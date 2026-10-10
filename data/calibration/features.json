@@ -1,0 +1,1433 @@
+{
+  "logo_stripes.jpg|logo_stripes_q85.jpg": {
+    "hash_dist": 0,
+    "inliers": 42,
+    "ratio": 1.0,
+    "tmpl": 0.9298025965690613,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.2
+  },
+  "logo_stripes.jpg|logo_stripes_q90.jpg": {
+    "hash_dist": 0,
+    "inliers": 49,
+    "ratio": 1.0,
+    "tmpl": 0.9296351075172424,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.201
+  },
+  "logo_stripes.jpg|logo_stripes_q95.jpg": {
+    "hash_dist": 0,
+    "inliers": 47,
+    "ratio": 0.9791666666666666,
+    "tmpl": 0.9298025965690613,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.201
+  },
+  "logo_stripes.jpg|logo_stripes_modified.jpg": {
+    "hash_dist": 4,
+    "inliers": 3,
+    "ratio": 0.0,
+    "tmpl": 0.9256272315979004,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_stripes.jpg|logo_stripes_mod1_modified.jpg": {
+    "hash_dist": 4,
+    "inliers": 3,
+    "ratio": 0.0,
+    "tmpl": 0.9256272315979004,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_stripes.jpg|logo_stripes_mod2_modified.jpg": {
+    "hash_dist": 4,
+    "inliers": 3,
+    "ratio": 0.0,
+    "tmpl": 0.9256272315979004,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_stripes.jpg|logo_stripes_cropped.jpg": {
+    "hash_dist": 75,
+    "inliers": 4,
+    "ratio": 0.0,
+    "tmpl": 0.6691488027572632,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_stripes.jpg|logo_stripes_altered.jpg": {
+    "hash_dist": 2,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.8735604882240295,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.063
+  },
+  "logo_stripes.jpg|logo_stripes_embedded.jpg": {
+    "hash_dist": 97,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.3405401110649109,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "logo_stripes.jpg|logo_stripes_rot.jpg": {
+    "hash_dist": 50,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.3906755745410919,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "logo_circle.jpg|logo_circle_q85.jpg": {
+    "hash_dist": 0,
+    "inliers": 89,
+    "ratio": 0.9270833333333334,
+    "tmpl": 0.9909992814064026,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.323
+  },
+  "logo_circle.jpg|logo_circle_q90.jpg": {
+    "hash_dist": 0,
+    "inliers": 122,
+    "ratio": 0.9838709677419355,
+    "tmpl": 0.991860568523407,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.336
+  },
+  "logo_circle.jpg|logo_circle_q95.jpg": {
+    "hash_dist": 0,
+    "inliers": 148,
+    "ratio": 0.9932885906040269,
+    "tmpl": 0.9923741221427917,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.348
+  },
+  "logo_circle.jpg|logo_circle_modified.jpg": {
+    "hash_dist": 4,
+    "inliers": 6,
+    "ratio": 0.0,
+    "tmpl": 0.9765836596488953,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_circle.jpg|logo_circle_mod1_modified.jpg": {
+    "hash_dist": 4,
+    "inliers": 6,
+    "ratio": 0.0,
+    "tmpl": 0.9765836596488953,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_circle.jpg|logo_circle_mod2_modified.jpg": {
+    "hash_dist": 4,
+    "inliers": 6,
+    "ratio": 0.0,
+    "tmpl": 0.9765836596488953,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_circle.jpg|logo_circle_cropped.jpg": {
+    "hash_dist": 89,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.7928715348243713,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.034
+  },
+  "logo_circle.jpg|logo_circle_altered.jpg": {
+    "hash_dist": 3,
+    "inliers": 27,
+    "ratio": 1.0,
+    "tmpl": 0.8453394174575806,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.308
+  },
+  "logo_circle.jpg|logo_circle_embedded.jpg": {
+    "hash_dist": 114,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.22229060530662537,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "logo_circle.jpg|logo_circle_rot.jpg": {
+    "hash_dist": 24,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.7136980891227722,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.017
+  },
+  "shoe_a.jpg|shoe_a_q85.jpg": {
+    "hash_dist": 1,
+    "inliers": 277,
+    "ratio": 0.9857651245551602,
+    "tmpl": 0.9982612133026123,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.175
+  },
+  "shoe_a.jpg|shoe_a_q90.jpg": {
+    "hash_dist": 0,
+    "inliers": 328,
+    "ratio": 0.9879518072289156,
+    "tmpl": 0.9992755055427551,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.176
+  },
+  "shoe_a.jpg|shoe_a_q95.jpg": {
+    "hash_dist": 0,
+    "inliers": 333,
+    "ratio": 0.9910714285714286,
+    "tmpl": 0.9998549818992615,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.176
+  },
+  "shoe_a.jpg|shoe_a_modified.jpg": {
+    "hash_dist": 6,
+    "inliers": 72,
+    "ratio": 0.782608695652174,
+    "tmpl": 0.9915780425071716,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.17
+  },
+  "shoe_a.jpg|shoe_a_mod1_modified.jpg": {
+    "hash_dist": 6,
+    "inliers": 72,
+    "ratio": 0.782608695652174,
+    "tmpl": 0.9915780425071716,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.17
+  },
+  "shoe_a.jpg|shoe_a_mod2_modified.jpg": {
+    "hash_dist": 6,
+    "inliers": 72,
+    "ratio": 0.782608695652174,
+    "tmpl": 0.9915780425071716,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.17
+  },
+  "shoe_a.jpg|shoe_a_cropped.jpg": {
+    "hash_dist": 54,
+    "inliers": 164,
+    "ratio": 0.9060773480662984,
+    "tmpl": 0.984596312046051,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.157
+  },
+  "shoe_a.jpg|shoe_a_altered.jpg": {
+    "hash_dist": 6,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.6402363181114197,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.096
+  },
+  "shoe_a.jpg|shoe_a_embedded.jpg": {
+    "hash_dist": 93,
+    "inliers": 31,
+    "ratio": 0.7948717948717948,
+    "tmpl": 0.4530739486217499,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.157
+  },
+  "shoe_a.jpg|shoe_a_rot.jpg": {
+    "hash_dist": 47,
+    "inliers": 99,
+    "ratio": 0.9252336448598131,
+    "tmpl": 0.5033061504364014,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.16
+  },
+  "shoe_b.jpg|shoe_b_q85.jpg": {
+    "hash_dist": 0,
+    "inliers": 210,
+    "ratio": 0.995260663507109,
+    "tmpl": 0.998944878578186,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.175
+  },
+  "shoe_b.jpg|shoe_b_q90.jpg": {
+    "hash_dist": 0,
+    "inliers": 233,
+    "ratio": 0.9957264957264957,
+    "tmpl": 0.9991554021835327,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.175
+  },
+  "shoe_b.jpg|shoe_b_q95.jpg": {
+    "hash_dist": 0,
+    "inliers": 255,
+    "ratio": 0.99609375,
+    "tmpl": 0.9997889995574951,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.176
+  },
+  "shoe_b.jpg|shoe_b_modified.jpg": {
+    "hash_dist": 0,
+    "inliers": 51,
+    "ratio": 0.8225806451612904,
+    "tmpl": 0.979088544845581,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.166
+  },
+  "shoe_b.jpg|shoe_b_mod1_modified.jpg": {
+    "hash_dist": 0,
+    "inliers": 51,
+    "ratio": 0.8225806451612904,
+    "tmpl": 0.979088544845581,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.166
+  },
+  "shoe_b.jpg|shoe_b_mod2_modified.jpg": {
+    "hash_dist": 0,
+    "inliers": 51,
+    "ratio": 0.8225806451612904,
+    "tmpl": 0.979088544845581,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.166
+  },
+  "shoe_b.jpg|shoe_b_cropped.jpg": {
+    "hash_dist": 49,
+    "inliers": 81,
+    "ratio": 0.9310344827586207,
+    "tmpl": 1.0,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.17
+  },
+  "shoe_b.jpg|shoe_b_altered.jpg": {
+    "hash_dist": 2,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.9370020031929016,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.081
+  },
+  "shoe_b.jpg|shoe_b_embedded.jpg": {
+    "hash_dist": 81,
+    "inliers": 18,
+    "ratio": 1.0,
+    "tmpl": 0.5034564733505249,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.139
+  },
+  "shoe_b.jpg|shoe_b_rot.jpg": {
+    "hash_dist": 42,
+    "inliers": 75,
+    "ratio": 0.9259259259259259,
+    "tmpl": 0.48534873127937317,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.15
+  },
+  "logo_stripes_alt.jpg|logo_stripes_alt_q85.jpg": {
+    "hash_dist": 0,
+    "inliers": 54,
+    "ratio": 0.9310344827586207,
+    "tmpl": 0.9873102903366089,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.165
+  },
+  "logo_stripes_alt.jpg|logo_stripes_alt_q90.jpg": {
+    "hash_dist": 0,
+    "inliers": 54,
+    "ratio": 0.9473684210526315,
+    "tmpl": 0.9869548678398132,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.164
+  },
+  "logo_stripes_alt.jpg|logo_stripes_alt_q95.jpg": {
+    "hash_dist": 0,
+    "inliers": 58,
+    "ratio": 0.9508196721311475,
+    "tmpl": 0.9876846075057983,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.166
+  },
+  "logo_stripes_alt.jpg|logo_stripes_alt_modified.jpg": {
+    "hash_dist": 1,
+    "inliers": 5,
+    "ratio": 0.0,
+    "tmpl": 0.7833491563796997,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_stripes_alt.jpg|logo_stripes_alt_mod1_modified.jpg": {
+    "hash_dist": 1,
+    "inliers": 5,
+    "ratio": 0.0,
+    "tmpl": 0.7833491563796997,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_stripes_alt.jpg|logo_stripes_alt_mod2_modified.jpg": {
+    "hash_dist": 1,
+    "inliers": 5,
+    "ratio": 0.0,
+    "tmpl": 0.7833491563796997,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_stripes_alt.jpg|logo_stripes_alt_cropped.jpg": {
+    "hash_dist": 105,
+    "inliers": 5,
+    "ratio": 0.0,
+    "tmpl": 0.8151805400848389,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_stripes_alt.jpg|logo_stripes_alt_altered.jpg": {
+    "hash_dist": 5,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.667377233505249,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.005
+  },
+  "logo_stripes_alt.jpg|logo_stripes_alt_embedded.jpg": {
+    "hash_dist": 89,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.4027540683746338,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "logo_stripes_alt.jpg|logo_stripes_alt_rot.jpg": {
+    "hash_dist": 29,
+    "inliers": 15,
+    "ratio": 0.8823529411764706,
+    "tmpl": 0.4423680305480957,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.146
+  },
+  "logo_circles.jpg|logo_circles_q85.jpg": {
+    "hash_dist": 0,
+    "inliers": 120,
+    "ratio": 0.975609756097561,
+    "tmpl": 0.9963396191596985,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.166
+  },
+  "logo_circles.jpg|logo_circles_q90.jpg": {
+    "hash_dist": 0,
+    "inliers": 162,
+    "ratio": 1.0,
+    "tmpl": 0.9976877570152283,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.206
+  },
+  "logo_circles.jpg|logo_circles_q95.jpg": {
+    "hash_dist": 0,
+    "inliers": 205,
+    "ratio": 0.9855769230769231,
+    "tmpl": 0.9963366985321045,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.207
+  },
+  "logo_circles.jpg|logo_circles_modified.jpg": {
+    "hash_dist": 0,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.9832028150558472,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "logo_circles.jpg|logo_circles_mod1_modified.jpg": {
+    "hash_dist": 0,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.9832028150558472,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "logo_circles.jpg|logo_circles_mod2_modified.jpg": {
+    "hash_dist": 0,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.9832028150558472,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "logo_circles.jpg|logo_circles_cropped.jpg": {
+    "hash_dist": 53,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.8452909588813782,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.061
+  },
+  "logo_circles.jpg|logo_circles_altered.jpg": {
+    "hash_dist": 8,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.7661490440368652,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.033
+  },
+  "logo_circles.jpg|logo_circles_embedded.jpg": {
+    "hash_dist": 70,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.37901541590690613,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "logo_circles.jpg|logo_circles_rot.jpg": {
+    "hash_dist": 40,
+    "inliers": 46,
+    "ratio": 0.8070175438596491,
+    "tmpl": 0.38462039828300476,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.105
+  },
+  "logo_triangle.jpg|logo_triangle_q85.jpg": {
+    "hash_dist": 0,
+    "inliers": 46,
+    "ratio": 1.0,
+    "tmpl": 0.9965275526046753,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.167
+  },
+  "logo_triangle.jpg|logo_triangle_q90.jpg": {
+    "hash_dist": 0,
+    "inliers": 51,
+    "ratio": 1.0,
+    "tmpl": 0.9947912096977234,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.167
+  },
+  "logo_triangle.jpg|logo_triangle_q95.jpg": {
+    "hash_dist": 0,
+    "inliers": 50,
+    "ratio": 1.0,
+    "tmpl": 0.9965260028839111,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.167
+  },
+  "logo_triangle.jpg|logo_triangle_modified.jpg": {
+    "hash_dist": 0,
+    "inliers": 7,
+    "ratio": 0.0,
+    "tmpl": 0.9856815934181213,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_triangle.jpg|logo_triangle_mod1_modified.jpg": {
+    "hash_dist": 0,
+    "inliers": 7,
+    "ratio": 0.0,
+    "tmpl": 0.9856815934181213,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_triangle.jpg|logo_triangle_mod2_modified.jpg": {
+    "hash_dist": 0,
+    "inliers": 7,
+    "ratio": 0.0,
+    "tmpl": 0.9856815934181213,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_triangle.jpg|logo_triangle_cropped.jpg": {
+    "hash_dist": 49,
+    "inliers": 6,
+    "ratio": 0.0,
+    "tmpl": 0.8436516523361206,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_triangle.jpg|logo_triangle_altered.jpg": {
+    "hash_dist": 8,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.4747040569782257,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.003
+  },
+  "logo_triangle.jpg|logo_triangle_embedded.jpg": {
+    "hash_dist": 85,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.576493501663208,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "logo_triangle.jpg|logo_triangle_rot.jpg": {
+    "hash_dist": 46,
+    "inliers": 24,
+    "ratio": 1.0,
+    "tmpl": 0.496467262506485,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.163
+  },
+  "logo_chevron.jpg|logo_chevron_q85.jpg": {
+    "hash_dist": 1,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.9964568018913269,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.085
+  },
+  "logo_chevron.jpg|logo_chevron_q90.jpg": {
+    "hash_dist": 1,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.998522162437439,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.095
+  },
+  "logo_chevron.jpg|logo_chevron_q95.jpg": {
+    "hash_dist": 1,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.9982272982597351,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.096
+  },
+  "logo_chevron.jpg|logo_chevron_modified.jpg": {
+    "hash_dist": 3,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.9089308977127075,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.041
+  },
+  "logo_chevron.jpg|logo_chevron_mod1_modified.jpg": {
+    "hash_dist": 3,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.9089308977127075,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.041
+  },
+  "logo_chevron.jpg|logo_chevron_mod2_modified.jpg": {
+    "hash_dist": 3,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.9089308977127075,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.041
+  },
+  "logo_chevron.jpg|logo_chevron_cropped.jpg": {
+    "hash_dist": 34,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.938994288444519,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.092
+  },
+  "logo_chevron.jpg|logo_chevron_altered.jpg": {
+    "hash_dist": 8,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.44805872440338135,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.002
+  },
+  "logo_chevron.jpg|logo_chevron_embedded.jpg": {
+    "hash_dist": 69,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.5662427544593811,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "logo_chevron.jpg|logo_chevron_rot.jpg": {
+    "hash_dist": 43,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.4394170343875885,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "logo_stripes.jpg|logo_circle.jpg": {
+    "hash_dist": 100,
+    "inliers": 28,
+    "ratio": 0.0,
+    "tmpl": 0.28634312748908997,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_stripes.jpg|logo_chevron.jpg": {
+    "hash_dist": 75,
+    "inliers": 7,
+    "ratio": 0.0,
+    "tmpl": 0.320013165473938,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_stripes.jpg|logo_stripes_alt.jpg": {
+    "hash_dist": 76,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.47649621963500977,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "logo_stripes.jpg|logo_circles.jpg": {
+    "hash_dist": 70,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.3167014420032501,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "logo_stripes.jpg|logo_triangle.jpg": {
+    "hash_dist": 80,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.35314059257507324,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "logo_stripes.jpg|logo_diagonal.jpg": {
+    "hash_dist": 113,
+    "inliers": 6,
+    "ratio": 0.0,
+    "tmpl": 0.16216053068637848,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_circle.jpg|logo_chevron.jpg": {
+    "hash_dist": 99,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.22061431407928467,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_circle.jpg|logo_stripes_alt.jpg": {
+    "hash_dist": 102,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.17582054436206818,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_circle.jpg|logo_circles.jpg": {
+    "hash_dist": 88,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.8763117790222168,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_circle.jpg|logo_triangle.jpg": {
+    "hash_dist": 100,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.21399948000907898,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_circle.jpg|logo_diagonal.jpg": {
+    "hash_dist": 111,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.17105324566364288,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_chevron.jpg|logo_stripes_alt.jpg": {
+    "hash_dist": 69,
+    "inliers": 4,
+    "ratio": 0.0,
+    "tmpl": 0.31078040599823,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_chevron.jpg|logo_circles.jpg": {
+    "hash_dist": 59,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.29215049743652344,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "logo_chevron.jpg|logo_triangle.jpg": {
+    "hash_dist": 49,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.47059065103530884,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "logo_chevron.jpg|logo_diagonal.jpg": {
+    "hash_dist": 116,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.20664018392562866,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_stripes_alt.jpg|logo_circles.jpg": {
+    "hash_dist": 66,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.2958763837814331,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "logo_stripes_alt.jpg|logo_triangle.jpg": {
+    "hash_dist": 72,
+    "inliers": 6,
+    "ratio": 0.0,
+    "tmpl": 0.36749178171157837,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_stripes_alt.jpg|logo_diagonal.jpg": {
+    "hash_dist": 113,
+    "inliers": 1,
+    "ratio": 0.0,
+    "tmpl": 0.18535910546779633,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_circles.jpg|logo_triangle.jpg": {
+    "hash_dist": 72,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.2909749150276184,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "logo_circles.jpg|logo_diagonal.jpg": {
+    "hash_dist": 119,
+    "inliers": 7,
+    "ratio": 0.0,
+    "tmpl": 0.172430619597435,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_triangle.jpg|logo_diagonal.jpg": {
+    "hash_dist": 111,
+    "inliers": 9,
+    "ratio": 0.0,
+    "tmpl": 0.2080209106206894,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "shoe_a.jpg|shoe_b.jpg": {
+    "hash_dist": 51,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.4639674425125122,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.003
+  },
+  "shoe_a.jpg|shoe_c.jpg": {
+    "hash_dist": 82,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.36986416578292847,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "shoe_b.jpg|shoe_c.jpg": {
+    "hash_dist": 83,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.2939503788948059,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "shoe_a.jpg|logo_stripes.jpg": {
+    "hash_dist": 72,
+    "inliers": 3,
+    "ratio": 0.0,
+    "tmpl": 0.36847588419914246,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_stripes.jpg|shoe_a.jpg": {
+    "hash_dist": 72,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.2913484573364258,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "shoe_a.jpg|logo_circle.jpg": {
+    "hash_dist": 86,
+    "inliers": 6,
+    "ratio": 0.0,
+    "tmpl": 0.34057292342185974,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_circle.jpg|shoe_a.jpg": {
+    "hash_dist": 86,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.2356196790933609,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "shoe_a.jpg|logo_chevron.jpg": {
+    "hash_dist": 59,
+    "inliers": 6,
+    "ratio": 0.0,
+    "tmpl": 0.3551661968231201,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_chevron.jpg|shoe_a.jpg": {
+    "hash_dist": 59,
+    "inliers": 7,
+    "ratio": 0.0,
+    "tmpl": 0.30559206008911133,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "shoe_a.jpg|logo_stripes_alt.jpg": {
+    "hash_dist": 60,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.26976779103279114,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "logo_stripes_alt.jpg|shoe_a.jpg": {
+    "hash_dist": 60,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.2691820561885834,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "shoe_a.jpg|logo_circles.jpg": {
+    "hash_dist": 72,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.3232615888118744,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "logo_circles.jpg|shoe_a.jpg": {
+    "hash_dist": 72,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.3422861695289612,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "shoe_a.jpg|logo_triangle.jpg": {
+    "hash_dist": 72,
+    "inliers": 5,
+    "ratio": 0.0,
+    "tmpl": 0.3424636423587799,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_triangle.jpg|shoe_a.jpg": {
+    "hash_dist": 72,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.329762727022171,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "shoe_a.jpg|logo_diagonal.jpg": {
+    "hash_dist": 111,
+    "inliers": 1,
+    "ratio": 0.0,
+    "tmpl": 0.20036739110946655,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_diagonal.jpg|shoe_a.jpg": {
+    "hash_dist": 111,
+    "inliers": 8,
+    "ratio": 0.0,
+    "tmpl": 0.09611489623785019,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "shoe_b.jpg|logo_stripes.jpg": {
+    "hash_dist": 71,
+    "inliers": 5,
+    "ratio": 0.0,
+    "tmpl": 0.2843815088272095,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_stripes.jpg|shoe_b.jpg": {
+    "hash_dist": 71,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.3064970374107361,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "shoe_b.jpg|logo_circle.jpg": {
+    "hash_dist": 83,
+    "inliers": 16,
+    "ratio": 0.0,
+    "tmpl": 0.354707270860672,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_circle.jpg|shoe_b.jpg": {
+    "hash_dist": 83,
+    "inliers": 1,
+    "ratio": 0.0,
+    "tmpl": 0.2755921185016632,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "shoe_b.jpg|logo_chevron.jpg": {
+    "hash_dist": 56,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.38898536562919617,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "logo_chevron.jpg|shoe_b.jpg": {
+    "hash_dist": 56,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.30030784010887146,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "shoe_b.jpg|logo_stripes_alt.jpg": {
+    "hash_dist": 69,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.25770869851112366,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "logo_stripes_alt.jpg|shoe_b.jpg": {
+    "hash_dist": 69,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.30377766489982605,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "shoe_b.jpg|logo_circles.jpg": {
+    "hash_dist": 63,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.3300698399543762,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "logo_circles.jpg|shoe_b.jpg": {
+    "hash_dist": 63,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.32840561866760254,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "shoe_b.jpg|logo_triangle.jpg": {
+    "hash_dist": 39,
+    "inliers": 6,
+    "ratio": 0.0,
+    "tmpl": 0.3834664523601532,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_triangle.jpg|shoe_b.jpg": {
+    "hash_dist": 39,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.3599672019481659,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "shoe_b.jpg|logo_diagonal.jpg": {
+    "hash_dist": 108,
+    "inliers": 3,
+    "ratio": 0.0,
+    "tmpl": 0.25973471999168396,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_diagonal.jpg|shoe_b.jpg": {
+    "hash_dist": 108,
+    "inliers": 10,
+    "ratio": 0.0,
+    "tmpl": 0.20752353966236115,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "shoe_c.jpg|logo_stripes.jpg": {
+    "hash_dist": 84,
+    "inliers": 5,
+    "ratio": 0.0,
+    "tmpl": 0.347184956073761,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_stripes.jpg|shoe_c.jpg": {
+    "hash_dist": 84,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.29214274883270264,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "shoe_c.jpg|logo_circle.jpg": {
+    "hash_dist": 98,
+    "inliers": 1,
+    "ratio": 0.0,
+    "tmpl": 0.33958303928375244,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_circle.jpg|shoe_c.jpg": {
+    "hash_dist": 98,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.21817776560783386,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "shoe_c.jpg|logo_chevron.jpg": {
+    "hash_dist": 83,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.2563334107398987,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "logo_chevron.jpg|shoe_c.jpg": {
+    "hash_dist": 83,
+    "inliers": 6,
+    "ratio": 0.0,
+    "tmpl": 0.2404017448425293,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "shoe_c.jpg|logo_stripes_alt.jpg": {
+    "hash_dist": 56,
+    "inliers": 7,
+    "ratio": 0.0,
+    "tmpl": 0.3498006761074066,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_stripes_alt.jpg|shoe_c.jpg": {
+    "hash_dist": 56,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.2908575236797333,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "shoe_c.jpg|logo_circles.jpg": {
+    "hash_dist": 94,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.30038708448410034,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "logo_circles.jpg|shoe_c.jpg": {
+    "hash_dist": 94,
+    "inliers": 7,
+    "ratio": 0.0,
+    "tmpl": 0.2975589632987976,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "shoe_c.jpg|logo_triangle.jpg": {
+    "hash_dist": 94,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.29453495144844055,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "logo_triangle.jpg|shoe_c.jpg": {
+    "hash_dist": 94,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.2534598410129547,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "shoe_c.jpg|logo_diagonal.jpg": {
+    "hash_dist": 115,
+    "inliers": 6,
+    "ratio": 0.0,
+    "tmpl": 0.2210497409105301,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_diagonal.jpg|shoe_c.jpg": {
+    "hash_dist": 115,
+    "inliers": 7,
+    "ratio": 0.0,
+    "tmpl": 0.21250036358833313,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "acme_logo.jpg|wholesale_shoes.jpg": {
+    "hash_dist": 104,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.28521376848220825,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "acme_logo.jpg|logo_stripes.jpg": {
+    "hash_dist": 82,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.23720398545265198,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "acme_logo.jpg|logo_circle.jpg": {
+    "hash_dist": 110,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.3525485396385193,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "acme_logo.jpg|logo_chevron.jpg": {
+    "hash_dist": 69,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.32003650069236755,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "acme_logo.jpg|logo_stripes_alt.jpg": {
+    "hash_dist": 78,
+    "inliers": 5,
+    "ratio": 0.0,
+    "tmpl": 0.25731173157691956,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "acme_logo.jpg|logo_circles.jpg": {
+    "hash_dist": 72,
+    "inliers": 8,
+    "ratio": 0.0,
+    "tmpl": 0.33825451135635376,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "acme_logo.jpg|logo_triangle.jpg": {
+    "hash_dist": 70,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.3449597954750061,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "acme_logo.jpg|logo_diagonal.jpg": {
+    "hash_dist": 121,
+    "inliers": 1,
+    "ratio": 0.0,
+    "tmpl": 0.2698284983634949,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_stripes.jpg|grid_page.jpg": {
+    "hash_dist": 117,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.4401340186595917,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "logo_circle.jpg|grid_page.jpg": {
+    "hash_dist": 106,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.2582763731479645,
+    "changed": null,
+    "degenerate": false,
+    "hull_frac": 0.0
+  },
+  "logo_chevron.jpg|grid_page.jpg": {
+    "hash_dist": 118,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.2515203356742859,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "shoe_a.jpg|grid_page.jpg": {
+    "hash_dist": 119,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.23966321349143982,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  },
+  "shoe_b.jpg|grid_page.jpg": {
+    "hash_dist": 118,
+    "inliers": 0,
+    "ratio": 0.0,
+    "tmpl": 0.19541126489639282,
+    "changed": null,
+    "degenerate": true,
+    "hull_frac": 0.0
+  }
+}

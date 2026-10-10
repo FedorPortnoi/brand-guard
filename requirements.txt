@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+python-multipart
+httpx
+pillow
+imagehash
+numpy
+opencv-python-headless
+ddgs
+fpdf2
+c2pa-python
+beautifulsoup4
+lxml
+python-dotenv
+yt-dlp

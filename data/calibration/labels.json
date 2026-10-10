@@ -1,0 +1,1115 @@
+[
+  {
+    "original": "logo_stripes.jpg",
+    "candidate": "logo_stripes_q85.jpg",
+    "related": true,
+    "kind": "exact",
+    "note": "Exact recompression (quality 85)"
+  },
+  {
+    "original": "logo_stripes.jpg",
+    "candidate": "logo_stripes_q90.jpg",
+    "related": true,
+    "kind": "exact",
+    "note": "Exact recompression (quality 90)"
+  },
+  {
+    "original": "logo_stripes.jpg",
+    "candidate": "logo_stripes_q95.jpg",
+    "related": true,
+    "kind": "exact",
+    "note": "Exact recompression (quality 95)"
+  },
+  {
+    "original": "logo_stripes.jpg",
+    "candidate": "logo_stripes_modified.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Resized + recoloured"
+  },
+  {
+    "original": "logo_stripes.jpg",
+    "candidate": "logo_stripes_mod1_modified.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Resized + recoloured"
+  },
+  {
+    "original": "logo_stripes.jpg",
+    "candidate": "logo_stripes_mod2_modified.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Resized + recoloured"
+  },
+  {
+    "original": "logo_stripes.jpg",
+    "candidate": "logo_stripes_cropped.jpg",
+    "related": true,
+    "kind": "cropped",
+    "note": "Cropped and reframed"
+  },
+  {
+    "original": "logo_stripes.jpg",
+    "candidate": "logo_stripes_altered.jpg",
+    "related": true,
+    "kind": "altered",
+    "note": "Same image, visibly edited (blurred region)"
+  },
+  {
+    "original": "logo_stripes.jpg",
+    "candidate": "logo_stripes_embedded.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Logo embedded small in larger scene"
+  },
+  {
+    "original": "logo_stripes.jpg",
+    "candidate": "logo_stripes_rot.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Slightly rotated"
+  },
+  {
+    "original": "logo_circle.jpg",
+    "candidate": "logo_circle_q85.jpg",
+    "related": true,
+    "kind": "exact",
+    "note": "Exact recompression (quality 85)"
+  },
+  {
+    "original": "logo_circle.jpg",
+    "candidate": "logo_circle_q90.jpg",
+    "related": true,
+    "kind": "exact",
+    "note": "Exact recompression (quality 90)"
+  },
+  {
+    "original": "logo_circle.jpg",
+    "candidate": "logo_circle_q95.jpg",
+    "related": true,
+    "kind": "exact",
+    "note": "Exact recompression (quality 95)"
+  },
+  {
+    "original": "logo_circle.jpg",
+    "candidate": "logo_circle_modified.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Resized + recoloured"
+  },
+  {
+    "original": "logo_circle.jpg",
+    "candidate": "logo_circle_mod1_modified.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Resized + recoloured"
+  },
+  {
+    "original": "logo_circle.jpg",
+    "candidate": "logo_circle_mod2_modified.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Resized + recoloured"
+  },
+  {
+    "original": "logo_circle.jpg",
+    "candidate": "logo_circle_cropped.jpg",
+    "related": true,
+    "kind": "cropped",
+    "note": "Cropped and reframed"
+  },
+  {
+    "original": "logo_circle.jpg",
+    "candidate": "logo_circle_altered.jpg",
+    "related": true,
+    "kind": "altered",
+    "note": "Same image, visibly edited (blurred region)"
+  },
+  {
+    "original": "logo_circle.jpg",
+    "candidate": "logo_circle_embedded.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Logo embedded small in larger scene"
+  },
+  {
+    "original": "logo_circle.jpg",
+    "candidate": "logo_circle_rot.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Slightly rotated"
+  },
+  {
+    "original": "shoe_a.jpg",
+    "candidate": "shoe_a_q85.jpg",
+    "related": true,
+    "kind": "exact",
+    "note": "Exact recompression (quality 85)"
+  },
+  {
+    "original": "shoe_a.jpg",
+    "candidate": "shoe_a_q90.jpg",
+    "related": true,
+    "kind": "exact",
+    "note": "Exact recompression (quality 90)"
+  },
+  {
+    "original": "shoe_a.jpg",
+    "candidate": "shoe_a_q95.jpg",
+    "related": true,
+    "kind": "exact",
+    "note": "Exact recompression (quality 95)"
+  },
+  {
+    "original": "shoe_a.jpg",
+    "candidate": "shoe_a_modified.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Resized + recoloured"
+  },
+  {
+    "original": "shoe_a.jpg",
+    "candidate": "shoe_a_mod1_modified.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Resized + recoloured"
+  },
+  {
+    "original": "shoe_a.jpg",
+    "candidate": "shoe_a_mod2_modified.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Resized + recoloured"
+  },
+  {
+    "original": "shoe_a.jpg",
+    "candidate": "shoe_a_cropped.jpg",
+    "related": true,
+    "kind": "cropped",
+    "note": "Cropped and reframed"
+  },
+  {
+    "original": "shoe_a.jpg",
+    "candidate": "shoe_a_altered.jpg",
+    "related": true,
+    "kind": "altered",
+    "note": "Same image, visibly edited (blurred region)"
+  },
+  {
+    "original": "shoe_a.jpg",
+    "candidate": "shoe_a_embedded.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Logo embedded small in larger scene"
+  },
+  {
+    "original": "shoe_a.jpg",
+    "candidate": "shoe_a_rot.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Slightly rotated"
+  },
+  {
+    "original": "shoe_b.jpg",
+    "candidate": "shoe_b_q85.jpg",
+    "related": true,
+    "kind": "exact",
+    "note": "Exact recompression (quality 85)"
+  },
+  {
+    "original": "shoe_b.jpg",
+    "candidate": "shoe_b_q90.jpg",
+    "related": true,
+    "kind": "exact",
+    "note": "Exact recompression (quality 90)"
+  },
+  {
+    "original": "shoe_b.jpg",
+    "candidate": "shoe_b_q95.jpg",
+    "related": true,
+    "kind": "exact",
+    "note": "Exact recompression (quality 95)"
+  },
+  {
+    "original": "shoe_b.jpg",
+    "candidate": "shoe_b_modified.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Resized + recoloured"
+  },
+  {
+    "original": "shoe_b.jpg",
+    "candidate": "shoe_b_mod1_modified.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Resized + recoloured"
+  },
+  {
+    "original": "shoe_b.jpg",
+    "candidate": "shoe_b_mod2_modified.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Resized + recoloured"
+  },
+  {
+    "original": "shoe_b.jpg",
+    "candidate": "shoe_b_cropped.jpg",
+    "related": true,
+    "kind": "cropped",
+    "note": "Cropped and reframed"
+  },
+  {
+    "original": "shoe_b.jpg",
+    "candidate": "shoe_b_altered.jpg",
+    "related": true,
+    "kind": "altered",
+    "note": "Same image, visibly edited (blurred region)"
+  },
+  {
+    "original": "shoe_b.jpg",
+    "candidate": "shoe_b_embedded.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Logo embedded small in larger scene"
+  },
+  {
+    "original": "shoe_b.jpg",
+    "candidate": "shoe_b_rot.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Slightly rotated"
+  },
+  {
+    "original": "logo_stripes_alt.jpg",
+    "candidate": "logo_stripes_alt_q85.jpg",
+    "related": true,
+    "kind": "exact",
+    "note": "Exact recompression (quality 85)"
+  },
+  {
+    "original": "logo_stripes_alt.jpg",
+    "candidate": "logo_stripes_alt_q90.jpg",
+    "related": true,
+    "kind": "exact",
+    "note": "Exact recompression (quality 90)"
+  },
+  {
+    "original": "logo_stripes_alt.jpg",
+    "candidate": "logo_stripes_alt_q95.jpg",
+    "related": true,
+    "kind": "exact",
+    "note": "Exact recompression (quality 95)"
+  },
+  {
+    "original": "logo_stripes_alt.jpg",
+    "candidate": "logo_stripes_alt_modified.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Resized + recoloured"
+  },
+  {
+    "original": "logo_stripes_alt.jpg",
+    "candidate": "logo_stripes_alt_mod1_modified.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Resized + recoloured"
+  },
+  {
+    "original": "logo_stripes_alt.jpg",
+    "candidate": "logo_stripes_alt_mod2_modified.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Resized + recoloured"
+  },
+  {
+    "original": "logo_stripes_alt.jpg",
+    "candidate": "logo_stripes_alt_cropped.jpg",
+    "related": true,
+    "kind": "cropped",
+    "note": "Cropped and reframed"
+  },
+  {
+    "original": "logo_stripes_alt.jpg",
+    "candidate": "logo_stripes_alt_altered.jpg",
+    "related": true,
+    "kind": "altered",
+    "note": "Same image, visibly edited (blurred region)"
+  },
+  {
+    "original": "logo_stripes_alt.jpg",
+    "candidate": "logo_stripes_alt_embedded.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Logo embedded small in larger scene"
+  },
+  {
+    "original": "logo_stripes_alt.jpg",
+    "candidate": "logo_stripes_alt_rot.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Slightly rotated"
+  },
+  {
+    "original": "logo_circles.jpg",
+    "candidate": "logo_circles_q85.jpg",
+    "related": true,
+    "kind": "exact",
+    "note": "Exact recompression (quality 85)"
+  },
+  {
+    "original": "logo_circles.jpg",
+    "candidate": "logo_circles_q90.jpg",
+    "related": true,
+    "kind": "exact",
+    "note": "Exact recompression (quality 90)"
+  },
+  {
+    "original": "logo_circles.jpg",
+    "candidate": "logo_circles_q95.jpg",
+    "related": true,
+    "kind": "exact",
+    "note": "Exact recompression (quality 95)"
+  },
+  {
+    "original": "logo_circles.jpg",
+    "candidate": "logo_circles_modified.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Resized + recoloured"
+  },
+  {
+    "original": "logo_circles.jpg",
+    "candidate": "logo_circles_mod1_modified.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Resized + recoloured"
+  },
+  {
+    "original": "logo_circles.jpg",
+    "candidate": "logo_circles_mod2_modified.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Resized + recoloured"
+  },
+  {
+    "original": "logo_circles.jpg",
+    "candidate": "logo_circles_cropped.jpg",
+    "related": true,
+    "kind": "cropped",
+    "note": "Cropped and reframed"
+  },
+  {
+    "original": "logo_circles.jpg",
+    "candidate": "logo_circles_altered.jpg",
+    "related": true,
+    "kind": "altered",
+    "note": "Same image, visibly edited (blurred region)"
+  },
+  {
+    "original": "logo_circles.jpg",
+    "candidate": "logo_circles_embedded.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Logo embedded small in larger scene"
+  },
+  {
+    "original": "logo_circles.jpg",
+    "candidate": "logo_circles_rot.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Slightly rotated"
+  },
+  {
+    "original": "logo_triangle.jpg",
+    "candidate": "logo_triangle_q85.jpg",
+    "related": true,
+    "kind": "exact",
+    "note": "Exact recompression (quality 85)"
+  },
+  {
+    "original": "logo_triangle.jpg",
+    "candidate": "logo_triangle_q90.jpg",
+    "related": true,
+    "kind": "exact",
+    "note": "Exact recompression (quality 90)"
+  },
+  {
+    "original": "logo_triangle.jpg",
+    "candidate": "logo_triangle_q95.jpg",
+    "related": true,
+    "kind": "exact",
+    "note": "Exact recompression (quality 95)"
+  },
+  {
+    "original": "logo_triangle.jpg",
+    "candidate": "logo_triangle_modified.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Resized + recoloured"
+  },
+  {
+    "original": "logo_triangle.jpg",
+    "candidate": "logo_triangle_mod1_modified.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Resized + recoloured"
+  },
+  {
+    "original": "logo_triangle.jpg",
+    "candidate": "logo_triangle_mod2_modified.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Resized + recoloured"
+  },
+  {
+    "original": "logo_triangle.jpg",
+    "candidate": "logo_triangle_cropped.jpg",
+    "related": true,
+    "kind": "cropped",
+    "note": "Cropped and reframed"
+  },
+  {
+    "original": "logo_triangle.jpg",
+    "candidate": "logo_triangle_altered.jpg",
+    "related": true,
+    "kind": "altered",
+    "note": "Same image, visibly edited (blurred region)"
+  },
+  {
+    "original": "logo_triangle.jpg",
+    "candidate": "logo_triangle_embedded.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Logo embedded small in larger scene"
+  },
+  {
+    "original": "logo_triangle.jpg",
+    "candidate": "logo_triangle_rot.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Slightly rotated"
+  },
+  {
+    "original": "logo_chevron.jpg",
+    "candidate": "logo_chevron_q85.jpg",
+    "related": true,
+    "kind": "exact",
+    "note": "Exact recompression (quality 85)"
+  },
+  {
+    "original": "logo_chevron.jpg",
+    "candidate": "logo_chevron_q90.jpg",
+    "related": true,
+    "kind": "exact",
+    "note": "Exact recompression (quality 90)"
+  },
+  {
+    "original": "logo_chevron.jpg",
+    "candidate": "logo_chevron_q95.jpg",
+    "related": true,
+    "kind": "exact",
+    "note": "Exact recompression (quality 95)"
+  },
+  {
+    "original": "logo_chevron.jpg",
+    "candidate": "logo_chevron_modified.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Resized + recoloured"
+  },
+  {
+    "original": "logo_chevron.jpg",
+    "candidate": "logo_chevron_mod1_modified.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Resized + recoloured"
+  },
+  {
+    "original": "logo_chevron.jpg",
+    "candidate": "logo_chevron_mod2_modified.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Resized + recoloured"
+  },
+  {
+    "original": "logo_chevron.jpg",
+    "candidate": "logo_chevron_cropped.jpg",
+    "related": true,
+    "kind": "cropped",
+    "note": "Cropped and reframed"
+  },
+  {
+    "original": "logo_chevron.jpg",
+    "candidate": "logo_chevron_altered.jpg",
+    "related": true,
+    "kind": "altered",
+    "note": "Same image, visibly edited (blurred region)"
+  },
+  {
+    "original": "logo_chevron.jpg",
+    "candidate": "logo_chevron_embedded.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Logo embedded small in larger scene"
+  },
+  {
+    "original": "logo_chevron.jpg",
+    "candidate": "logo_chevron_rot.jpg",
+    "related": true,
+    "kind": "modified",
+    "note": "Slightly rotated"
+  },
+  {
+    "original": "logo_stripes.jpg",
+    "candidate": "logo_circle.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: stripes vs circle logos"
+  },
+  {
+    "original": "logo_stripes.jpg",
+    "candidate": "logo_chevron.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: stripes vs chevron logos"
+  },
+  {
+    "original": "logo_stripes.jpg",
+    "candidate": "logo_stripes_alt.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: stripes vs stripes_alt logos"
+  },
+  {
+    "original": "logo_stripes.jpg",
+    "candidate": "logo_circles.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: stripes vs circles logos"
+  },
+  {
+    "original": "logo_stripes.jpg",
+    "candidate": "logo_triangle.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: stripes vs triangle logos"
+  },
+  {
+    "original": "logo_stripes.jpg",
+    "candidate": "logo_diagonal.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: stripes vs diagonal logos"
+  },
+  {
+    "original": "logo_circle.jpg",
+    "candidate": "logo_chevron.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: circle vs chevron logos"
+  },
+  {
+    "original": "logo_circle.jpg",
+    "candidate": "logo_stripes_alt.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: circle vs stripes_alt logos"
+  },
+  {
+    "original": "logo_circle.jpg",
+    "candidate": "logo_circles.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: circle vs circles logos"
+  },
+  {
+    "original": "logo_circle.jpg",
+    "candidate": "logo_triangle.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: circle vs triangle logos"
+  },
+  {
+    "original": "logo_circle.jpg",
+    "candidate": "logo_diagonal.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: circle vs diagonal logos"
+  },
+  {
+    "original": "logo_chevron.jpg",
+    "candidate": "logo_stripes_alt.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: chevron vs stripes_alt logos"
+  },
+  {
+    "original": "logo_chevron.jpg",
+    "candidate": "logo_circles.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: chevron vs circles logos"
+  },
+  {
+    "original": "logo_chevron.jpg",
+    "candidate": "logo_triangle.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: chevron vs triangle logos"
+  },
+  {
+    "original": "logo_chevron.jpg",
+    "candidate": "logo_diagonal.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: chevron vs diagonal logos"
+  },
+  {
+    "original": "logo_stripes_alt.jpg",
+    "candidate": "logo_circles.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: stripes_alt vs circles logos"
+  },
+  {
+    "original": "logo_stripes_alt.jpg",
+    "candidate": "logo_triangle.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: stripes_alt vs triangle logos"
+  },
+  {
+    "original": "logo_stripes_alt.jpg",
+    "candidate": "logo_diagonal.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: stripes_alt vs diagonal logos"
+  },
+  {
+    "original": "logo_circles.jpg",
+    "candidate": "logo_triangle.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: circles vs triangle logos"
+  },
+  {
+    "original": "logo_circles.jpg",
+    "candidate": "logo_diagonal.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: circles vs diagonal logos"
+  },
+  {
+    "original": "logo_triangle.jpg",
+    "candidate": "logo_diagonal.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: triangle vs diagonal logos"
+  },
+  {
+    "original": "shoe_a.jpg",
+    "candidate": "shoe_b.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: shoe A vs B"
+  },
+  {
+    "original": "shoe_a.jpg",
+    "candidate": "shoe_c.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: shoe A vs C"
+  },
+  {
+    "original": "shoe_b.jpg",
+    "candidate": "shoe_c.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: shoe B vs C"
+  },
+  {
+    "original": "shoe_a.jpg",
+    "candidate": "logo_stripes.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: shoe A vs stripes logo"
+  },
+  {
+    "original": "logo_stripes.jpg",
+    "candidate": "shoe_a.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: stripes logo vs shoe A"
+  },
+  {
+    "original": "shoe_a.jpg",
+    "candidate": "logo_circle.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: shoe A vs circle logo"
+  },
+  {
+    "original": "logo_circle.jpg",
+    "candidate": "shoe_a.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: circle logo vs shoe A"
+  },
+  {
+    "original": "shoe_a.jpg",
+    "candidate": "logo_chevron.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: shoe A vs chevron logo"
+  },
+  {
+    "original": "logo_chevron.jpg",
+    "candidate": "shoe_a.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: chevron logo vs shoe A"
+  },
+  {
+    "original": "shoe_a.jpg",
+    "candidate": "logo_stripes_alt.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: shoe A vs stripes_alt logo"
+  },
+  {
+    "original": "logo_stripes_alt.jpg",
+    "candidate": "shoe_a.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: stripes_alt logo vs shoe A"
+  },
+  {
+    "original": "shoe_a.jpg",
+    "candidate": "logo_circles.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: shoe A vs circles logo"
+  },
+  {
+    "original": "logo_circles.jpg",
+    "candidate": "shoe_a.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: circles logo vs shoe A"
+  },
+  {
+    "original": "shoe_a.jpg",
+    "candidate": "logo_triangle.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: shoe A vs triangle logo"
+  },
+  {
+    "original": "logo_triangle.jpg",
+    "candidate": "shoe_a.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: triangle logo vs shoe A"
+  },
+  {
+    "original": "shoe_a.jpg",
+    "candidate": "logo_diagonal.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: shoe A vs diagonal logo"
+  },
+  {
+    "original": "logo_diagonal.jpg",
+    "candidate": "shoe_a.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: diagonal logo vs shoe A"
+  },
+  {
+    "original": "shoe_b.jpg",
+    "candidate": "logo_stripes.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: shoe B vs stripes logo"
+  },
+  {
+    "original": "logo_stripes.jpg",
+    "candidate": "shoe_b.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: stripes logo vs shoe B"
+  },
+  {
+    "original": "shoe_b.jpg",
+    "candidate": "logo_circle.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: shoe B vs circle logo"
+  },
+  {
+    "original": "logo_circle.jpg",
+    "candidate": "shoe_b.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: circle logo vs shoe B"
+  },
+  {
+    "original": "shoe_b.jpg",
+    "candidate": "logo_chevron.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: shoe B vs chevron logo"
+  },
+  {
+    "original": "logo_chevron.jpg",
+    "candidate": "shoe_b.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: chevron logo vs shoe B"
+  },
+  {
+    "original": "shoe_b.jpg",
+    "candidate": "logo_stripes_alt.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: shoe B vs stripes_alt logo"
+  },
+  {
+    "original": "logo_stripes_alt.jpg",
+    "candidate": "shoe_b.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: stripes_alt logo vs shoe B"
+  },
+  {
+    "original": "shoe_b.jpg",
+    "candidate": "logo_circles.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: shoe B vs circles logo"
+  },
+  {
+    "original": "logo_circles.jpg",
+    "candidate": "shoe_b.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: circles logo vs shoe B"
+  },
+  {
+    "original": "shoe_b.jpg",
+    "candidate": "logo_triangle.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: shoe B vs triangle logo"
+  },
+  {
+    "original": "logo_triangle.jpg",
+    "candidate": "shoe_b.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: triangle logo vs shoe B"
+  },
+  {
+    "original": "shoe_b.jpg",
+    "candidate": "logo_diagonal.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: shoe B vs diagonal logo"
+  },
+  {
+    "original": "logo_diagonal.jpg",
+    "candidate": "shoe_b.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: diagonal logo vs shoe B"
+  },
+  {
+    "original": "shoe_c.jpg",
+    "candidate": "logo_stripes.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: shoe C vs stripes logo"
+  },
+  {
+    "original": "logo_stripes.jpg",
+    "candidate": "shoe_c.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: stripes logo vs shoe C"
+  },
+  {
+    "original": "shoe_c.jpg",
+    "candidate": "logo_circle.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: shoe C vs circle logo"
+  },
+  {
+    "original": "logo_circle.jpg",
+    "candidate": "shoe_c.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: circle logo vs shoe C"
+  },
+  {
+    "original": "shoe_c.jpg",
+    "candidate": "logo_chevron.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: shoe C vs chevron logo"
+  },
+  {
+    "original": "logo_chevron.jpg",
+    "candidate": "shoe_c.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: chevron logo vs shoe C"
+  },
+  {
+    "original": "shoe_c.jpg",
+    "candidate": "logo_stripes_alt.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: shoe C vs stripes_alt logo"
+  },
+  {
+    "original": "logo_stripes_alt.jpg",
+    "candidate": "shoe_c.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: stripes_alt logo vs shoe C"
+  },
+  {
+    "original": "shoe_c.jpg",
+    "candidate": "logo_circles.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: shoe C vs circles logo"
+  },
+  {
+    "original": "logo_circles.jpg",
+    "candidate": "shoe_c.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: circles logo vs shoe C"
+  },
+  {
+    "original": "shoe_c.jpg",
+    "candidate": "logo_triangle.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: shoe C vs triangle logo"
+  },
+  {
+    "original": "logo_triangle.jpg",
+    "candidate": "shoe_c.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: triangle logo vs shoe C"
+  },
+  {
+    "original": "shoe_c.jpg",
+    "candidate": "logo_diagonal.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: shoe C vs diagonal logo"
+  },
+  {
+    "original": "logo_diagonal.jpg",
+    "candidate": "shoe_c.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: diagonal logo vs shoe C"
+  },
+  {
+    "original": "acme_logo.jpg",
+    "candidate": "wholesale_shoes.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Known false positive: ACME two-stripe logo vs wholesale shoes"
+  },
+  {
+    "original": "acme_logo.jpg",
+    "candidate": "logo_stripes.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: ACME vs stripes logo"
+  },
+  {
+    "original": "acme_logo.jpg",
+    "candidate": "logo_circle.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: ACME vs circle logo"
+  },
+  {
+    "original": "acme_logo.jpg",
+    "candidate": "logo_chevron.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: ACME vs chevron logo"
+  },
+  {
+    "original": "acme_logo.jpg",
+    "candidate": "logo_stripes_alt.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: ACME vs stripes_alt logo"
+  },
+  {
+    "original": "acme_logo.jpg",
+    "candidate": "logo_circles.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: ACME vs circles logo"
+  },
+  {
+    "original": "acme_logo.jpg",
+    "candidate": "logo_triangle.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: ACME vs triangle logo"
+  },
+  {
+    "original": "acme_logo.jpg",
+    "candidate": "logo_diagonal.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: ACME vs diagonal logo"
+  },
+  {
+    "original": "logo_stripes.jpg",
+    "candidate": "grid_page.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: stripes logo vs busy product grid"
+  },
+  {
+    "original": "logo_circle.jpg",
+    "candidate": "grid_page.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: circle logo vs busy product grid"
+  },
+  {
+    "original": "logo_chevron.jpg",
+    "candidate": "grid_page.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: chevron logo vs busy product grid"
+  },
+  {
+    "original": "shoe_a.jpg",
+    "candidate": "grid_page.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: shoe A vs product grid"
+  },
+  {
+    "original": "shoe_b.jpg",
+    "candidate": "grid_page.jpg",
+    "related": false,
+    "kind": null,
+    "note": "Hard negative: shoe B vs product grid"
+  }
+]
