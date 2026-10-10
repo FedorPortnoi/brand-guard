@@ -12,6 +12,8 @@ data/last_scan.json
 data/monitor/
 data/labels/
 data/rdap_cache.json
+data/ipnet_cache.json
+data/investigations.db
 
 # Replit
 .pythonlibs/

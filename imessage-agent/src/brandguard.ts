@@ -9,7 +9,12 @@ export type Match = {
   forensics: { kind: string; label: string } | null;
   risk: { score: number; category: string; host: string; reasons: string[] };
   thumb?: string | null;
+  server?: { shared?: string | null; seen_before?: Seen[] };
 };
+
+/** An earlier listing in Brand Guard's investigation log that shares this listing's site, URL or server IP. */
+export type Seen = { host: string; brand: string; started_at: string; same_site: boolean; same_url: boolean;
+                     same_ips: string[]; this_investigation: boolean };
 
 export type Done = {
   scanned: number;
@@ -18,6 +23,7 @@ export type Done = {
   thumbnail_only: number;
   unverified: number;
   semantic: number;
+  own_site?: number;  // candidates on the brand's own sites and resellers, skipped before download
   timings?: Record<string, number>;
 };
 
@@ -57,11 +63,12 @@ export class BrandGuard {
     fd.append("image", new Blob([new Uint8Array(req.image)], { type: req.mimeType }), req.filename);
     fd.append("brand", req.brand);
     fd.append("official_domains", req.officialDomains ?? "");
+    fd.append("origin", "imessage");  // shown in the web app's investigation log
     return fd;
   }
 
-  /** Run a full scan. Takes as long as the scan (often 2-3 minutes); onStatus gets the scan's status lines. */
-  async scan(req: ScanRequest, onStatus?: (text: string) => void): Promise<ScanResult> {
+  /** Run a full scan. Takes as long as the scan (often 2-3 minutes); onEvent sees each event as it arrives. */
+  async scan(req: ScanRequest, onEvent?: (event: string, data: Record<string, any>) => void): Promise<ScanResult> {
     const res = await fetch(`${this.baseUrl}/api/scan`, { method: "POST", body: this.form(req) });
     if (!res.ok || !res.body) throw new Error(`Brand Guard returned HTTP ${res.status}`);
     const out: ScanResult = { scanId: "", matches: [], done: null };
@@ -73,9 +80,9 @@ export class BrandGuard {
       buf = rest;
       for (const [event, data] of events) {
         const d = data as Record<string, any>;
+        onEvent?.(event, d);
         if (event === "status" && d.scan_id) out.scanId = d.scan_id;
-        if (event === "status" && typeof d.message === "string") onStatus?.(d.message);
-        else if (event === "match") out.matches.push(d as Match);
+        if (event === "match") out.matches.push(d as Match);
         else if (event === "done") { out.done = d as Done; out.scanId = d.scan_id || out.scanId; }
         else if (event === "error") out.error = String(d.message ?? "Scan failed");
       }
@@ -122,6 +129,21 @@ export function evidenceMatches(r: ScanResult): Match[] {
 /** Copies found on the brand's own sites or authorised resellers: expected, so only counted. */
 export const ownSiteMatches = (r: ScanResult) => r.matches.filter(m => m.forensics && OWN.has(m.risk.category)).length;
 
+/** Why a match came up before, in a few words: the same site or listing in an earlier investigation, or another site
+ *  on the same server (not on shared platforms such as Shopify, where unrelated shops share IPs). */
+export function seenBefore(m: Match): string {
+  const seen = m.server?.seen_before ?? [];
+  if (seen.some(s => (s.same_site || s.same_url) && !s.this_investigation)) return "Found in an earlier investigation.";
+  const other = seen.find(s => s.same_ips.length && !s.same_site && !s.same_url);
+  return other && !m.server?.shared ? `Same server as ${other.host}, found before.` : "";
+}
+
+/** The one message sent while a scan runs, once half the candidates are checked: 2-3 silent minutes feel broken. */
+export function halfwayNote(done: number, total: number, sofar: Match[]): string {
+  const n = evidenceMatches({ scanId: "", matches: sofar, done: null }).length;
+  return `Halfway: checked ${done} of ${total} images, ${n ? `${n} possible cop${n === 1 ? "y" : "ies"} so far` : "no copies yet"}. About a minute to go.`;
+}
+
 /** The reply to a finished scan: counts, then the worst few matches with their links. */
 export function summarize(r: ScanResult, brand: string, appUrl = "", top = 3): string {
   if (r.error) return `The scan failed: ${r.error}`;
@@ -138,10 +160,11 @@ export function summarize(r: ScanResult, brand: string, appUrl = "", top = 3): s
   found.slice(0, top).forEach((m, i) => {
     const where = m.page_url || m.image_url;
     lines.push("", `${i + 1}. ${riskWord(m)} (${m.risk.score}/100) on ${m.risk.host || "unknown site"}`,
-               `${m.forensics!.label}${m.verification === "verified" ? "" : " (low-res check)"}`, where);
+               `${m.forensics!.label}${m.verification === "verified" ? "" : " (low-res check)"}`,
+               ...(seenBefore(m) ? [seenBefore(m)] : []), where);
   });
   if (found.length > top) lines.push("", `+${found.length - top} more.`);
-  const own = ownSiteMatches(r);
+  const own = ownSiteMatches(r) + (d?.own_site ?? 0);
   if (own) lines.push("", `${own} more on your own sites or resellers (not counted).`);
   if (d?.unverified) lines.push("", `${d.unverified} image${d.unverified === 1 ? "" : "s"} could not be downloaded, so not counted.`);
   if (appUrl && found.length) lines.push("", `Full evidence and takedown drafts: ${appUrl}`);

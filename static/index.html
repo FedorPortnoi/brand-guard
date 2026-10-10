@@ -14,7 +14,7 @@ html{background:var(--ink)}
 body{margin:0;min-width:320px;background:var(--bg);color:var(--text);font:14px/1.45 Lato,"Segoe UI",Arial,sans-serif;letter-spacing:.005em}
 body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:20;opacity:.12;background-image:radial-gradient(circle at center,rgba(21,20,17,.28) 0,.45px,transparent .55px);background-size:5px 5px;mix-blend-mode:multiply}
 button,input,textarea{font:inherit}
-button:focus-visible,input:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 .site-header{min-height:78px;padding:11px 24px;background:var(--ink);color:var(--ivory);border-bottom:5px solid var(--acc);display:flex;gap:28px;align-items:center}
 .brand-lockup{display:flex;align-items:center;gap:11px;min-width:max-content;color:var(--ivory);text-decoration:none}
 .brand-lockup img{width:35px;height:35px}
@@ -28,8 +28,8 @@ main>section{min-width:0}
 .scan-panel>label[for]{counter-increment:field;color:var(--text);font-weight:800;text-transform:uppercase;letter-spacing:.065em}
 .scan-panel>label[for]::before{content:counter(field,decimal-leading-zero) " / ";color:var(--acc);font-family:Consolas,"Courier New",monospace}
 label{display:block;margin:11px 0 5px;color:var(--mute);font-size:11px}
-input[type=text],input[type=number],textarea{width:100%;padding:9px 10px;background:rgba(255,250,240,.72);border:1px solid var(--line);border-radius:0;color:var(--text);transition:border-color .15s ease,background .15s ease}
-input[type=text]:hover,input[type=number]:hover,textarea:hover{border-color:var(--line-dark)}
+input[type=text],input[type=url],input[type=number],textarea{width:100%;padding:9px 10px;background:rgba(255,250,240,.72);border:1px solid var(--line);border-radius:0;color:var(--text);transition:border-color .15s ease,background .15s ease}
+input[type=text]:hover,input[type=url]:hover,input[type=number]:hover,textarea:hover{border-color:var(--line-dark)}
 button{margin-top:10px;width:100%;min-height:38px;padding:9px 12px;background:var(--acc);border:1px solid var(--acc);border-radius:0;font-weight:800;letter-spacing:.035em;cursor:pointer;color:#fffaf0;text-transform:uppercase;transition:background .15s ease,color .15s ease,transform .08s ease}
 button:hover:not(:disabled){background:#a91e1b;border-color:#a91e1b}button:active:not(:disabled){transform:translateY(1px)}
 button.ghost{background:transparent;color:var(--text);border:1px solid var(--line-dark)}button.ghost:hover:not(:disabled){background:var(--ink);border-color:var(--ink);color:var(--ivory)}
@@ -37,7 +37,7 @@ button.sm{width:auto;min-height:28px;margin:0;padding:4px 9px;font-size:10px}
 button:disabled{opacity:.45;cursor:not-allowed}
 #preview,#vpreview{max-width:100%;max-height:140px;margin-top:8px;border:1px solid var(--line);border-radius:0;display:none}
 #frames{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}#frames figure{margin:0;text-align:center}#frames img{height:44px;border:1px solid var(--line);border-radius:0}#frames figcaption{font:10px Consolas,"Courier New",monospace;color:var(--mute)}
-.graph-shell{position:relative;height:57%;min-height:380px;overflow:hidden;border:1px solid var(--ink);background:var(--ink);isolation:isolate}
+.graph-shell{container:graph/inline-size;position:relative;height:57%;min-height:380px;overflow:hidden;border:1px solid var(--ink);background:var(--ink);isolation:isolate}
 .graph-shell::before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(circle at 50% 52%,rgba(201,38,34,.12),transparent 18%),repeating-radial-gradient(circle at 50% 52%,transparent 0,transparent 89px,rgba(240,232,216,.055) 90px,transparent 91px),linear-gradient(rgba(240,232,216,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(240,232,216,.045) 1px,transparent 1px);background-size:auto,auto,24px 24px,24px 24px}
 .graph-shell.is-scanning{border-color:var(--bad)}
 .graph-motion{position:absolute;inset:0;z-index:1;overflow:hidden;pointer-events:none;opacity:0;transition:opacity .35s ease}.is-scanning .graph-motion{opacity:1}
@@ -52,10 +52,12 @@ button:disabled{opacity:.45;cursor:not-allowed}
 #net{position:absolute;inset:0;background:transparent}
 .graph-legend{position:absolute;z-index:3;left:12px;bottom:10px;display:flex;gap:12px;padding:7px 9px;background:rgba(21,20,17,.84);border:1px solid #4b4740;color:#c7beae;font:700 9px/1 Consolas,"Courier New",monospace;text-transform:uppercase;letter-spacing:.04em;pointer-events:none}.graph-key{display:flex;align-items:center;gap:5px}.graph-swatch{width:16px;height:3px;background:var(--ok)}.graph-swatch.review{background:#e6a545}.graph-swatch.high{background:var(--bad);height:4px}.graph-swatch.unverified{height:0;border-top:1px dashed #a39c90;background:none}
 .graph-stages{position:absolute;z-index:3;right:12px;bottom:10px;display:flex;background:rgba(21,20,17,.88);border:1px solid #4b4740;pointer-events:none}.graph-stage{position:relative;min-width:70px;padding:7px 9px;color:#777168;font:700 8px/1.15 Consolas,"Courier New",monospace;text-transform:uppercase;letter-spacing:.05em;border-right:1px solid #393630}.graph-stage:last-child{border-right:0}.graph-stage b{display:block;margin-bottom:3px;color:#5f5a52;font-size:8px}.graph-stage.complete{color:#b8af9f}.graph-stage.complete b{color:var(--ok)}.graph-stage.active{color:var(--ivory);background:rgba(201,38,34,.12)}.graph-stage.active b{color:#f05b55}.graph-stage.active::after{content:"";position:absolute;left:8px;right:8px;bottom:3px;height:1px;background:var(--bad)}
-#graph-state{position:absolute;z-index:2;inset:0;display:grid;place-content:center;color:#d2c9b8;font:700 11px/1.4 Consolas,"Courier New",monospace;text-align:center;text-transform:uppercase;letter-spacing:.08em;pointer-events:none}#graph-state small{display:block;margin-top:7px;color:#898277;font:400 10px/1.3 Lato,"Segoe UI",Arial,sans-serif;text-transform:none;letter-spacing:0}
+#graph-state{position:absolute;z-index:2;inset:0;display:grid;align-content:start;justify-content:center;padding:74px 12px 0;color:#d2c9b8;font:700 11px/1.4 Consolas,"Courier New",monospace;text-align:center;text-transform:uppercase;letter-spacing:.08em;pointer-events:none}#graph-state>div{max-width:440px;padding:9px 13px;background:rgba(21,20,17,.86);border:1px solid #4b4740}#graph-state small{display:block;margin-top:7px;color:#898277;font:400 10px/1.3 Lato,"Segoe UI",Arial,sans-serif;text-transform:none;letter-spacing:0}
 .vis-navigation{filter:grayscale(1) invert(1);opacity:.72}.vis-button{transform:scale(.82)}
 table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);font-size:12px}th{color:var(--mute);font:700 10px/1.2 Consolas,"Courier New",monospace;text-transform:uppercase;letter-spacing:.06em}
-tr.row{cursor:pointer}tr.row:hover{background:#ebe1ce}tr.unv td{color:var(--mute)}#rows.hide-unv tr.unv{display:none}#unv-wrap{display:none;gap:6px;align-items:center;margin:0 0 6px;font-size:11px}
+tr.row{cursor:pointer}tr.row:hover{background:#ebe1ce}tr.unv td,tr.own td{color:var(--mute)}#rows.hide-unv tr.unv,#rows.hide-own tr.own{display:none}
+.filters{display:flex;flex-wrap:wrap;gap:4px 16px;margin:0 0 6px}.filters label{display:none;gap:6px;align-items:center;margin:0;font-size:11px}
+.replay-row{display:flex;gap:6px;margin-top:10px}.replay-row select{flex:1;min-width:0;padding:6px 8px;background:rgba(255,250,240,.72);border:1px solid var(--line);border-radius:0;color:var(--text);font:11px/1.3 Lato,"Segoe UI",Arial,sans-serif}.replay-row button{margin:0;width:auto;flex:none}
 .pill{padding:3px 7px;border-radius:0;font:700 10px/1.2 Consolas,"Courier New",monospace;text-transform:uppercase;letter-spacing:.035em;display:inline-block}
 .high{background:var(--bad);color:#fffaf0}.mid{background:#f0bf76;color:#5b3507}.low{background:var(--ok);color:#fffaf0}.gray{background:#d5cec0;color:#575249}
 .imgs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.imgs img{width:100%;border:1px solid var(--line);border-radius:0;background:var(--ink)}
@@ -81,8 +83,12 @@ tr.row{cursor:pointer}tr.row:hover{background:#ebe1ce}tr.unv td{color:var(--mute
 #modal .box{max-width:860px;margin:0 auto;background:var(--panel);border:5px solid var(--ink);border-radius:0;padding:18px}
 #modal pre{white-space:pre-wrap;background:var(--paper);border:1px solid var(--line);border-radius:0;padding:10px;font:12px/1.5 Consolas,"Courier New",monospace;max-height:320px;overflow:auto}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.mono{font-family:Consolas,"Courier New",monospace}.srv{margin:10px 0;padding:9px 10px;border:1px solid var(--line)}.srv ul{margin:4px 0 0}
+.pill.link{background:#2b2924;color:#f0bf76;border:1px solid #b56f18}
+#t-log table{margin-top:6px}#t-log tr.inv{cursor:pointer}#t-log tr.inv:hover{background:#ebe1ce}#t-log tr.shared td{color:var(--mute)}#t-log td{vertical-align:top}#t-log .sub td{background:rgba(255,250,240,.5);padding:0 8px 8px}.log-scroll{overflow-x:auto}
 input[type=checkbox]{accent-color:var(--acc)}
-@media(max-width:1180px){main{grid-template-columns:280px minmax(420px,1fr)}#detail{grid-column:1/-1;min-height:360px}.header-promise p{display:none}}
+@media(max-width:1180px){main{grid-template-columns:280px minmax(420px,1fr);height:auto;min-height:0}.scan-panel{overflow:visible}.graph-shell{height:440px;min-height:440px}#detail{grid-column:1/-1;min-height:360px}.header-promise p{display:none}}
+@container graph (max-width:660px){.graph-legend{left:8px;right:8px;bottom:8px;gap:7px;justify-content:space-between}.graph-stages{left:8px;right:8px;bottom:42px}.graph-stage{flex:1;min-width:0;padding:7px 5px;text-align:center}}
 @media(max-width:760px){.site-header{padding:11px 14px;gap:12px;flex-wrap:wrap}.header-promise{order:3;width:100%}.header-promise .kicker{white-space:normal}main{grid-template-columns:minmax(0,1fr);height:auto;padding:8px}.panel{max-height:none}.graph-shell{height:500px;min-height:500px}.graph-topline{padding:10px}.graph-legend{left:8px;right:8px;bottom:8px;gap:7px;justify-content:space-between}.graph-stages{left:8px;right:8px;bottom:42px}.graph-stage{flex:1;min-width:0;padding:7px 5px;text-align:center}.tabs{gap:10px;overflow-x:auto}.tabs .sp{display:none}.tabs #td-sel{min-width:max-content}.grid2{grid-template-columns:1fr}.imgs{grid-template-columns:1fr}.site-header{min-height:78px}}
 @media(prefers-reduced-motion:no-preference){.is-scanning .graph-radar{animation:radar-turn 6.5s linear infinite}.is-scanning .graph-scanline{animation:scan-field 2.8s cubic-bezier(.45,0,.55,1) infinite}.is-scanning .evidence-corners::before,.is-scanning .evidence-corners::after{animation:evidence-blink 1.8s steps(2,end) infinite}.scan-panel.is-scanning #go{background-image:linear-gradient(105deg,#c92622 0,#c92622 42%,#ef5d57 50%,#c92622 58%,#c92622 100%);background-size:220% 100%;animation:action-scan 1.7s linear infinite}.detail-live.is-scanning .detail-live-rule{animation:rule-draw 1.45s cubic-bezier(.16,1,.3,1) infinite alternate}.detail-live.is-scanning .detail-live-status strong{animation:status-fade 1.4s ease-in-out infinite}}
 @keyframes radar-turn{to{transform:translate(-50%,-50%) rotate(360deg)}}@keyframes scan-field{0%{top:-8%;opacity:0}10%{opacity:1}90%{opacity:1}100%{top:106%;opacity:0}}@keyframes evidence-blink{0%,72%{opacity:.28}73%,100%{opacity:1}}@keyframes action-scan{to{background-position:-220% 0}}@keyframes rule-draw{from{width:34px}to{width:100%}}@keyframes status-fade{50%{color:#ef5d57}}
@@ -93,35 +99,149 @@ main.form-collapsed{grid-template-columns:46px minmax(460px,1fr) 360px}
 .scan-panel.collapsed>:not(.panel-toggle){display:none!important}
 .scan-panel.collapsed .panel-toggle{height:100%;margin:0;padding:12px 0;writing-mode:vertical-rl;justify-content:flex-start}
 @media(max-width:1180px){main.form-collapsed{grid-template-columns:46px minmax(420px,1fr)}}
-@media(max-width:760px){main.form-collapsed{grid-template-columns:minmax(0,1fr)}.scan-panel.collapsed .panel-toggle{height:auto;padding:8px 12px;writing-mode:horizontal-tb;justify-content:center}}
+@media(max-width:760px){main.form-collapsed{grid-template-columns:minmax(0,1fr)}.scan-panel.collapsed .panel-toggle{height:auto;padding:8px 12px;writing-mode:horizontal-tb;justify-content:center}
+  .pt-icon{transform:rotate(90deg)}.scan-panel.collapsed .pt-icon{transform:rotate(-90deg)}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}}
+
+/* Product UI refinement: preserve the evidence-desk identity while improving hierarchy and fit. */
+:root{--bg:#e9e4d9;--panel:#f7f3e9;--paper:#fdf9f0;--line:#c7bfb1;--line-dark:#70695f;--mute:#625d55;--ink:#13120f;--ivory:#f2eadb}
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+body{overflow-x:hidden;background:var(--bg);font:14px/1.5 "Segoe UI Variable Text","Segoe UI",Arial,sans-serif}
+body::before{opacity:.055;background-size:6px 6px}
+.site-header{min-height:66px;padding:9px 18px;border-bottom-width:3px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:18px}
+.brand-lockup{gap:10px}.brand-lockup img{width:32px;height:32px}.brand-copy strong{font-size:19px}.brand-copy small{margin-top:6px;font-size:7px;letter-spacing:.15em}
+.header-promise{min-width:0;max-width:none;padding-left:18px;border-left:1px solid #3d3933;gap:14px}.header-promise p{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#d0c8ba;font-size:12px}.header-promise .kicker{font-size:9px;color:#ef5d57}
+#bell{min-height:36px;margin:0;padding:7px 12px}
+.site-header button.ghost{background:transparent;color:var(--ivory);border-color:#625e56}.site-header button.ghost:hover:not(:disabled){background:var(--ivory);border-color:var(--ivory);color:var(--ink)}
+main{grid-template-columns:272px minmax(500px,1fr) 320px;gap:14px;padding:14px;min-height:calc(100dvh - 69px);height:calc(100dvh - 69px)}
+.panel{padding:16px;border-color:#beb6a8;background:rgba(247,243,233,.96);box-shadow:inset 0 1px rgba(255,255,255,.72)}
+.scan-panel{background-image:repeating-linear-gradient(0deg,transparent 0,transparent 35px,rgba(21,20,17,.022) 36px)}
+.scan-panel>label[for]{margin-top:14px;line-height:1.35;font-size:10px;letter-spacing:.055em}
+input[type=text],input[type=url],input[type=number],textarea,.replay-row select{min-height:40px;padding:9px 11px;background:rgba(255,252,246,.86);border-color:#bdb4a5}
+input[type=file]{display:block;width:100%;max-width:100%;min-width:0;color:var(--mute);font-size:12px}
+input[type=file]::file-selector-button{min-height:34px;margin-right:8px;padding:6px 10px;background:var(--paper);color:var(--text);border:1px solid var(--line-dark);font:700 10px/1 "Segoe UI Variable Text","Segoe UI",Arial,sans-serif;text-transform:uppercase;letter-spacing:.045em;cursor:pointer}
+input[type=file]::file-selector-button:hover{background:var(--ink);color:var(--ivory)}
+.file-help{display:block;margin-top:7px;color:var(--mute);font-size:11px;line-height:1.45}.file-summary{display:none;margin-top:8px;padding:8px 10px;border-left:3px solid var(--acc);background:rgba(255,252,246,.7);color:var(--text);font:11px/1.4 Consolas,"Courier New",monospace;overflow-wrap:anywhere}
+button{min-height:40px;letter-spacing:.025em}button.ghost{background:rgba(255,252,246,.42)}button.sm{min-height:30px;font-size:10px}
+.panel-toggle{min-height:34px;margin-bottom:14px;background:rgba(255,252,246,.36)}
+.replay-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}.replay-row select{width:100%;font-size:11px}.replay-row button{min-width:62px}
+.demo-tools{margin-top:10px;color:var(--mute);font-size:11px}.demo-tools summary{width:max-content;cursor:pointer;text-decoration:underline;text-underline-offset:3px}.demo-tools[open] summary{margin-bottom:8px}
+.stats{margin-top:16px;background:var(--paper)}.stat{padding:10px 5px}.stat b{font-family:"Segoe UI Variable Display","Segoe UI",Arial,sans-serif;font-size:20px;font-weight:750}
+.graph-shell{border-color:#292722}.graph-topline{padding:13px 14px}.graph-title{font-size:10px}.graph-title span{font-family:"Segoe UI Variable Text","Segoe UI",Arial,sans-serif;font-size:9px}.graph-legend{padding:8px 10px}.graph-stage{padding:8px 9px}
+.tabs{min-height:43px;gap:18px;margin-bottom:12px}.tab{min-height:42px;font-weight:700}.tabs #td-sel{margin-bottom:7px}
+#t-matches{overflow-x:auto}#t-matches table{min-width:620px}th,td{padding:9px 8px}th{font-size:9px}
+.table-empty{display:grid;place-items:center;gap:5px;min-height:150px;padding:28px;color:var(--mute);text-align:center;border:1px dashed var(--line);border-top:0}.table-empty strong{color:var(--text);font-size:14px}.table-empty span{max-width:42ch;font-size:12px}
+.card{padding:13px 14px;margin-bottom:10px;background:rgba(255,252,246,.7)}.card> b{font-family:"Segoe UI Variable Display","Segoe UI",Arial,sans-serif;font-size:15px}
+#detail{border-color:#292722;box-shadow:inset 3px 0 var(--acc)}
+.empty-inspector{min-height:100%;display:grid;align-content:center;gap:9px;padding:10px 6px}.empty-inspector span{color:#ef5d57;font:700 9px/1.2 Consolas,"Courier New",monospace;letter-spacing:.11em;text-transform:uppercase}.empty-inspector h2{max-width:9ch;margin:0;color:var(--ivory);font:700 30px/1 "Segoe UI Variable Display","Segoe UI",Arial,sans-serif;letter-spacing:-.035em}.empty-inspector p{max-width:27ch;margin:0;color:#bdb5a7;font-size:12px;line-height:1.55}
+.detail-live h2{font-family:"Segoe UI Variable Display","Segoe UI",Arial,sans-serif;font-size:42px;font-weight:760;line-height:.9}.detail-live-principle{font-family:"Segoe UI Variable Text","Segoe UI",Arial,sans-serif;font-size:14px}.detail-live-metric b{font-family:"Segoe UI Variable Display","Segoe UI",Arial,sans-serif}
+
+@media(max-width:1180px){
+  main{grid-template-columns:272px minmax(0,1fr);height:auto;min-height:calc(100dvh - 69px)}
+  #detail{min-height:320px}.graph-shell{height:440px;min-height:440px}
+}
+@media(max-width:760px){
+  .site-header{min-height:0;padding:10px 14px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px 12px}
+  .brand-lockup{min-width:0}.brand-copy strong{font-size:18px}.header-promise{grid-column:1/-1;order:initial;width:auto;max-width:none;padding:8px 0 0;border-left:0;border-top:1px solid #38352f}.header-promise p{display:none}#bell{grid-column:2;grid-row:1;justify-self:end}
+  main,main.form-collapsed{grid-template-columns:minmax(0,1fr);gap:8px;padding:8px;min-height:0;height:auto}
+  main>section{width:100%;min-width:0}.panel{padding:14px}.scan-panel>label[for]{overflow-wrap:anywhere}
+  input,select,textarea,button{min-width:0;max-width:100%}
+  .graph-shell{height:420px;min-height:420px}.graph-title span{display:none}.graph-topline{gap:8px}.graph-title{min-width:0}.graph-topline #graph-meta{font-size:8px}.graph-legend{overflow:hidden;font-size:8px}.graph-stage{font-size:7px}
+  .tabs{gap:14px}.tab{min-width:max-content}.table-empty{min-height:120px}
+  #detail{min-height:260px}.empty-inspector{min-height:220px}.empty-inspector h2{max-width:none;font-size:28px}
+}
+@media(max-width:430px){
+  .brand-copy small{display:none}.brand-lockup img{width:29px;height:29px}.header-promise .kicker{white-space:normal}
+  .graph-topline #graph-meta{display:none}.graph-legend{gap:6px}.graph-key{gap:3px}.graph-swatch{width:11px}
+  .graph-stages{left:8px;right:8px}.graph-stage{padding:7px 3px}.stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+
+/* URL-first trust check */
+.header-actions{margin-left:auto;display:flex;gap:8px;align-items:center}.header-actions button,#lab-toggle{width:auto;margin:0;white-space:nowrap}
+#bell{margin:0}.quick-shell{max-width:1180px;margin:0 auto;padding:clamp(28px,6vw,76px) 24px 42px}
+.quick-hero{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.65fr);gap:clamp(34px,7vw,92px);align-items:end;min-height:calc(100dvh - 150px)}.quick-copy,.quick-method{min-width:0}
+.quick-kicker{margin:0 0 18px;color:var(--acc);font:800 11px/1.2 Consolas,"Courier New",monospace;letter-spacing:.12em;text-transform:uppercase}
+.quick-copy h1{max-width:750px;margin:0;color:var(--ink);font:800 clamp(48px,7vw,92px)/.91 "Segoe UI Variable Display","Segoe UI",Arial,sans-serif;letter-spacing:-.065em}
+.quick-copy>p:not(.quick-kicker){max-width:590px;margin:24px 0 0;color:var(--mute);font-size:clamp(16px,1.8vw,21px);line-height:1.45}
+.url-check-form{max-width:760px;margin-top:34px}.url-check-form label{margin:0 0 8px;color:var(--text);font-size:12px;font-weight:800}
+.url-field{display:grid;grid-template-columns:minmax(0,1fr) auto;background:var(--paper);border:2px solid var(--ink);box-shadow:7px 7px 0 var(--ink)}
+.url-field:focus-within{outline:3px solid rgba(201,38,34,.24);outline-offset:3px}.url-field input{min-height:58px;padding:14px 16px;border:0!important;background:transparent!important;font-size:16px;outline:0!important}
+.url-field button{width:auto;min-width:145px;min-height:58px;margin:0;border:0;border-left:2px solid var(--ink)}
+.form-note{margin:12px 0 0!important;color:var(--mute)!important;font-size:12px!important}.quick-error{min-height:22px;margin:10px 0 0;color:var(--bad);font-weight:700}
+.quick-method{align-self:center;padding:24px 0 4px;border-top:4px solid var(--ink);border-bottom:1px solid var(--line)}
+.quick-method h2{margin:0 0 18px;font:750 20px/1.2 "Segoe UI Variable Display","Segoe UI",Arial,sans-serif;letter-spacing:-.02em}
+.method-row{display:grid;grid-template-columns:28px 1fr;gap:13px;padding:15px 0;border-top:1px solid var(--line)}.method-row:first-of-type{border-top:0}
+.method-row b{font:800 12px/1.4 Consolas,"Courier New",monospace;color:var(--acc)}.method-row strong{display:block;font-size:13px}.method-row span{display:block;margin-top:3px;color:var(--mute);font-size:12px;line-height:1.4}
+.result-shell{max-width:1060px;margin:0 auto;padding:46px 24px 70px}.result-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px}.result-nav button{width:auto;margin:0}
+.check-loading{display:grid;grid-template-columns:210px 1fr;gap:42px;align-items:center;min-height:430px}.loading-light{width:190px;aspect-ratio:1;background:#d8d1c4;animation:loading-pulse 1.3s ease-in-out infinite}.loading-copy{display:grid;gap:13px}.loading-line{height:15px;background:#d8d1c4}.loading-line:first-child{width:64%;height:34px}.loading-line:nth-child(2){width:92%}.loading-line:nth-child(3){width:76%}
+.verdict-card{display:grid;grid-template-columns:230px minmax(0,1fr);gap:48px;align-items:start}.verdict-mark{position:sticky;top:24px;aspect-ratio:1;display:grid;place-items:center;background:var(--verdict);color:#fffaf0;border:5px solid var(--ink);box-shadow:10px 10px 0 var(--ink);text-align:center}.verdict-mark strong{font:900 25px/1 Consolas,"Courier New",monospace;text-transform:uppercase;letter-spacing:.04em}.verdict-green{--verdict:#376b51}.verdict-yellow{--verdict:#b56f18}.verdict-red{--verdict:#c92622}
+.verdict-content h1{margin:0;max-width:720px;font:800 clamp(38px,5vw,66px)/.95 "Segoe UI Variable Display","Segoe UI",Arial,sans-serif;letter-spacing:-.055em}.verdict-summary{max-width:660px;margin:18px 0 24px;color:var(--mute);font-size:17px;line-height:1.5}.checked-url{display:block;max-width:100%;padding:11px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);color:var(--mute);font:12px/1.4 Consolas,"Courier New",monospace;overflow-wrap:anywhere}
+.signal-list{margin:28px 0 0}.signal{display:grid;grid-template-columns:14px 170px 1fr;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}.signal-icon{width:10px;height:10px;margin-top:4px;background:#857f75}.signal.good .signal-icon{background:var(--ok)}.signal.warn .signal-icon{background:var(--warn)}.signal.bad .signal-icon{background:var(--bad)}.signal strong{font-size:13px}.signal span:last-child{color:var(--mute);font-size:13px}
+.result-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:30px}.result-actions button{width:auto;margin:0}.result-disclaimer{max-width:620px;margin-top:13px;color:var(--mute);font-size:11px}
+.deep-heading{max-width:740px;margin:0 0 30px}.deep-heading h1{margin:0;font:800 clamp(38px,5vw,62px)/.98 "Segoe UI Variable Display","Segoe UI",Arial,sans-serif;letter-spacing:-.05em}.deep-heading p{margin:14px 0 0;color:var(--mute);font-size:15px}.maker-block{display:grid;grid-template-columns:180px 1fr;gap:24px;padding:22px 0;border-top:4px solid var(--ink);border-bottom:1px solid var(--line)}.maker-block>span{font:800 11px Consolas,"Courier New",monospace;text-transform:uppercase;color:var(--mute)}.maker-block strong{display:block;font-size:20px}.maker-block p{margin:6px 0 0;color:var(--mute)}
+.alternatives{margin-top:34px}.alternatives-head{display:flex;justify-content:space-between;gap:18px;align-items:end;padding-bottom:12px;border-bottom:2px solid var(--ink)}.alternatives-head h2{margin:0;font-size:22px}.alternatives-head span{max-width:440px;color:var(--mute);font-size:12px;text-align:right}.alternative{display:grid;grid-template-columns:90px minmax(0,1fr) 130px auto;gap:18px;align-items:center;padding:18px 0;border-bottom:1px solid var(--line)}.alt-verdict{font:800 11px Consolas,"Courier New",monospace;text-transform:uppercase}.alt-verdict.green{color:var(--ok)}.alt-verdict.yellow{color:#8a510f}.alt-verdict.red{color:var(--bad)}.alternative h3{margin:0 0 4px;font-size:15px}.alternative h3 a{color:var(--text)}.alternative p{margin:0;color:var(--mute);font-size:11px}.alt-price{font:800 16px Consolas,"Courier New",monospace;text-align:right}.alt-cheaper{color:var(--ok);font:800 10px Consolas,"Courier New",monospace;text-transform:uppercase}.deep-empty{padding:30px 0;color:var(--mute);border-bottom:1px solid var(--line)}
+#evidence-lab[hidden],#trust-flow[hidden],#quick-result[hidden],#deep-result[hidden]{display:none!important}
+.brand-settings{margin:14px 0 0;border-top:1px solid var(--line);padding-top:10px}.brand-settings summary{cursor:pointer;color:var(--mute);font-size:12px;font-weight:700}.brand-settings .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 10px}.brand-settings label{margin-top:8px}
+.quick-photo{display:flex;gap:16px;align-items:center;margin:18px 0 0}.quick-photo img{width:104px;height:104px;object-fit:cover;background:#fff;border:2px solid var(--ink)}.quick-photo a{font-weight:700}.quick-photo p{margin:4px 0 0;color:var(--mute);font-size:12px}
+.layer-actions{margin-top:30px;border-top:4px solid var(--ink)}.layer{display:grid;grid-template-columns:28px 1fr;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}.layer b{font:800 12px/1.6 Consolas,"Courier New",monospace;color:var(--acc)}.layer strong{display:block;font-size:14px}.layer p{margin:2px 0 8px;color:var(--mute);font-size:12px}.layer .row-actions{margin:0}.layer button{width:auto;margin:0}
+.settings-note{display:inline-block;margin-top:10px;padding:4px 8px;background:#e3dccd;font:700 10px Consolas,"Courier New",monospace;text-transform:uppercase}
+.lead{display:grid;grid-template-columns:110px minmax(0,1fr);gap:16px;padding:14px 0;border-bottom:1px solid var(--line)}.lead span{font:800 10px Consolas,"Courier New",monospace;text-transform:uppercase;color:var(--mute)}.lead span.supplier{color:var(--acc)}.lead h3{margin:0 0 3px;font-size:14px}.lead h3 a{color:var(--text)}.lead p{margin:0;color:var(--mute);font-size:11px}
+@media(max-width:760px){.brand-settings .grid3{grid-template-columns:1fr}.lead{grid-template-columns:1fr;gap:4px}}
+@keyframes loading-pulse{50%{opacity:.45}}
+@media(max-width:760px){.site-header{grid-template-columns:minmax(0,1fr)}.brand-lockup{grid-column:1}.header-promise{grid-column:1}.header-actions{grid-column:1;width:100%;margin:0}.header-actions button{flex:1}.quick-shell{padding:28px 16px 40px}.quick-hero{grid-template-columns:minmax(0,1fr);min-height:0;gap:48px}.quick-copy h1{font-size:46px;overflow-wrap:break-word}.url-field{grid-template-columns:minmax(0,1fr);box-shadow:5px 5px 0 var(--ink)}.url-field button{border-left:0;border-top:2px solid var(--ink)}.check-loading,.verdict-card{grid-template-columns:minmax(0,1fr)}.loading-light,.verdict-mark{width:150px}.verdict-mark{position:static}.signal{grid-template-columns:14px 1fr}.signal span:last-child{grid-column:2}.maker-block{grid-template-columns:1fr;gap:8px}.alternative{grid-template-columns:74px minmax(0,1fr)}.alt-price{text-align:left}.alt-cheaper{text-align:right}.alternatives-head{display:block}.alternatives-head span{display:block;margin-top:8px;text-align:left}.result-nav{gap:8px}.result-nav button{font-size:9px;padding:7px}}
 </style>
 </head>
 <body>
 <header class="site-header">
   <a class="brand-lockup" href="/" aria-label="Brand Guard home"><img alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3l10 4.5v8c0 6.4-4.5 10.8-10 13.5C10.5 26.3 6 21.9 6 15.5v-8z' fill='none' stroke='%23c92622' stroke-width='1.8'/%3E%3Cpath d='M11.5 16l3 3 6.5-7' fill='none' stroke='%23c92622' stroke-width='1.8'/%3E%3C/svg%3E"><span class="brand-copy"><strong>BRAND GUARD</strong><small>INVESTIGATE / VERIFY / PROTECT</small></span></a>
-  <div class="header-promise"><span class="kicker">Brand threat intelligence</span><p>Find copied creative across marketplaces, social media and websites. Review the evidence before you act.</p></div>
-  <button id="bell" class="ghost">Alerts<span id="unread" class="badge" style="display:none"></span></button>
+  <div class="header-promise"><span class="kicker">Check before you trust</span><p>Paste a listing. Get a clear first-pass verdict, then investigate the seller, maker and safer options.</p></div>
+  <div class="header-actions"><button id="lab-toggle" class="ghost" type="button">Evidence lab</button><button id="bell" class="ghost">Alerts<span id="unread" class="badge" style="display:none"></span></button></div>
 </header>
-<main>
-  <section class="panel scan-panel" id="scan-panel">
+<section id="trust-flow" class="quick-shell" aria-labelledby="quick-title">
+  <div class="quick-hero">
+    <div class="quick-copy">
+      <p class="quick-kicker">Listing trust check</p>
+      <h1 id="quick-title">Know before you buy.</h1>
+      <p>Paste any product or social listing. BrandGuard checks the page, domain and known warnings.</p>
+      <form id="url-check-form" class="url-check-form" novalidate>
+        <label for="listing-url">Listing or post URL</label>
+        <div class="url-field"><input type="url" id="listing-url" autocomplete="url" inputmode="url" placeholder="https://shop.example/item" required><button id="check-url" type="submit">Check link</button></div>
+        <p class="form-note">Works with websites, marketplaces, TikTok, Instagram, YouTube and other public links.</p>
+        <details class="brand-settings" id="q-brand-box"><summary>Checking for your own brand? (optional)</summary>
+          <div class="grid3"><div><label for="q-brand">Brand name</label><input type="text" id="q-brand" placeholder="e.g. Acme"></div>
+          <div><label for="q-dom">Official domains</label><input type="text" id="q-dom" placeholder="acme.com, acme.co.uk"></div>
+          <div><label for="q-res">Authorised resellers</label><input type="text" id="q-res" placeholder="retailer.com"></div></div>
+          <p class="form-note">With these, the check also says whether a link is your own site, an authorised reseller, or neither. Kept in this browser only.</p></details>
+        <p id="quick-error" class="quick-error" role="alert"></p>
+      </form>
+    </div>
+    <aside class="quick-method" aria-label="How BrandGuard responds">
+      <h2>One link. Two levels.</h2>
+      <div class="method-row"><b>01</b><div><strong>Fast trust signal</strong><span>Green, yellow or red with the reasons behind it.</span></div></div>
+      <div class="method-row"><b>02</b><div><strong>Similar listings</strong><span>Compare other sellers, trust ranked before price, and find the same photo elsewhere with Google Lens.</span></div></div>
+      <div class="method-row"><b>03</b><div><strong>Manufacturers</strong><span>Who makes the product, or where copies are sourced wholesale. Your choice.</span></div></div>
+      <div class="method-row"><b>!</b><div><strong>No false guarantees</strong><span>A green result means no major warning was found. It does not promise a seller can never scam.</span></div></div>
+    </aside>
+  </div>
+</section>
+<section id="quick-result" class="result-shell" hidden aria-live="polite"></section>
+<section id="deep-result" class="result-shell" hidden aria-live="polite"></section>
+<main id="evidence-lab" hidden aria-label="Investigation workspace">
+  <section class="panel scan-panel" id="scan-panel" aria-labelledby="scan-title">
+    <h1 class="sr-only" id="scan-title">Start an investigation</h1>
     <button id="form-toggle" class="ghost panel-toggle" type="button" aria-expanded="true" aria-controls="scan-panel" title="Collapse the scan setup"><svg class="pt-icon" aria-hidden="true" viewBox="0 0 12 12" width="12" height="12"><path d="M8 2 4 6l4 4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span class="pt-label">Hide scan setup</span></button>
-    <label for="file">Original image (logo, product photo, ad creative or listing photo)</label>
-    <input type="file" id="file" accept="image/*,video/*"><img id="preview" alt=""><video id="vpreview" muted controls playsinline></video><div id="frames"></div>
-    <label for="brand">Brand name</label><input type="text" id="brand" placeholder="e.g. Acme">
-    <label for="kw">Extra keywords (comma separated)</label><input type="text" id="kw" placeholder="product or model name, campaign, slogan">
-    <label for="dom">Your official domains</label><input type="text" id="dom" placeholder="acme.com, shop.acme.com, acme.co.uk">
-    <label for="resellers">Authorised resellers (optional)</label><input type="text" id="resellers" placeholder="retailer.com, partner-shop.com">
-    <label for="imgurl">Public URL of the image (enables reverse image search)</label><input type="text" id="imgurl">
-    <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="demo"> Add 5 synthetic demo copies</label>
-    <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="sem"> Also find the same product in different photos (slower)</label>
-    <button id="go">Scan the web</button>
-    <button id="replay" class="ghost">Replay last scan (offline)</button>
-    <div id="status"></div>
+    <label for="file">Source file</label>
+    <input type="file" id="file" required><span class="file-help">Any file with visual content: images, video, PDF, ZIP, Office files, and renamed files such as .img.</span><div id="file-summary" class="file-summary"></div><img id="preview" alt="Uploaded source preview"><video id="vpreview" muted controls playsinline></video><div id="frames"></div>
+    <label for="brand">Name it uses</label><input type="text" id="brand" placeholder="Brand, account, seller, or campaign name" required>
+    <label for="imgurl">Post or source link</label><input type="url" id="imgurl" placeholder="https://tiktok.com/..." required>
+    <div hidden><input type="text" id="kw"><input type="text" id="dom"><input type="text" id="resellers"><input type="checkbox" id="demo"><input type="checkbox" id="sem"></div>
+    <button id="go">Start investigation</button>
+    <details class="demo-tools"><summary>Use a recorded example</summary><div class="replay-row"><select id="rec" aria-label="Recorded scan to replay"><option value="last_scan">Last scan</option></select><button id="replay" class="ghost sm" title="Play back a recorded scan, offline">Replay</button></div></details>
+    <div id="status" aria-live="polite"></div>
     <div class="stats"><div class="stat"><b id="s-all">0</b>flagged</div><div class="stat"><b id="s-bad" style="color:var(--bad)">0</b>high risk</div><div class="stat"><b id="s-sel">0</b>sellers</div></div>
     <div id="lookalikes"></div>
   </section>
-  <section style="display:flex;flex-direction:column;min-height:0">
+  <section style="display:flex;flex-direction:column;min-height:0" aria-label="Evidence workspace">
     <div id="banner">Synthetic local demonstration: rows marked DEMO are generated copies of your own image, not real offenders.</div>
     <div class="graph-shell">
       <div class="graph-topline"><div class="graph-title">Live evidence map<span>Source relationships and verified visual signals</span></div><div id="graph-meta">Awaiting scan</div><button id="graph-fit" class="ghost" type="button">Fit map</button></div>
@@ -129,14 +249,14 @@ main.form-collapsed{grid-template-columns:46px minmax(460px,1fr) 360px}
       <div class="graph-motion" aria-hidden="true"><i class="graph-radar"></i><i class="graph-scanline"></i><i class="evidence-corners"></i></div>
       <div class="graph-legend" aria-hidden="true"><span class="graph-key"><i class="graph-swatch"></i>low</span><span class="graph-key"><i class="graph-swatch review"></i>review</span><span class="graph-key"><i class="graph-swatch high"></i>high risk</span><span class="graph-key"><i class="graph-swatch unverified"></i>unverified</span></div>
       <div class="graph-stages" aria-label="Investigation stages"><span class="graph-stage active" data-phase="discover"><b>01</b>Discover</span><span class="graph-stage" data-phase="investigate"><b>02</b>Investigate</span><span class="graph-stage" data-phase="verify"><b>03</b>Verify</span><span class="graph-stage" data-phase="act"><b>04</b>Act</span></div>
-      <div id="graph-state">Build the evidence map<small>Run or replay an investigation to reveal source relationships.</small></div>
+      <div id="graph-state"><div>Build the evidence map<small>Run or replay an investigation to reveal source relationships.</small></div></div>
     </div>
     <div class="panel" style="margin-top:12px;flex:1">
       <div class="tabs">
-        <button class="tab on" data-tab="matches">Matches</button><button class="tab" data-tab="sellers">Sellers</button><button class="tab" data-tab="watches">Monitoring</button><button class="tab" data-tab="video">Video check</button>
+        <button class="tab on" data-tab="matches">Matches</button><button class="tab" data-tab="sellers">Sellers</button><button class="tab" data-tab="watches">Monitoring</button><button class="tab" data-tab="video">Video check</button><button class="tab" data-tab="log">Investigations</button>
         <span class="sp"></span><button id="td-sel" class="sm ghost" disabled>Draft takedown (<span id="n-sel">0</span>)</button>
       </div>
-      <div id="t-matches"><label id="unv-wrap" class="muted"><input type="checkbox" id="show-unv"> Show unverified rows (<span id="n-unv">0</span>): image could not be downloaded, flagged on page wording only</label><table><thead><tr><th><input type="checkbox" id="all" aria-label="Select all"></th><th>Risk</th><th>Domain</th><th>Finding</th><th>Type</th></tr></thead><tbody id="rows" class="hide-unv"></tbody></table></div>
+      <div id="t-matches"><div class="filters"><label id="unv-wrap" class="muted"><input type="checkbox" id="show-unv"> Show unverified rows (<span id="n-unv">0</span>): image could not be downloaded, flagged on page wording only</label><label id="own-wrap" class="muted"><input type="checkbox" id="show-own"> Show your own sites and resellers (<span id="n-own">0</span>): never flagged</label></div><table><thead><tr><th><input type="checkbox" id="all" aria-label="Select all"></th><th>Risk</th><th>Domain</th><th>Finding</th><th>Type</th></tr></thead><tbody id="rows" class="hide-unv"></tbody></table><div class="table-empty" id="matches-empty"><strong>No findings yet</strong><span>Start a scan or replay a recorded investigation. Verified matches will appear here.</span></div></div>
       <div id="t-sellers" style="display:none"><div class="muted" id="sellers-note">Run or replay a scan to group matches by seller.</div><div id="sellers"></div></div>
       <div id="t-video" style="display:none">
         <div class="card"><b>Check a suspect video</b><div class="muted">Compares a suspect clip with your original commercial frame by frame: which parts were copied, and whether it was mirrored, cropped, reframed to vertical or sped up.</div>
@@ -148,6 +268,10 @@ main.form-collapsed{grid-template-columns:46px minmax(460px,1fr) 360px}
           <div class="muted" id="v-note">Links are downloaded with yt-dlp. Public Instagram reels, TikTok and YouTube videos usually work; private or deleted posts do not. If a link fails, save the video and upload the file.</div></div>
         <div id="v-out"></div>
       </div>
+      <div id="t-log" style="display:none">
+        <div class="card"><b>Servers seen more than once</b><div class="muted">IP addresses that hosted more than one listing across all investigations. Shared platforms (Shopify, Cloudflare and others) host thousands of unrelated sites, so a repeat there links nothing; they are listed last, in grey.</div><div id="servers" class="log-scroll"></div></div>
+        <h4 style="margin:14px 0 6px">Past investigations</h4><div id="invs" class="log-scroll muted">Loading…</div>
+      </div>
       <div id="t-watches" style="display:none">
         <div class="card"><b>Watch this brand</b><div class="muted">Re-scans on a schedule with the image and settings on the left, and alerts you to copies that are new since the last run.</div>
           <div class="grid2"><div><label for="w-int">Every (hours)</label><input type="number" id="w-int" value="24" min="1"></div>
@@ -158,12 +282,12 @@ main.form-collapsed{grid-template-columns:46px minmax(460px,1fr) 360px}
       </div>
     </div>
   </section>
-  <section class="panel" id="detail"><span style="color:var(--mute)">Click a node or row to inspect a match.</span></section>
+  <section class="panel" id="detail" aria-label="Evidence inspector"><div class="empty-inspector"><span>Evidence inspector</span><h2>No finding selected</h2><p>Select a node on the map or a row in the findings table to review its evidence.</p></div></section>
 </main>
 <div id="modal"><div class="box" id="mbox"></div></div>
 <script>
 const $=id=>document.getElementById(id);
-const nodes=new vis.DataSet(),edges=new vis.DataSet(),matches=[],selected=new Set(),hostStats=new Map();
+const nodes=new vis.DataSet(),edges=new vis.DataSet(),matches=[],selected=new Set();
 const net=new vis.Network($('net'),{nodes,edges},{
   layout:{improvedLayout:true,randomSeed:31},
   physics:{solver:'forceAtlas2Based',forceAtlas2Based:{gravitationalConstant:-54,centralGravity:.008,springLength:132,springConstant:.052,damping:.56,avoidOverlap:.82},stabilization:{enabled:true,iterations:140,updateInterval:20}},
@@ -184,26 +308,43 @@ const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{re
 function setFormCollapsed(c){$('scan-panel').classList.toggle('collapsed',c);document.querySelector('main').classList.toggle('form-collapsed',c);
   const t=$('form-toggle');t.setAttribute('aria-expanded',String(!c));t.title=c?'Show the scan setup':'Collapse the scan setup';
   t.querySelector('.pt-label').textContent=c?'Scan setup':'Hide scan setup';
-  store.set('formCollapsed',c);setTimeout(()=>{try{fitGraph()}catch{}},250)}
-async function api(url,opt){const r=await fetch(url,opt);if(!r.ok)throw new Error((await r.json().catch(()=>({}))).detail||('HTTP '+r.status));return r}
-function graphState(title,detail=''){const el=$('graph-state');el.innerHTML=`${esc(title)}${detail?`<small>${esc(detail)}</small>`:''}`;el.style.display='grid'}
-function updateGraphMeta(){const V=matches.filter(m=>$('show-unv').checked||m.verification!=='unverified'),hosts=new Set(V.map(m=>m.risk.host||'unknown')).size,high=V.filter(m=>m.forensics&&m.risk.score>=65).length;
-  $('graph-meta').textContent=(scanProgress?scanProgress+' / ':'')+`${hosts} source${hosts===1?'':'s'} / ${V.length} signal${V.length===1?'':'s'} / ${high} high`}
+  store.set('formCollapsed',c);requestAnimationFrame(()=>{try{net.setSize('100%','100%');net.redraw();fitGraph()}catch{}})}
+async function api(url,opt){const r=await fetch(url,opt);if(!r.ok){const problem=await r.json().catch(()=>({}));if(r.status===404&&url.startsWith('/api/listing/'))throw new Error('The URL checker is not loaded. Restart BrandGuard and try again.');throw new Error(problem.detail||('HTTP '+r.status))}return r}
+function graphState(title,detail=''){const el=$('graph-state');el.innerHTML=`<div>${esc(title)}${detail?`<small>${esc(detail)}</small>`:''}</div>`;el.style.display='grid'}
+function updateGraphMeta(){const c=counts();
+  $('graph-meta').textContent=(scanProgress?scanProgress+' / ':'')+`${c.sources} source${c.sources===1?'':'s'} / ${c.flagged} flagged / ${c.high} high`}
 const phaseOrder=['discover','investigate','verify','act'];
 function setPhase(phase){const at=Math.max(0,phaseOrder.indexOf(phase));document.querySelectorAll('.graph-stage').forEach((el,i)=>{el.classList.toggle('complete',i<at);el.classList.toggle('active',i===at)})}
 function setScanning(on){document.querySelector('.graph-shell').classList.toggle('is-scanning',on);document.querySelector('.scan-panel').classList.toggle('is-scanning',on);document.querySelector('.detail-live')?.classList.toggle('is-scanning',on)}
-function renderLiveDetail(){const el=$('detail');el.dataset.live='1';el.innerHTML=`<div class="detail-live is-scanning"><div class="detail-live-kicker">Live investigation</div><h2>THE HUNT<br>IS ON.</h2><div class="detail-live-rule"></div><p class="detail-live-principle">Evidence over assumption.</p><div class="detail-live-status"><span>Current operation</span><strong id="live-operation">Discovering sources</strong></div><div class="detail-live-grid"><div class="detail-live-metric"><b id="live-sources">0</b><small>sources mapped</small></div><div class="detail-live-metric"><b id="live-signals">0</b><small>signals found</small></div></div></div>`}
-function updateLiveDetail(operation){if($('detail').dataset.live!=='1')return;const op=$('live-operation'),sources=$('live-sources'),signals=$('live-signals');if(op)op.textContent=operation;if(sources)sources.textContent=hostStats.size;if(signals)signals.textContent=matches.length}
-function fitGraph(){net.fit({animation:{duration:420,easingFunction:'easeInOutQuad'}});setTimeout(()=>net.moveTo({position:net.getViewPosition(),scale:Math.max(.12,net.getScale()*.72),offset:{x:0,y:16},animation:{duration:320,easingFunction:'easeInOutQuad'}}),440)}
+function renderLiveDetail(){const el=$('detail');el.dataset.live='1';el.innerHTML=`<div class="detail-live is-scanning"><div class="detail-live-kicker">Live investigation</div><h2>THE HUNT<br>IS ON.</h2><div class="detail-live-rule"></div><p class="detail-live-principle">Evidence over assumption.</p><div class="detail-live-status"><span>Current operation</span><strong id="live-operation">Discovering sources</strong></div><div class="detail-live-grid"><div class="detail-live-metric"><b id="live-sources">0</b><small>sources mapped</small></div><div class="detail-live-metric"><b id="live-signals">0</b><small>flagged</small></div></div></div>`}
+function updateLiveDetail(operation){if($('detail').dataset.live!=='1')return;const op=$('live-operation'),sources=$('live-sources'),signals=$('live-signals');if(op&&operation)op.textContent=operation;const c=counts();if(sources)sources.textContent=c.sources;if(signals)signals.textContent=c.flagged}
+// fit the visible nodes between the title bar and the legend; computed here because vis-network's own fit() gives
+// a stale zoom while the layout is still moving
+function fitGraph(){const ids=net.body.nodeIndices;if(!ids.length)return;let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+  for(const id of ids){const b=net.getBoundingBox(id);x0=Math.min(x0,b.left);x1=Math.max(x1,b.right);y0=Math.min(y0,b.top);y1=Math.max(y1,b.bottom)}
+  const box=$('net').getBoundingClientRect(),top=document.querySelector('.graph-topline').getBoundingClientRect().bottom-box.top,
+    bottom=Math.min(...['.graph-legend','.graph-stages'].map(q=>document.querySelector(q).getBoundingClientRect().top))-box.top,
+    W=box.width-24,H=Math.max(80,bottom-top-12),scale=Math.max(.12,Math.min(1,W/Math.max(1,x1-x0),H/Math.max(1,y1-y0)));
+  net.moveTo({position:{x:(x0+x1)/2,y:(y0+y1)/2},scale,offset:{x:0,y:(top+bottom-box.height)/2},animation:{duration:480,easingFunction:'easeInOutQuad'}})}
 $('graph-fit').onclick=fitGraph;
+// settle the layout, then fit: fitting while it still spreads leaves nodes off the edges
+function fitWhenSettled(){let done=false;const go=()=>{if(!done){done=true;net.off('stabilized',go);fitGraph()}};
+  net.on('stabilized',go);net.stabilize(160);setTimeout(go,4000)}
 
 let keyframes=[];
 const mmss=t=>Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0');
-$('file').onchange=e=>{const f=e.target.files[0];if(!f)return;$('frames').innerHTML='';keyframes=[];
-  if(f.type.startsWith('video/')){$('preview').style.display='none';rootDataUrl='';
-    $('vpreview').src=URL.createObjectURL(f);$('vpreview').style.display='block';return}
-  $('vpreview').style.display='none';const r=new FileReader();
-  r.onload=()=>{rootDataUrl=r.result;$('preview').src=r.result;$('preview').style.display='block'};r.readAsDataURL(f)};
+let uploadPreviewUrl='';
+const fileSize=n=>n>=1e9?(n/1e9).toFixed(1)+' GB':n>=1e6?(n/1e6).toFixed(1)+' MB':n>=1e3?Math.round(n/1e3)+' KB':n+' bytes';
+$('file').onchange=e=>{const f=e.target.files[0],summary=$('file-summary');$('frames').innerHTML='';keyframes=[];
+  if(uploadPreviewUrl){URL.revokeObjectURL(uploadPreviewUrl);uploadPreviewUrl=''}
+  if(!f){summary.style.display='none';$('preview').style.display=$('vpreview').style.display='none';return}
+  summary.textContent=f.name+' | '+fileSize(f.size);summary.style.display='block';
+  const videoFile=f.type.startsWith('video/')||/\.(mp4|mov|webm|mkv|avi|flv)$/i.test(f.name);
+  if(videoFile){$('preview').style.display='none';rootDataUrl='';uploadPreviewUrl=URL.createObjectURL(f);
+    $('vpreview').src=uploadPreviewUrl;$('vpreview').style.display='block';return}
+  $('vpreview').style.display='none';
+  if(f.type.startsWith('image/')){const r=new FileReader();r.onload=()=>{rootDataUrl=r.result;$('preview').src=r.result;$('preview').style.display='block'};r.readAsDataURL(f)}
+  else{rootDataUrl='';$('preview').style.display='none'}};
 function showFrames(F){keyframes=F;if(!F.length)return;rootDataUrl=F[0].thumb;nodes.update({id:'root',image:rootDataUrl});
   $('frames').innerHTML=F.map(x=>`<figure><img src="${safeImg(x.thumb)}" alt=""><figcaption>${mmss(x.t)}</figcaption></figure>`).join('')}
 function videoReport(r){const c={copy:'high',partial:'mid',weak:'low'}[r.verdict]||'gray';
@@ -224,31 +365,42 @@ $('v-go').onclick=async()=>{const fd=new FormData(),left=$('file').files[0];
 
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>tab(b.dataset.tab));
 function tab(t){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
-  for(const k of['matches','sellers','watches','video'])$('t-'+k).style.display=k===t?'':'none';
-  if(t==='watches')loadWatches()}
+  for(const k of['matches','sellers','watches','video','log'])$('t-'+k).style.display=k===t?'':'none';
+  if(t==='watches')loadWatches();if(t==='log')loadLog()}
 
-function reset(){nodes.clear();edges.clear();matches.length=0;selected.clear();syncSel();$('rows').innerHTML='';$('s-all').textContent=0;$('n-unv').textContent=0;$('unv-wrap').style.display='none';$('s-bad').textContent=0;$('s-sel').textContent=0;
-  hostStats.clear();scanProgress='';$('banner').style.display='none';$('sellers').innerHTML='';sellersData=[];$('lookalikes').innerHTML='';$('sellers-note').textContent='Grouping sellers when the scan finishes…';
+function reset(){nodes.clear();edges.clear();matches.length=0;selected.clear();syncSel();$('rows').innerHTML='';$('matches-empty').style.display='grid';$('s-all').textContent=0;$('n-unv').textContent=0;$('unv-wrap').style.display='none';$('n-own').textContent=0;$('own-wrap').style.display='none';$('s-bad').textContent=0;$('s-sel').textContent=0;
+  scanProgress='';$('banner').style.display='none';$('sellers').innerHTML='';sellersData=[];$('lookalikes').innerHTML='';$('sellers-note').textContent='Grouping sellers when the scan finishes…';
   setPhase('discover');graphState('Mapping the investigation','Sources and visual evidence will assemble around your original.');updateGraphMeta();
   nodes.add({id:'root',label:'ORIGINAL',shape:'circularImage',image:rootDataUrl,size:48,borderWidth:6,borderWidthSelected:9,
     color:{border:'#c92622',background:'#151411',highlight:{border:'#f0e8d8',background:'#151411'},hover:{border:'#f0e8d8',background:'#151411'}},
     font:{color:'#f0e8d8',face:'Consolas, Courier New, monospace',size:12,bold:true,background:'rgba(21,20,17,.88)',vadjust:8},
     shadow:{enabled:true,color:'rgba(201,38,34,.48)',size:28,x:0,y:0}})}
 
-const isUnv=m=>m.verification==='unverified';
-const visible=()=>matches.filter(m=>$('show-unv').checked||!isUnv(m));
-function syncSel(){$('n-sel').textContent=selected.size;$('td-sel').disabled=!selected.size;const v=visible();$('all').checked=v.length>0&&v.every(m=>selected.has(m.idx))}
-$('all').onchange=e=>{selected.clear();if(e.target.checked)visible().forEach(m=>selected.add(m.idx));
-  document.querySelectorAll('#rows tr').forEach((tr,i)=>tr.querySelector('input').checked=selected.has(matches[i].idx));syncSel()};
-function syncUnv(){const show=$('show-unv').checked,n=matches.filter(isUnv).length;
-  $('rows').classList.toggle('hide-unv',!show);$('n-unv').textContent=n;$('unv-wrap').style.display=n?'flex':'none';
-  const hostShown={};matches.forEach((m,i)=>{const hide=isUnv(m)&&!show;nodes.update({id:'m:'+i,hidden:hide});
-    const h='h:'+(m.risk.host||'unknown');hostShown[h]=hostShown[h]||!hide});
-  nodes.update(Object.entries(hostShown).map(([id,on])=>({id,hidden:!on})));
-  if(!show)matches.filter(isUnv).forEach(m=>selected.delete(m.idx));
-  document.querySelectorAll('#rows tr').forEach((tr,i)=>tr.querySelector('input').checked=selected.has(matches[i].idx));
-  $('s-all').textContent=visible().length;syncSel();updateGraphMeta();if(sellersData.length)renderSellers()}
-$('show-unv').onchange=syncUnv;
+// What the page counts, in one place, so the stats, map header, live panel and status line always agree.
+// Flagged: someone else's copy, with visual evidence (plus the unverified ones while they are shown).
+// The brand's own sites and authorised resellers are never flagged; their rows are hidden unless asked for.
+const OWN=new Set(['official','authorised_reseller']);
+const isUnv=m=>m.verification==='unverified',isOwn=m=>OWN.has(m.risk.category);
+const shown=m=>(!isUnv(m)||$('show-unv').checked)&&(!isOwn(m)||$('show-own').checked);
+const flagged=()=>matches.filter(m=>!isOwn(m)&&(!isUnv(m)||$('show-unv').checked));
+function counts(){const F=flagged();return{flagged:F.length,sources:new Set(F.map(m=>m.risk.host||'unknown')).size,
+  high:F.filter(m=>m.forensics&&m.risk.score>=65).length,own:matches.filter(isOwn).length,unv:matches.filter(isUnv).length}}
+const checkRows=()=>document.querySelectorAll('#rows tr').forEach((tr,i)=>tr.querySelector('input').checked=selected.has(matches[i].idx));
+function syncSel(){$('n-sel').textContent=selected.size;$('td-sel').disabled=!selected.size;const v=flagged();$('all').checked=v.length>0&&v.every(m=>selected.has(m.idx))}
+$('all').onchange=e=>{selected.clear();if(e.target.checked)flagged().forEach(m=>selected.add(m.idx));checkRows();syncSel()};
+function syncFilters(){const c=counts();
+  $('rows').classList.toggle('hide-unv',!$('show-unv').checked);$('rows').classList.toggle('hide-own',!$('show-own').checked);
+  $('n-unv').textContent=c.unv;$('unv-wrap').style.display=c.unv?'flex':'none';$('n-own').textContent=c.own;$('own-wrap').style.display=c.own?'flex':'none';
+  const hubs={};matches.forEach((m,i)=>{const on=shown(m),h=m.risk.host||'unknown',hs=hubs[h]??={n:0,max:0,own:isOwn(m)};
+    nodes.update({id:'m:'+i,hidden:!on});if(on){hs.n++;hs.max=Math.max(hs.max,m.forensics?m.risk.score:0)}});
+  nodes.update(Object.entries(hubs).map(([h,hs])=>({id:'h:'+h,hidden:!hs.n,label:`${h.toUpperCase()}\n${hs.own?`YOUR SITE · ${hs.n} ${hs.n===1?'COPY':'COPIES'}`:hs.n+' FLAGGED'}`,
+    borderWidth:hs.max>=65?4:hs.max>=40?3:2,color:{background:'#f0e8d8',border:hs.own?'#8d877c':hs.max>=65?'#c92622':hs.max>=40?'#b56f18':'#527b66',highlight:{background:'#fffaf0',border:'#c92622'},hover:{background:'#fffaf0',border:'#f0e8d8'}}})));
+  matches.filter(m=>!shown(m)||isOwn(m)).forEach(m=>selected.delete(m.idx));checkRows();
+  $('s-all').textContent=c.flagged;$('s-bad').textContent=c.high;syncSel();updateGraphMeta();updateLiveDetail();if(sellersData.length)renderSellers()}
+$('show-unv').onchange=$('show-own').onchange=()=>{syncFilters();if(!$('go').disabled&&matches.length)settledMap()};
+// the map once a scan is over: settled and fitted, or a note saying why it is empty
+function settledMap(){fitWhenSettled();const c=counts();if(matches.some(shown))$('graph-state').style.display='none';
+  else graphState(c.own?'No copies outside your sites':'No visual matches',c.own?`${c.own} found on your own sites or resellers (tick "Show your own sites" below to see them).`:'The investigation completed without a verified visual signal.')}
 
 const srcLabel=m=>/^ebay/.test(m.source||'')?'eBay image search':/^aliexpress/.test(m.source||'')?'AliExpress':m.reverse?'reverse':'';
 function showLookalikes(L){if(!L.length)return;
@@ -266,20 +418,18 @@ async function archive(idxs,out){const todo=idxs.filter(i=>{const m=matches[byId
   out.textContent=`Archived ${ok} of ${todo.length} page${todo.length===1?'':'s'}${fail?` (${fail} failed: archive.org may be rate-limiting, try again later)`:''}. Archived links now appear in drafts and evidence PDFs.`}
 function addMatch(m){
   const i=matches.push(m)-1,r=m.risk,host=r.host||'unknown';
-  const finding=m.forensics?m.forensics.label+(m.demo?' (DEMO)':''):'Unverified: image download blocked';
+  $('matches-empty').style.display='none';
+  const own=isOwn(m),finding=m.forensics?m.forensics.label+(m.demo?' (DEMO)':''):'Unverified: image download blocked';
   if(m.demo)$('banner').style.display='block';
-  const hs=hostStats.get(host)||{count:0,max:0};hs.count++;hs.max=Math.max(hs.max,m.forensics?r.score:0);hostStats.set(host,hs);
   if(!nodes.get('h:'+host)){
     nodes.add({id:'h:'+host,label:'',shape:'box',margin:{top:9,right:12,bottom:9,left:12},borderWidth:2,
       color:{background:'#f0e8d8',border:'#8d877c',highlight:{background:'#fffaf0',border:'#c92622'},hover:{background:'#fffaf0',border:'#f0e8d8'}},
       font:{color:'#151411',face:'Consolas, Courier New, monospace',size:10,bold:true,multi:'html'},shadow:{enabled:true,color:'rgba(0,0,0,.52)',size:18,x:0,y:8}});
     edges.add({id:'e:root:'+host,from:'root',to:'h:'+host,width:1.3,dashes:[3,7],color:{color:'#777066',highlight:'#f0e8d8'},smooth:{enabled:true,type:'continuous',roundness:.12}})
   }
-  nodes.update({id:'h:'+host,label:`${host.toUpperCase()}\n${hs.count} SIGNAL${hs.count===1?'':'S'}`,borderWidth:hs.max>=65?4:hs.max>=40?3:2,
-    color:{background:'#f0e8d8',border:hs.max>=65?'#c92622':hs.max>=40?'#b56f18':'#527b66',highlight:{background:'#fffaf0',border:'#c92622'},hover:{background:'#fffaf0',border:'#f0e8d8'}}});
   const img=m.thumb||(/^https?:/.test(m.image_url||'')?m.image_url:null);
   const score=m.forensics?r.score:0,nodeSize=m.verification==='unverified'?20:score>=65?36:score>=40?31:26;
-  const nodeBase={id:'m:'+i,label:m.verification==='unverified'?'UNVERIFIED':`${score} / ${riskWord(m)}`,size:nodeSize,title:`${host}\n${finding}\n${m.verification==='unverified'?'Unverified':'Risk '+score}`,
+  const nodeBase={id:'m:'+i,label:m.verification==='unverified'?'UNVERIFIED':own?'YOUR SITE':`${score} / ${riskWord(m)}`,size:nodeSize,title:`${host}\n${finding}\n${m.verification==='unverified'?'Unverified':'Risk '+score}`,
     borderWidth:score>=65?5:3,borderWidthSelected:7,color:{border:col(m),background:'#211f1b',highlight:{border:'#f0e8d8',background:'#211f1b'},hover:{border:'#f0e8d8',background:'#211f1b'}},
     font:{color:'#f0e8d8',face:'Consolas, Courier New, monospace',size:10,bold:true,background:'rgba(21,20,17,.9)',vadjust:7},
     shadow:{enabled:true,color:score>=65?'rgba(201,38,34,.58)':'rgba(0,0,0,.54)',size:score>=65?24:16,x:0,y:5}};
@@ -288,13 +438,13 @@ function addMatch(m){
   edges.add({id:'e:'+i,from:'h:'+host,to:'m:'+i,width:m.verification==='unverified'?1:1.4+score/24,
     color:{color:col(m),highlight:'#f0e8d8',hover:'#f0e8d8',opacity:.94},dashes:m.verification==='unverified'?[5,6]:false,
     arrows:{to:{enabled:true,scaleFactor:.48}},smooth:{enabled:true,type:i%2?'curvedCW':'curvedCCW',roundness:.12+(i%4)*.045}});
-  $('graph-state').style.display='none';setPhase('verify');updateLiveDetail('Verifying visual signal '+matches.length);
-  const tr=document.createElement('tr');tr.className='row'+(m.verification==='unverified'?' unv':'');
+  if(shown(m))$('graph-state').style.display='none';setPhase('verify');updateLiveDetail('Verifying visual signal '+matches.length);
+  const tr=document.createElement('tr');tr.className='row'+(m.verification==='unverified'?' unv':'')+(own?' own':'');
   const src=srcLabel(m);
-  tr.innerHTML=`<td><input type="checkbox" aria-label="Select"></td><td><span class="pill ${cls(m)}">${m.forensics?r.score:'n/a'}</span></td><td>${esc(host)}</td><td>${esc(finding)}${src?` <span class="pill gray">${src}</span>`:''}</td><td>${esc(r.category.replace(/_/g,' '))}</td>`;
-  const cb=tr.querySelector('input');cb.onclick=e=>{e.stopPropagation();cb.checked?selected.add(m.idx):selected.delete(m.idx);syncSel()};
+  tr.innerHTML=`<td><input type="checkbox" aria-label="Select"></td><td><span class="pill ${own?'gray':cls(m)}">${own?'own':m.forensics?r.score:'n/a'}</span></td><td>${esc(host)}</td><td>${esc(finding)}${src?` <span class="pill gray">${src}</span>`:''}${links(m).length?` <span class="pill link" title="Its site, listing or server came up in the investigation log before">seen before</span>`:''}</td><td>${own?(r.category==='official'?'your site':'authorised reseller'):esc(r.category.replace(/_/g,' '))}</td>`;
+  const cb=tr.querySelector('input');if(own){cb.disabled=true;cb.title='Your own site: nothing to take down'}cb.onclick=e=>{e.stopPropagation();cb.checked?selected.add(m.idx):selected.delete(m.idx);syncSel()};
   tr.onclick=()=>show(i);$('rows').appendChild(tr);
-  $('s-bad').textContent=matches.filter(x=>x.forensics&&x.risk.score>=65).length;syncUnv();
+  syncFilters();
 }
 net.on('click',p=>{const id=p.nodes[0];if(id&&id.startsWith('m:'))show(+id.slice(2));else if(id)net.focus(id,{scale:1.22,animation:{duration:500,easingFunction:'easeInOutQuad'}})});
 net.on('hoverNode',()=>{$('net').style.cursor='pointer'});net.on('blurNode',()=>{$('net').style.cursor='default'});
@@ -306,7 +456,7 @@ function show(i){const m=matches[i],r=m.risk,f=m.forensics,unv=!f,pdf=`/api/repo
   const thumb=safeImg(m.thumb||m.image_url);
   const stats=unv?'':f.kind==='same_product'?`semantic similarity ${f.similarity} &middot; hash distance ${f.hash_distance}/256`
     :`hash distance ${f.hash_distance}/256 &middot; feature inliers ${f.feature_inliers} &middot; template ${f.template_score}`;
-  $('detail').innerHTML=`<h3 style="margin:0 0 6px">${esc(r.host)} <span class="pill ${cls(m)}">${unv?'unverified':'risk '+r.score}</span></h3>
+  $('detail').innerHTML=`<h3 style="margin:0 0 6px">${esc(r.host)} <span class="pill ${isOwn(m)?'gray':cls(m)}">${isOwn(m)?(r.category==='official'?'your site':'authorised reseller'):unv?'unverified':'risk '+r.score}</span></h3>
   <div style="color:var(--mute)">${esc(m.title)}</div>
   ${m.seller||m.price?`<div class="muted">${m.seller?'Seller: '+esc(m.seller):''}${m.seller&&m.price?' · ':''}${m.price?esc(m.price):''}${m.orders?' · '+esc(m.orders)+' orders':''}</div>`:''}
   <div class="imgs"><div><img src="${safeImg(kf?kf.thumb:rootDataUrl)}" alt=""><small>${kf?'Your video at '+mmss(kf.t):'Your original'}</small></div>
@@ -314,13 +464,15 @@ function show(i){const m=matches[i],r=m.risk,f=m.forensics,unv=!f,pdf=`/api/repo
   ${unv||!f.heatmap?'':`<div style="grid-column:span 2"><img src="${esc(f.heatmap)}" alt=""><small>Difference map (bright = changed vs. your original, ${f.changed_pct}% of pixels)</small></div>`}</div>
   <span class="pill gray">${esc(m.verification||'verified')}</span> ${srcLabel(m)?`<span class="pill gray">found by ${esc(srcLabel(m)==='reverse'?'reverse image search':srcLabel(m))}</span>`:''}<br><b>${unv?'Could not verify similarity':esc(f.label)}</b>
   <ul>${r.reasons.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+  ${serverBlock(m)}
   ${unv?'':`<small style="color:var(--mute)">${stats} &middot; C2PA: ${esc(f.c2pa.state)} &middot; synthetic hints: ${esc(f.ai_signal.level)}</small><br>`}
-  <div class="row-actions"><button class="sm" id="d-td">Draft takedown</button><a class="pill gray" href="${pdf}" target="_blank">Evidence PDF</a><a class="pill gray" href="${safeHref(m.page_url)}" target="_blank" rel="noopener noreferrer">Source page</a><span id="d-arc">${archiveCell(m.archive)}</span>${m.page_url&&!m.demo?'<button class="sm ghost" id="d-save">Save to Wayback Machine</button>':''}</div>
+  ${isOwn(m)?`<p class="muted">${r.category==='official'?'This page is on one of your official domains':'This page is on one of your authorised resellers'}, so it is not flagged.</p>`:''}
+  <div class="row-actions">${isOwn(m)?'':'<button class="sm" id="d-td">Draft takedown</button>'}<a class="pill gray" href="${pdf}" target="_blank">Evidence PDF</a><a class="pill gray" href="${safeHref(m.page_url)}" target="_blank" rel="noopener noreferrer">Source page</a><span id="d-arc">${archiveCell(m.archive)}</span>${m.page_url&&!m.demo?'<button class="sm ghost" id="d-save">Save to Wayback Machine</button>':''}</div>
   <div id="d-arc-msg" class="muted"></div>
   <div class="row-actions" style="align-items:center"><span class="muted">Is this right?</span>
     <button class="sm ghost" data-l="confirmed">Real copy</button><button class="sm ghost" data-l="false_positive">False positive</button><button class="sm ghost" data-l="not_sure">Not sure</button><span id="d-lab" class="muted"></span></div>
   <p style="color:var(--mute);font-size:12px">Signals only. Review before taking enforcement action.</p>`;
-  $('d-td').onclick=()=>takedown([m.idx]);
+  if($('d-td'))$('d-td').onclick=()=>takedown([m.idx]);
   if($('d-save'))$('d-save').onclick=async()=>{$('d-save').disabled=true;await archive([m.idx],$('d-arc-msg'));$('d-arc').innerHTML=archiveCell(m.archive);$('d-save').disabled=false};
   document.querySelectorAll('#detail [data-l]').forEach(b=>b.onclick=async()=>{
     try{await api('/api/labels',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scan_id:scanId,idx:m.idx,label:b.dataset.l,note:''})});
@@ -340,7 +492,7 @@ function renderSellers(){const all=sellersData,S=$('show-unv').checked?all:all.f
       <div class="row-actions"><button class="sm" data-k="${k}" data-a="td">Takedown all ${s.listings}</button><button class="sm ghost" data-k="${k}" data-a="sel">Select listings</button></div></div>`).join('');
     $('sellers').querySelectorAll('button').forEach(b=>b.onclick=()=>{const s=S[+b.dataset.k];
       if(b.dataset.a==='td')takedown(s.idxs);else{selected.clear();s.idxs.forEach(x=>selected.add(x));
-        document.querySelectorAll('#rows tr').forEach((tr,i)=>tr.querySelector('input').checked=selected.has(matches[i].idx));syncSel();tab('matches')}})}
+        checkRows();syncSel();tab('matches')}})}
 
 const RH=['name','company','email','phone','address','trademark_reg','original_url'];
 const RHL={name:'Your name',company:'Company / brand owner',email:'Email',phone:'Phone',address:'Postal address',trademark_reg:'Trademark reg. no. & jurisdiction',original_url:'Where your original is published'};
@@ -362,7 +514,9 @@ function takedown(idxs){const rh=store.get('bg-rh',{});
       $('td-out').innerHTML=d.drafts.map((x,k)=>`<div class="card"><h4>${esc(x.channel)} <span class="pill gray">${esc(x.notice_type)}</span> <span class="muted">${x.idxs.length} listing${x.idxs.length===1?'':'s'}</span></h4>
         <div class="meta">${x.recipient?'To: '+esc(x.recipient)+' · ':''}${x.report_url?`<a href="${safeHref(x.report_url)}" target="_blank" rel="noopener noreferrer">Open report form</a> · `:''}${esc(x.how_to||'')}</div>
         <div class="meta"><b>Subject:</b> ${esc(x.subject)}</div><pre>${esc(x.body)}</pre>
-        <div class="row-actions"><button class="sm ghost" data-c="${k}">Copy text</button>${x.mailto?`<a class="pill gray" href="${esc(x.mailto)}">Open in email</a>`:''}</div></div>`).join('');
+        <div class="row-actions"><button class="sm ghost" data-c="${k}">Copy text</button>${x.mailto?`<a class="pill gray" data-m="${k}" href="${esc(x.mailto)}" title="${x.mailto_has_body?'Opens your email app with the notice filled in':'The notice is too long for an email link: it is copied to your clipboard, paste it into the email'}">Open in email${x.mailto_has_body?'':' (copies the text)'}</a>`:''}</div></div>`).join('');
+      $('td-out').querySelectorAll('[data-m]').forEach(a=>a.onclick=()=>{const x=d.drafts[+a.dataset.m];
+        if(!x.mailto_has_body)navigator.clipboard.writeText(x.body).catch(()=>{})});
       $('td-out').querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{const x=d.drafts[+b.dataset.c];
         navigator.clipboard.writeText(`Subject: ${x.subject}\n\n${x.body}`).then(()=>b.textContent='Copied',()=>b.textContent='Copy failed')})
     }catch(e){$('td-out').innerHTML=`<p class="muted">Could not draft: ${esc(e.message)}</p>`}};
@@ -370,6 +524,30 @@ function takedown(idxs){const rh=store.get('bg-rh',{});
     const a=document.createElement('a');a.href=URL.createObjectURL(await r.blob());a.download=`takedown-${scanId}.zip`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
     catch(e){$('td-out').innerHTML=`<p class="muted">Could not build the pack: ${esc(e.message)}</p>`}}}
 
+// links to earlier listings that mean something: the same site or listing in another investigation, or the same
+// IP off shared platforms (two Shopify shops share IPs without being related)
+const links=m=>{const s=m.server;return s?(s.seen_before||[]).filter(x=>((x.same_site||x.same_url)&&!x.this_investigation)||(x.same_ips.length&&!s.shared&&!x.same_site&&!x.same_url)):[]};
+function seenList(s){if(!s.seen_count)return'<div class="muted">Not seen in earlier investigations.</div>';
+  return `<div class="muted">Seen before (${s.seen_count}${s.seen_count>s.seen_before.length?', newest shown':''}):</div><ul>${s.seen_before.slice(0,6).map(x=>`<li>${esc(x.host)} · ${esc(x.brand)} ${esc((x.started_at||'').slice(0,10))} · ${x.same_site?'same site':x.same_url?'same listing':'same IP '+esc(x.same_ips.join(', '))}${x.this_investigation?' (this investigation)':''}</li>`).join('')}</ul>`}
+function serverBlock(m){const s=m.server;if(!s)return'';
+  if(s.platform)return`<div class="srv"><b>Server</b> <span class="muted">On a marketplace or social site, whose IP is the platform's own, so no IP is recorded.</span>${seenList(s)}</div>`;
+  if(!s.ips.length)return`<div class="srv"><b>Server</b> <span class="muted">IP address could not be resolved.</span>${seenList(s)}</div>`;
+  return`<div class="srv"><b>Server</b> <span class="mono">${esc(s.ips.slice(0,3).join(', '))}</span> · ${esc(s.org||s.network||'unknown network')}${s.shared?` <span class="pill gray">shared: ${esc(s.shared)}</span><div class="muted">Many unrelated sites use ${esc(s.shared)} addresses, so a shared IP links nothing here.</div>`:''}${seenList(s)}</div>`}
+const when=t=>t?new Date(t).toLocaleString([],{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+async function loadLog(){
+  try{const S=await(await api('/api/servers')).json();
+    $('servers').innerHTML=S.length?`<table><thead><tr><th>IP</th><th>Network</th><th>Sites</th><th>Listings</th><th>Investigations</th><th>Last seen</th></tr></thead><tbody>${S.map(x=>`<tr class="${x.shared?'shared':''}"><td class="mono">${esc(x.ips.slice(0,3).join(', '))}${x.ips.length>3?' …':''}</td><td>${esc(x.org||x.network||'unknown')}${x.shared?` <span class="pill gray">shared</span>`:''}</td><td>${x.sites}: ${esc(x.domains.slice(0,4).join(', '))}${x.domains.length>4?' …':''}</td><td>${x.listings}</td><td>${x.investigations} (${esc(x.brands.slice(0,3).join(', '))})</td><td>${esc(when(x.last_seen))}</td></tr>`).join('')}</tbody></table>`
+      :'<p class="muted">No server has come up twice yet. Each investigation records the IP behind every listing it finds.</p>'}
+  catch(e){$('servers').innerHTML=`<p class="muted">Could not load: ${esc(e.message)}</p>`}
+  try{const H=await(await api('/api/investigations')).json();
+    $('invs').innerHTML=H.length?`<table><thead><tr><th>Started</th><th>Brand</th><th>By</th><th>Checked</th><th>Listings</th><th>High</th><th>Seen before</th></tr></thead><tbody>${H.map(h=>`<tr class="inv" data-id="${esc(h.id)}"><td>${esc(when(h.started_at))}${h.status!=='done'?` <span class="pill gray">${esc(h.status)}</span>`:''}</td><td>${esc(h.brand)}</td><td>${esc({scan:'web',watch:'monitoring',imessage:'iMessage',link:'link check'}[h.origin]||h.origin)}</td><td>${h.scanned??''}</td><td>${h.listings??''}</td><td>${h.high??''}</td><td>${h.linked?`<span class="pill link">${h.linked}</span>`:'0'}</td></tr>`).join('')}</tbody></table>`
+      :'<p class="muted">No investigations yet. Every scan from now on is logged here.</p>';
+    $('invs').querySelectorAll('tr.inv').forEach(tr=>tr.onclick=async()=>{const nx=tr.nextElementSibling;if(nx&&nx.classList.contains('sub')){nx.remove();return}
+      const sub=document.createElement('tr');sub.className='sub';sub.innerHTML='<td colspan="7" class="muted">Loading…</td>';tr.after(sub);
+      try{const L=(await(await api('/api/investigations/'+encodeURIComponent(tr.dataset.id))).json()).listings;
+        sub.innerHTML=`<td colspan="7">${L.length?`<table><thead><tr><th>Risk</th><th>Site</th><th>IP</th><th>Network</th><th>Finding</th></tr></thead><tbody>${L.map(l=>`<tr><td><span class="pill ${l.verification==='unverified'?'gray':tier(l.score)}">${l.verification==='unverified'?'n/a':l.score}</span></td><td><a href="${safeHref(l.page_url)}" target="_blank" rel="noopener noreferrer">${esc(l.host)}</a></td><td class="mono">${l.platform?'<span class="muted">platform</span>':esc(l.ips.slice(0,2).join(', '))||'<span class="muted">unresolved</span>'}</td><td>${esc(l.org||l.network||'')}${l.shared?' <span class="pill gray">shared</span>':''}</td><td>${esc(l.finding)}</td></tr>`).join('')}</tbody></table>`:'<span class="muted">No listings found in this investigation.</span>'}</td>`}
+      catch(e){sub.innerHTML=`<td colspan="7" class="muted">Could not load: ${esc(e.message)}</td>`}})}
+  catch(e){$('invs').innerHTML=`<p class="muted">Could not load: ${esc(e.message)}</p>`}}
 const ago=t=>{if(!t)return'never';const s=(Date.now()-new Date(t))/1000;return s<90?'just now':s<5400?Math.round(s/60)+' min ago':s<129600?Math.round(s/3600)+' h ago':Math.round(s/86400)+' days ago'};
 async function loadWatches(){
   try{const W=await(await api('/api/watches')).json(),list=Array.isArray(W)?W:(W.watches||[]);
@@ -386,11 +564,11 @@ async function loadAlerts(){
     $('alerts').innerHTML=list.slice(0,30).map(a=>`<div class="card"><h4>${a.read?'':'<span class="badge">new</span>'}${esc(a.message)}</h4><div class="meta">${esc(a.brand)} · ${ago(a.created_at)}</div>
       ${(a.items||[]).length?`<ul>${a.items.slice(0,8).map(x=>`<li><span class="pill ${tier(x.score)}">${x.score}</span> ${esc(x.host)}: ${esc(x.label)} · <a href="${safeHref(x.page_url)}" target="_blank" rel="noopener noreferrer">page</a></li>`).join('')}</ul>`:''}</div>`).join('')||'No alerts yet.';
   }catch(e){}}
-$('bell').onclick=async()=>{tab('watches');await api('/api/alerts/read',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({all:true})}).catch(()=>{});setTimeout(loadAlerts,300)};
+$('bell').onclick=async()=>{showLab(true);tab('watches');await api('/api/alerts/read',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({all:true})}).catch(()=>{});setTimeout(loadAlerts,300)};
 $('w-add').onclick=async()=>{const f=$('file').files[0];
-  if(!f||!$('brand').value.trim()){$('watches').innerHTML='<p class="muted">Choose an image and a brand name on the left first.</p>';return}
+  if(!f||!$('brand').value.trim()){$('watches').innerHTML='<p class="muted">Choose a source file and enter the name it uses first.</p>';return}
   const fd=new FormData();fd.append('image',f);fd.append('brand',$('brand').value);fd.append('keywords',$('kw').value);fd.append('official_domains',$('dom').value);fd.append('resellers',$('resellers').value);
-  fd.append('image_url',$('imgurl').value);fd.append('interval_hours',$('w-int').value);fd.append('min_score',$('w-min').value);fd.append('webhook_url',$('w-hook').value.trim());
+  fd.append('source_url',$('imgurl').value);fd.append('interval_hours',$('w-int').value);fd.append('min_score',$('w-min').value);fd.append('webhook_url',$('w-hook').value.trim());
   try{await api('/api/watches?run_now=1',{method:'POST',body:fd});loadWatches()}catch(e){$('watches').innerHTML=`<p class="muted">Could not create the watch: ${esc(e.message)}</p>`}};
 setInterval(()=>{loadAlerts();if($('t-watches').style.display!=='none')loadWatches()},30000);loadAlerts();
 
@@ -399,7 +577,7 @@ async function run(url,fd){
   $('status').textContent='Starting investigation...';renderLiveDetail();setPhase('discover');setScanning(true);graphState('Investigation running','Searching sources and preparing visual evidence.');updateLiveDetail('Discovering sources');updateGraphMeta();
   try{
     const res=await fetch(url,{method:'POST',body:fd});
-    if(!res.ok){$('status').textContent='Request failed: '+res.status;return}
+    if(!res.ok){const problem=await res.json().catch(()=>({}));throw new Error(problem.detail||('Request failed: '+res.status))}
     const rd=res.body.getReader(),dec=new TextDecoder();let buf='';
     while(true){const{done,value}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});
       let k;while((k=buf.indexOf('\n\n'))>=0){const blk=buf.slice(0,k);buf=buf.slice(k+2);
@@ -411,19 +589,132 @@ async function run(url,fd){
         else if(ev==='status'){$('status').textContent=d.message;scanProgress=/same-product/i.test(d.message)?'Semantic check':/verifying|checking/i.test(d.message)?'Evidence intake':/searching/i.test(d.message)?'Discovery live':'Investigation live';if(/verifying|checking/i.test(d.message)){setPhase('investigate');updateLiveDetail('Investigating candidate evidence')}else updateLiveDetail('Discovering sources');updateGraphMeta();if(!matches.length)graphState('Investigation running',d.message);if(d.scan_id)scanId=d.scan_id}
         else if(ev==='progress'){$('status').textContent='Checked '+d.done+'/'+d.total+'...';scanProgress=`${d.done}/${d.total} checked`;setPhase('verify');updateLiveDetail(`Verifying evidence ${d.done}/${d.total}`);updateGraphMeta();if(!matches.length)graphState('Verifying evidence',`${d.done} of ${d.total} candidates checked.`)}
         else if(ev==='error'){$('status').textContent=d.message;scanProgress='Stopped';setScanning(false);updateLiveDetail('Investigation stopped');updateGraphMeta();graphState('Investigation stopped',d.message)}
-        else if(ev==='done'){scanProgress='';setPhase('act');setScanning(false);updateLiveDetail(matches.length?'Evidence ready for review':'Investigation complete');updateGraphMeta();if(matches.length){$('graph-state').style.display='none';setTimeout(fitGraph,250)}else graphState('No visual matches','The investigation completed without a verified visual signal.');
-          $('status').textContent=`Done. Checked ${d.scanned}: ${d.verified||0} verified, ${d.semantic?d.semantic+' same-product, ':''}${d.thumbnail_only||0} low-res, ${d.unverified||0} blocked, ${matches.length} flagged.`+(d.timings&&d.timings.total?` Took ${Math.round(d.timings.total)}s (search ${Math.round(d.timings.search||0)}s, checking ${Math.round(d.timings.verify||0)}s${d.timings.first_match?`, first match at ${Math.round(d.timings.first_match)}s`:''}).`:'');loadSellers()}}}
+        else if(ev==='done'){scanProgress='';setPhase('act');setScanning(false);updateLiveDetail(counts().flagged?'Evidence ready for review':'Investigation complete');updateGraphMeta();settledMap();
+          $('status').textContent=`Done. Checked ${d.scanned}: ${d.verified||0} verified, ${d.semantic?d.semantic+' same-product, ':''}${d.thumbnail_only||0} low-res, ${d.unverified||0} blocked. ${counts().flagged} flagged${counts().own?`, ${counts().own} on your own sites (not flagged)`:''}.${d.own_site?` ${d.own_site} images on your own sites and resellers not checked.`:''}${d.slow_hosts&&d.slow_hosts.length?` Gave up on slow site${d.slow_hosts.length===1?'':'s'} ${d.slow_hosts.slice(0,3).join(', ')} (thumbnails checked instead).`:''}`+(d.timings&&d.timings.total?` Took ${Math.round(d.timings.total)}s (search ${Math.round(d.timings.search||0)}s, checking ${Math.round(d.timings.verify||0)}s${d.timings.first_match?`, first match at ${Math.round(d.timings.first_match)}s`:''}).`:'');loadSellers();if($('t-log').style.display!=='none')loadLog()}}}
   }catch(e){$('status').textContent='Investigation failed: '+e.message;scanProgress='Failed';setScanning(false);updateLiveDetail('Investigation failed');updateGraphMeta();graphState('Investigation failed',e.message)}
-  finally{setScanning(false);$('go').disabled=$('replay').disabled=false;$('go').textContent='Scan the web'}}
+  finally{setScanning(false);$('go').disabled=$('replay').disabled=false;$('go').textContent='Start investigation';if(url==='/api/scan')loadRecordings()}}
 $('go').onclick=()=>{
-  const f=$('file').files[0];if(!f||!$('brand').value.trim()){$('status').textContent='Add an image or video and a brand name.';return}
+  const f=$('file').files[0],name=$('brand').value.trim(),source=$('imgurl').value.trim();
+  if(!f||!name||!source){$('status').textContent='Add a file, the name it uses, and a public link.';return}
+  try{const u=new URL(source);if(!/^https?:$/.test(u.protocol))throw new Error()}catch{$('status').textContent='Enter a full public link starting with https://';return}
   if(f.type.startsWith('video/')){$('frames').innerHTML='';keyframes=[]}
   reset();const fd=new FormData();fd.append('image',f);fd.append('brand',$('brand').value);fd.append('keywords',$('kw').value);
-  fd.append('official_domains',$('dom').value);fd.append('resellers',$('resellers').value);fd.append('image_url',$('imgurl').value);if($('demo').checked)fd.append('inject_demo','1');if($('sem').checked)fd.append('semantic_search','1');
+  fd.append('official_domains',$('dom').value);fd.append('resellers',$('resellers').value);fd.append('source_url',source);if($('demo').checked)fd.append('inject_demo','1');if($('sem').checked)fd.append('semantic_search','1');
   run('/api/scan',fd)};
-$('replay').onclick=()=>{const fd=new FormData();fd.append('name','last_scan');run('/api/replay',fd)};
+$('replay').onclick=()=>{const fd=new FormData();fd.append('name',$('rec').value||'last_scan');run('/api/replay',fd)};
+async function loadRecordings(){try{const R=await(await api('/api/recordings')).json(),keep=$('rec').value;if(!R.length)return;
+  const when=t=>new Date(t).toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  $('rec').innerHTML=R.map(r=>`<option value="${esc(r.name)}">${r.name==='demo'?'Demo: ':r.name==='last_scan'?'Last scan: ':''}${esc(r.brand)} · ${r.flagged} flagged${r.high?`, ${r.high} high`:''}${r.demo?' (with demo copies)':''}${r.name.startsWith('scans/')?' · '+when(r.recorded_at):''}</option>`).join('');
+  $('rec').value=R.some(r=>r.name===keep)&&keep!=='last_scan'?keep:R[0].name}catch(e){}}
+loadRecordings();
 $('form-toggle').onclick=()=>setFormCollapsed(!$('scan-panel').classList.contains('collapsed'));
 if(store.get('formCollapsed',false))setFormCollapsed(true);
+
+let quickCheck=null;
+function showLab(on){
+  if(on&&quickCheck){$('imgurl').value=quickCheck.url;$('brand').value=quickCheck.facts.brand||quickCheck.facts.manufacturer||''}
+  $('trust-flow').hidden=on;$('quick-result').hidden=true;$('deep-result').hidden=true;$('evidence-lab').hidden=!on;
+  $('lab-toggle').textContent=on?'Quick check':'Evidence lab';
+  if(on)requestAnimationFrame(()=>{try{net.setSize('100%','100%');net.redraw();fitGraph()}catch{}})
+  window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+}
+function quickHome(){
+  $('evidence-lab').hidden=true;$('quick-result').hidden=true;$('deep-result').hidden=true;$('trust-flow').hidden=false;
+  $('lab-toggle').textContent='Evidence lab';$('quick-error').textContent='';requestAnimationFrame(()=>$('listing-url').focus());
+}
+function resultNav(){return `<div class="result-nav"><button type="button" class="ghost sm" data-quick-home>Check another link</button></div>`}
+function wireResultNav(root){
+  root.querySelectorAll('[data-quick-home]').forEach(b=>b.onclick=quickHome);
+  root.querySelectorAll('[data-open-lab]').forEach(b=>b.onclick=()=>{if(quickCheck){$('imgurl').value=quickCheck.url;$('brand').value=quickCheck.facts.brand||quickCheck.facts.manufacturer||''}showLab(true)});
+}
+function showLoading(target,title){
+  $('trust-flow').hidden=true;$('quick-result').hidden=target!=='quick-result';$('deep-result').hidden=target!=='deep-result';
+  const root=$(target);root.innerHTML=`${resultNav()}<div class="check-loading" role="status"><div class="loading-light"></div><div class="loading-copy"><div class="loading-line"></div><h1 class="sr-only">${esc(title)}</h1><div class="loading-line"></div><div class="loading-line"></div></div></div>`;wireResultNav(root)
+}
+function factLine(facts){
+  const parts=[facts.product,facts.brand&&facts.brand!==facts.product?facts.brand:null,facts.price!=null?money(facts.price,facts.currency):null].filter(Boolean);
+  return parts.length?`<span class="checked-url">${parts.map(esc).join(' / ')}</span>`:''
+}
+function money(value,currency){
+  if(value==null)return 'Price not found';
+  try{return new Intl.NumberFormat(undefined,{style:currency?'currency':'decimal',currency:currency||undefined,maximumFractionDigits:2}).format(value)}catch{return `${currency?currency+' ':''}${value}`}
+}
+function renderQuick(r){
+  quickCheck=r;const root=$('quick-result'),tones=new Set(['good','warn','bad','neutral']);
+  root.innerHTML=`${resultNav()}<div class="verdict-card verdict-${esc(r.verdict)}">
+    <div class="verdict-mark"><strong>${esc(r.verdict)}</strong></div>
+    <div class="verdict-content"><h1>${esc(r.headline)}</h1><p class="verdict-summary">${esc(r.summary)}</p>
+      <span class="checked-url">${esc(r.host)}${r.platform?' / '+esc(r.platform):''}</span>${factLine(r.facts)}
+      ${r.brand_settings?'<span class="settings-note">Checked against your brand settings</span>':''}
+      ${r.image_url?`<div class="quick-photo"><img src="${safeImg(r.image_url)}" alt="Product photo from the listing" referrerpolicy="no-referrer"><div><a href="${safeHref(r.lens_url)}" target="_blank" rel="noopener noreferrer">Open this photo in Google Lens</a><p>Shows where else the photo appears online. Opens in your browser, free.</p></div></div>`:''}
+      <div class="signal-list">${r.signals.map(s=>`<div class="signal ${tones.has(s.tone)?s.tone:'neutral'}"><span class="signal-icon" aria-hidden="true"></span><strong>${esc(s.label)}</strong><span>${esc(s.detail)}</span></div>`).join('')}</div>
+      <div class="layer-actions">
+        <div class="layer"><b>02</b><div><strong>Similar listings</strong><p>Other sellers of this product, trust before price${r.image_url?', and where the same photo appears':''}.</p>
+          <div class="row-actions"><button type="button" id="deep-go">${esc(r.deep_action)}</button>${r.image_url?'<button type="button" class="ghost" id="photo-scan">Scan the web for copies of this photo</button>':''}</div></div></div>
+        <div class="layer"><b>03</b><div><strong>Manufacturers</strong><p>Choose what you are after.</p>
+          <div class="row-actions"><button type="button" class="ghost" data-sup="maker">Who makes it</button><button type="button" class="ghost" data-sup="source">Where copies are sourced</button></div></div></div>
+      </div>
+      <p class="result-disclaimer">BrandGuard reports observable signals, not a guarantee or legal finding. Confirm the seller, payment protection and return policy before purchase.</p>
+    </div></div>`;
+  wireResultNav(root);
+  $('deep-go').onclick=()=>runDeep(r.url);root.hidden=false;
+  root.querySelectorAll('[data-sup]').forEach(b=>b.onclick=()=>runSuppliers(r.url,b.dataset.sup));
+  if($('photo-scan'))$('photo-scan').onclick=()=>scanPhoto(r);
+}
+function renderDeep(r){
+  const root=$('deep-result'),maker=r.manufacturer,alts=r.alternatives||[];
+  root.innerHTML=`${resultNav()}<div class="deep-heading"><h1>Trust first. Price second.</h1><p>Research for ${esc(r.product)}. Results are ordered by trust tier before any price comparison.</p></div>
+    <div class="maker-block"><span>Maker or source lead</span><div>${maker?`<strong>${esc(maker.name)}</strong><p>${esc(maker.status)}</p>${maker.url?`<p><a href="${safeHref(maker.url)}" target="_blank" rel="noopener noreferrer">Review source lead</a></p>`:''}`:'<strong>Not confirmed</strong><p>The listing does not expose a clear maker. Use the evidence lab with a product file for a visual trace.</p>'}</div></div>
+    <div class="alternatives"><div class="alternatives-head"><h2>Other listings found</h2><span>${esc(r.ranking_note)}</span></div>
+      ${alts.length?alts.map(a=>`<article class="alternative"><span class="alt-verdict ${esc(a.verdict)}">${esc(a.verdict)}</span><div><h3><a href="${safeHref(a.url)}" target="_blank" rel="noopener noreferrer">${esc(a.title)}</a></h3><p>${esc(a.host)}${a.signals?.[0]?' / '+esc(a.signals[0].detail):''}</p></div><div class="alt-price">${esc(money(a.price,a.currency))}</div><span class="alt-cheaper">${a.cheaper?'Lower price':''}</span></article>`).join(''):`<div class="deep-empty">No comparable public listings were returned. Try the evidence lab with a product image or document.</div>`}
+    </div>
+    <div class="alternatives"><div class="alternatives-head"><h2>Same photo elsewhere</h2><span>Google Lens: pages showing this exact photo or a close match.</span></div>
+      ${(r.same_photo||[]).length?r.same_photo.map(x=>`<div class="lead"><span>${x.exact?'exact photo':'similar'}</span><div><h3><a href="${safeHref(x.url)}" target="_blank" rel="noopener noreferrer">${esc(x.title||x.host)}</a></h3><p>${esc(x.host)}</p></div></div>`).join('')
+        :`<div class="deep-empty">${r.lens_url?`${r.lens_automatic?'Google Lens returned no other pages. ':''}<a href="${safeHref(r.lens_url)}" target="_blank" rel="noopener noreferrer">Open the photo in Google Lens</a> to look yourself.${r.lens_automatic?'':' (Automatic Lens results need a SerpApi key.)'}`:'The listing has no product photo to look up.'}</div>`}
+    </div><div class="result-actions"><button type="button" class="ghost" data-quick-home>Check another link</button></div>`;
+  wireResultNav(root);root.hidden=false;
+}
+function renderSuppliers(r){
+  const root=$('deep-result'),maker=r.maker,L=r.leads||[];
+  root.innerHTML=`${resultNav()}<div class="deep-heading"><h1>${r.mode==='maker'?'Who makes it.':'Where copies are sourced.'}</h1><p>${esc(r.note)}</p></div>
+    ${r.mode==='maker'?`<div class="maker-block"><span>Named maker</span><div>${maker&&maker.name?`<strong>${esc(maker.name)}</strong><p>${esc(maker.status)}</p>${maker.url?`<p><a href="${safeHref(maker.url)}" target="_blank" rel="noopener noreferrer">Maker's site</a></p>`:''}`:`<strong>Not named</strong><p>${esc(maker?maker.status:'')} The factory listings below may show who makes it.</p>`}</div></div>`:''}
+    <div class="alternatives"><div class="alternatives-head"><h2>${r.mode==='maker'?'Factories listing this product':'Wholesale suppliers'}</h2><span>Searched for "${esc(r.query)}" on Alibaba, 1688, Made-in-China, DHgate, Global Sources and IndiaMART.</span></div>
+      ${L.length?L.map(x=>`<div class="lead"><span class="${x.kind==='supplier'?'supplier':''}">${esc(x.site)} · ${x.kind==='supplier'?(x.supplier?esc(x.supplier):'listing'):'search page'}</span><div><h3><a href="${safeHref(x.url)}" target="_blank" rel="noopener noreferrer">${esc(x.title||x.host)}</a></h3><p>${esc(x.host)}${x.kind==='supplier'?'':' · a page listing many suppliers'}</p></div></div>`).join('')
+        :`<div class="deep-empty">No supplier pages came back for this product.${(r.errors||[]).length?' Search problems: '+esc(r.errors.join(', ')):''}</div>`}
+    </div><div class="result-actions"><button type="button" class="ghost" data-back-check>Back to the check</button><button type="button" class="ghost" data-quick-home>Check another link</button></div>`;
+  wireResultNav(root);root.querySelector('[data-back-check]').onclick=()=>{root.hidden=true;$('quick-result').hidden=false};root.hidden=false;
+}
+async function runSuppliers(url,mode){
+  showLoading('deep-result',mode==='maker'?'Looking for the maker':'Looking for wholesale suppliers');
+  try{renderSuppliers(await(await api('/api/listing/suppliers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,mode})})).json())}
+  catch(e){const root=$('deep-result');root.innerHTML=`${resultNav()}<div class="deep-heading"><h1>No supplier search possible.</h1><p>${esc(e.message)}</p></div>`;wireResultNav(root)}
+}
+// layer 2 by photo: run the full web scan on the listing's own product photo, in the evidence lab
+function scanPhoto(r){
+  showLab(true);const brand=$('q-brand').value.trim()||r.facts.brand||r.facts.manufacturer||r.facts.site_name||r.host;
+  // the site the photo came from is not a copy of itself (on a marketplace or social site other sellers share the domain)
+  const official=[$('q-dom').value.trim(),r.platform?'':r.domain].filter(Boolean).join(', ');
+  $('brand').value=brand;$('imgurl').value=r.url;$('dom').value=official;$('resellers').value=$('q-res').value;
+  rootDataUrl=r.image_url;$('preview').src=r.image_url;$('preview').style.display='block';$('vpreview').style.display='none';
+  reset();const fd=new FormData();fd.append('photo_url',r.image_url);fd.append('brand',brand);fd.append('keywords',r.facts.product||'');
+  fd.append('official_domains',official);fd.append('resellers',$('q-res').value);fd.append('source_url',r.url);
+  run('/api/scan',fd)}
+async function runDeep(url){
+  showLoading('deep-result','Researching the manufacturer and trusted listings');
+  try{const r=await(await api('/api/listing/deep',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url})})).json();renderDeep(r)}
+  catch(e){const root=$('deep-result');root.innerHTML=`${resultNav()}<div class="deep-heading"><h1>Research needs more evidence.</h1><p>${esc(e.message)} Use the evidence lab in the header to add a product file.</p></div>`;wireResultNav(root)}
+}
+$('url-check-form').onsubmit=async e=>{
+  e.preventDefault();const url=$('listing-url').value.trim();$('quick-error').textContent='';
+  if(!url){$('quick-error').textContent='Paste a listing or post URL first.';return}
+  showLoading('quick-result','Checking the listing');
+  const bs={brand:$('q-brand').value.trim(),official_domains:$('q-dom').value.trim(),resellers:$('q-res').value.trim()};store.set('bg-brand',bs);
+  try{const r=await(await api('/api/listing/check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,...bs})})).json();renderQuick(r)}
+  catch(err){quickHome();$('quick-error').textContent=err.message}
+};
+$('lab-toggle').onclick=()=>$('evidence-lab').hidden?showLab(true):quickHome();
+{const bs=store.get('bg-brand',{});$('q-brand').value=bs.brand||'';$('q-dom').value=bs.official_domains||'';$('q-res').value=bs.resellers||'';
+  if(bs.brand||bs.official_domains||bs.resellers)$('q-brand-box').open=true}
 </script>
 </body>
 </html>

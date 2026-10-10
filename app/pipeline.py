@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 
 import httpx
 
-from . import demo, forensics, llm, marketplaces, net, reputation, risk, search, semantic, video
+from . import demo, forensics, infra, investigations, llm, marketplaces, net, reputation, risk, search, semantic, video
 from .store import UA, add_session
 
 
@@ -45,6 +45,21 @@ def source_rank(c: dict) -> int:
     return SOURCE_RANK.get(str(c.get("source") or "").split(":")[0], 4)
 
 
+# Seconds one candidate may spend downloading: its full-size image (with retries), then its thumbnail. A few slow
+# hosts used to hold the scan open for a minute after everything else was done.
+DOWNLOAD_BUDGET, THUMB_BUDGET = 15, 8
+SLOW_HOST = 3  # timeouts after which a host's remaining images are not downloaded
+
+
+async def within(seconds: float, aw):
+    """aw's result, or None if it takes longer than seconds."""
+    try:
+        async with asyncio.timeout(seconds):
+            return await aw
+    except TimeoutError:
+        return None
+
+
 def thumb_uri(data: bytes) -> str:
     return "data:image/jpeg;base64," + base64.b64encode(shrink(data, 160)).decode()
 
@@ -59,11 +74,12 @@ def public_image_url(scan_id: str, image_url: str) -> str:
 
 async def run_scan(data: bytes, brand: str, keywords: list[str], official_domains: list[str],
                    image_url: str = "", inject_demo: bool = False, semantic_search: bool = False,
-                   resellers: list[str] | None = None):
+                   resellers: list[str] | None = None, origin: str = "scan"):
     """Async generator of (event, payload). Events: status, progress, match, done, error.
     Registers the scan in store.SESSIONS so reports/takedowns work for it.
     semantic_search: also look for the same product in a different photo (CLIP; slower, needs the optional deps).
-    data may be a video: its key frames become the references, and a candidate matching any frame is a match."""
+    data may be a video: its key frames become the references, and a candidate matching any frame is a match.
+    origin: what started the scan (scan, watch, imessage), kept in the investigation log."""
     doms = official_domains
     resellers = resellers or []
     t_start = time.perf_counter()
@@ -101,6 +117,17 @@ async def run_scan(data: bytes, brand: str, keywords: list[str], official_domain
     scan_id = uuid.uuid4().hex[:12]
     sess = add_session(scan_id, {"brand": brand, "original": original, "official_domains": doms, "resellers": resellers,
                                  "items": {}})
+    errors: list = []
+
+    def logged(fn, *args):
+        """Write to the investigation log; a failing log never stops the scan."""
+        try:
+            return fn(*args)
+        except Exception as e:
+            errors.append(f"investigation log: {type(e).__name__}")
+            return None
+
+    logged(investigations.start, scan_id, brand, keywords, doms, resellers, hashlib.sha256(data).hexdigest(), origin)
     yield "status", {"message": "Searching the web…", "scan_id": scan_id}
     if is_vid:
         sess["frames"] = [await asyncio.to_thread(shrink, f["jpeg"]) for f in frames]
@@ -110,7 +137,6 @@ async def run_scan(data: bytes, brand: str, keywords: list[str], official_domain
     if semantic_search and not use_sem and not is_vid:
         yield "status", {"message": "Same-product search is not installed (pip install -r requirements-clip.txt); "
                                     "running pixel matching only."}
-    errors: list = []
     t_search = time.perf_counter()
     async with httpx.AsyncClient(timeout=10, headers=UA) as dclient:
         *found, phish = await asyncio.gather(search.discover(brand, keywords, doms, dclient, errors),
@@ -136,7 +162,14 @@ async def run_scan(data: bytes, brand: str, keywords: list[str], official_domain
     cands = [c for c in sorted(cands, key=source_rank)
              if (k := (c["image_url"], c.get("page_url"))) not in seen and not seen.add(k)]
     dedup = {"duplicate_candidates": n_found - len(cands), "same_bytes": 0}
-    yield "status", {"message": f"Verifying {len(cands)} candidates against your original…", "total": len(cands)}
+    # pages on the brand's own sites and resellers are never flagged, so their images are not downloaded at all
+    # (a live scan spent most of its time waiting on 116 images from the brand's own shop, which throttled us)
+    own = [c for c in cands if not c.get("demo")
+           and risk.on_domains(risk.host_of(c.get("page_url") or c["image_url"]), doms + resellers)]
+    own_ids = {id(c) for c in own}
+    cands = [c for c in cands if id(c) not in own_ids]
+    yield "status", {"message": f"Verifying {len(cands)} candidates against your original"
+                                f"{f' ({len(own)} on your own sites skipped)' if own else ''}…", "total": len(cands)}
 
     # downloads mostly wait on the network, comparisons on the CPU: separate limits, so a slow site never holds
     # a comparison slot. A download slot is held until its image is compared, which bounds the images in memory.
@@ -147,6 +180,7 @@ async def run_scan(data: bytes, brand: str, keywords: list[str], official_domain
     leftovers: list[tuple[dict, bytes, str, dict]] = []  # not a pixel copy: small_copy() input to the semantic pass
 
     matched_pages: set[str] = set()
+    timeouts: collections.Counter = collections.Counter()  # image host -> failed downloads; see fetch_original
 
     def register(res: dict) -> dict:
         idx = len(sess["items"])
@@ -158,7 +192,26 @@ async def run_scan(data: bytes, brand: str, keywords: list[str], official_domain
             matched_pages.add(res["page_url"])
         return res
 
+    def emit(res: dict) -> dict:
+        res = register(res)
+        if not res.get("demo"):
+            logged(investigations.add_listing, scan_id, res, res.get("server") or {})
+        return res
+
     async with httpx.AsyncClient(timeout=10, headers=UA) as client:
+        async def trace(m: dict) -> dict:
+            """Who hosts the listing, and whether its server, site or URL is already in the investigation log."""
+            if m.get("demo"):
+                return m
+            host = m["risk"].get("host") or ""
+            with timed("server"):
+                server = await infra.describe(host, client)
+            seen = logged(investigations.earlier, scan_id, host, m.get("page_url") or "", server["ips"],
+                          server["platform"]) or []
+            m["server"] = {**server, "seen_before": seen[:12], "seen_count": len(seen)}
+            m["risk"]["reasons"] += investigations.link_reasons(server, seen)
+            return m
+
         async def finish(c: dict, blob: bytes, f: dict, verification: str, orig: dict | None = None) -> dict:
             page = c["page_url"] = await marketplaces.canonical_page_url(client, c.get("page_url"))
             r = risk.assess(page or c["image_url"], c.get("title", ""), doms, f, ref.c2pa, resellers)
@@ -180,7 +233,7 @@ async def run_scan(data: bytes, brand: str, keywords: list[str], official_domain
                  "sha256": orig["sha256"] if orig else hashlib.sha256(blob).hexdigest(), "captured_at": datetime.now(timezone.utc).isoformat(timespec="seconds")}
             # with orig, blob is already small_copy()'s evidence-size copy
             m["_evidence"] = base64.b64encode(blob if orig else await asyncio.to_thread(shrink, blob)).decode()
-            return m
+            return await trace(m)
 
         async def compare_once(blob: bytes):
             key = hashlib.sha256(blob).hexdigest()
@@ -195,6 +248,26 @@ async def run_scan(data: bytes, brand: str, keywords: list[str], official_domain
             f, fi = await verdicts[key]
             return (dict(f) if f else None), fi  # a copy: each match row owns its forensics dict
 
+        async def fetch_original(url: str, page: str | None) -> bytes | None:
+            """The full-size image, with retries. A host that has timed out SLOW_HOST times is not tried again in
+            this scan (its candidates fall back to their thumbnails), so one stalled site cannot slow every scan."""
+            host = risk.host_of(url)
+            if timeouts[host] >= SLOW_HOST:
+                return None
+            try:
+                blob, st = await net.fetch_image(client, url, page)
+                if not blob and st in (429, 500, 502, 503, 504, -2):  # transient: one jittered retry
+                    timeouts[host] += st == -2
+                    await asyncio.sleep(0.5 + random.random())
+                    blob, st = await net.fetch_image(client, url, page)
+                if not blob and st not in (401, 403):  # bare retry without Referer
+                    blob, st = await net.fetch_image(client, url)
+                timeouts[host] += not blob and st == -2
+                return blob
+            except asyncio.CancelledError:  # the download budget ran out
+                timeouts[host] += 1
+                raise
+
         async def work(c):
             async with dl_sem:
                 page = c.get("page_url")
@@ -202,14 +275,10 @@ async def run_scan(data: bytes, brand: str, keywords: list[str], official_domain
                 blob = c.get("blob")
                 with timed("download"):
                     if not blob:
-                        blob, st = await net.fetch_image(client, c["image_url"], page)
-                        if not blob and st in (429, 500, 502, 503, 504, -2):  # transient: one jittered retry
-                            await asyncio.sleep(0.5 + random.random())
-                            blob, st = await net.fetch_image(client, c["image_url"], page)
-                        if not blob and st not in (401, 403):  # bare retry without Referer
-                            blob, st = await net.fetch_image(client, c["image_url"])
+                        blob = await within(DOWNLOAD_BUDGET, fetch_original(c["image_url"], page))
                     if not blob:
-                        blob, _ = await net.fetch_image(client, c.get("thumbnail"))
+                        blob = await within(THUMB_BUDGET, net.fetch_image(client, c.get("thumbnail")))
+                        blob = blob and blob[0]
                         verification = "thumbnail-only (original blocked download; low-res comparison)"
                 if not blob:
                     ctx = risk.context_only(page or c["image_url"], c.get("title", ""), doms, resellers)
@@ -220,8 +289,8 @@ async def run_scan(data: bytes, brand: str, keywords: list[str], official_domain
                         unverified_pages.add(page)
                     page = c["page_url"] = await marketplaces.canonical_page_url(client, page)
                     await rep.apply(ctx, page or c["image_url"], client, errors)
-                    return {**{k: v for k, v in c.items() if k != "blob"}, "forensics": None, "risk": ctx,
-                            "verification": "unverified", "thumb": None}
+                    return await trace({**{k: v for k, v in c.items() if k != "blob"}, "forensics": None, "risk": ctx,
+                                        "verification": "unverified", "thumb": None})
                 try:
                     f, fi = await compare_once(blob)
                 except Exception:
@@ -251,7 +320,7 @@ async def run_scan(data: bytes, brand: str, keywords: list[str], official_domain
             if res:
                 if "first_match" not in timings:
                     timings["first_match"] = time.perf_counter() - t_start
-                yield "match", register(res)
+                yield "match", emit(res)
             if done % 5 == 0:
                 yield "progress", {"done": done, "total": len(cands)}
         timings["verify"] = time.perf_counter() - t_verify
@@ -283,10 +352,12 @@ async def run_scan(data: bytes, brand: str, keywords: list[str], official_domain
                     stats["unrelated"] += 1
                     continue
                 stats["semantic"] += 1
-                yield "match", register(await finish(c, blob, f, verification, orig))
+                yield "match", emit(await finish(c, blob, f, verification, orig))
             timings["same_product"] = time.perf_counter() - t_same
     timings["total"] = time.perf_counter() - t_start
+    logged(investigations.finish, scan_id, len(cands))
     # search/verify/same_product/total/first_match are wall-clock; download/compare/evidence are summed over the
     # parallel workers, so they show where the work goes rather than how long the user waited
-    yield "done", {"scanned": len(cands), "scan_id": scan_id, **stats, "sources": dict(sources.most_common()),
+    yield "done", {"scanned": len(cands), "scan_id": scan_id, **stats, "own_site": len(own),
+                   "slow_hosts": sorted(h for h, n in timeouts.items() if n >= SLOW_HOST), "sources": dict(sources.most_common()),
                    "dedup": dedup, "timings": {k: round(v, 2) for k, v in timings.items()}}

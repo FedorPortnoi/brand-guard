@@ -400,7 +400,7 @@ def test_build_drafts_mailto_properly_encoded():
     # Long bodies fall back to the short body, still %20-encoded
     long_mailto = takedown._build_mailto("abuse@example.com", "Subject line", "word " * 1000)
     assert len(long_mailto) <= 1800
-    assert "See%20attached%20takedown%20draft" in long_mailto
+    assert "Paste%20the%20notice%20here" in long_mailto  # the page copies the full text to the clipboard
     assert "+" not in long_mailto
 
 

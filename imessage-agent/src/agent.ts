@@ -32,6 +32,7 @@ const bot = createBot({
   appUrl: (process.env.PUBLIC_BASE_URL || "").replace(/\/$/, ""),
   statePath: process.env.AGENT_STATE_FILE || new URL("../state.json", import.meta.url),
   lookupSpace,
+  allowedSenders: (process.env.ALLOWED_SENDERS || "").split(",").map(s => s.trim()).filter(Boolean),
 });
 
 setInterval(() => bot.forwardAlerts().catch(e => console.error("alert forwarding failed:", e)), ALERT_POLL_MS);

@@ -51,9 +51,11 @@ def test_pipeline_applies_resellers(monkeypatch):
 
     async def go():
         return [e async for e in pipeline.run_scan(img, "Acme", [], [], resellers=["target.com"])]
-    by_host = {d["risk"]["host"]: d["risk"] for e, d in asyncio.run(go()) if e == "match"}
-    assert by_host["target.com"]["category"] == "authorised_reseller"
-    assert by_host["other.example.com"]["category"] != "authorised_reseller"
+    ev = asyncio.run(go())
+    by_host = {d["risk"]["host"]: d["risk"] for e, d in ev if e == "match"}
+    # a reseller's page is never flagged, so it is skipped before download and only counted
+    assert "target.com" not in by_host and by_host["other.example.com"]["category"] != "authorised_reseller"
+    assert [d["own_site"] for e, d in ev if e == "done"] == [1]
 
 
 def test_watch_stores_resellers(tmp_path, monkeypatch):

@@ -103,6 +103,61 @@ Optional install for "same product, different photo" (about 1 GB): see `requirem
 | 2026-10-10 | Faster scans | Separate limits for downloads (32) and comparisons (one per core), each image decoded once, duplicate image+page dropped across sources, identical bytes compared once, reverse/marketplace candidates checked first, per-stage timings in the done event and status line. Live "lucky fours" scan: 371 s before, 157 s and 153 s after, same findings. Downloads are now the bottleneck (about 12 s per image summed) |
 | 2026-10-10 | Collapsible scan setup | "Hide scan setup" folds the form into a 46 px rail; remembered per browser. Checked in the browser at 1440 px; not checked at phone width |
 | 2026-10-10 | Replit + iMessage agent | `.replit` + `start.sh` for Replit. `imessage-agent/` on Photon Spectrum: photo in, top matches + thumbnail out, `report` sends the PDF, `watch` forwards monitoring alerts to the chat. HEIC photos supported (`pillow-heif`). Client checked live against a real scan; agent boots on Spectrum's terminal provider; real iMessage not yet run (needs Photon project credentials) |
+| 2026-10-10 | Review of the live test, fixed | One count for every number on screen (stats, map header, live panel, map source boxes, status line all agreed in the browser in every toggle state). The brand's own sites and resellers: rows hidden behind their own toggle, never counted, no takedown; their images are no longer even downloaded. Scans: Lucky Fours 146 s -> 28 s, same findings (the brand's own shop throttled 116 parallel downloads; now skipped), Adidas 45 s. Hosts that time out 3 times are given up for the scan (thumbnails checked instead); 15 s download budget per image. Replay picker lists the demo and history with their findings (`/api/recordings`). Layout: 900 px form no longer a scroll box, map legend/stages no longer overlap at any width (390-1600 checked), phone arrow points up/down, map refits after collapse and after a scan (settled layout, fit computed from node boxes). Email links: notices too long for a mailto now copy the full text to the clipboard instead of a misleading "See attached" body. iMessage: one "Halfway" message during a scan; `ALLOWED_SENDERS` keeps strangers from running scans. 199 Python + 10 agent tests pass |
+| 2026-10-10 | Investigation log with server IPs | Every scan (web, monitoring, iMessage) is logged permanently in `data/investigations.db` (SQLite): brand, settings, origin, counts, and every listing found with its site's IP addresses and the network that owns them (free RDAP, cached in `data/ipnet_cache.json`). A listing whose site, URL or server IP is already in the log gets a "seen before" tag, a Server section in the detail panel and a reason in the evidence PDF. Shared platforms (Shopify, Cloudflare, CloudFront and others) are recorded but never count as a link; marketplace and social listings are matched by their URL only (their IPs are the platform's). New "Investigations" tab: servers seen more than once (dedicated first, a CDN site's IPs merged into one row) and past investigations with their listings. API: `/api/investigations`, `/api/investigations/{id}`, `/api/servers`. Live: two Lucky Fours scans then Adidas; the second run flagged wethrift.com and a reddit.com listing as found before, wethrift.com shown on shared Cloudflare. Lookups add about 1 s per scan. 206 Python + 11 agent tests pass |
+| 2026-10-10 | Three layers from one link | Built on the URL-first listing flow another session had added (`app/listing.py`, quick check + deep research + evidence lab). Layer 1, check a link: optional brand settings (official domains, resellers) make it say "the brand's own site" / "authorised reseller"; social posts are read with yt-dlp (account, followers, verified badge, date, caption) and checked for off-platform payment (DM to order, WhatsApp, Zelle); a social or marketplace page is no longer judged by tiktok.com's or amazon.com's domain age; brand name inside a longer address flagged; brand-protection registrars (CSC, MarkMonitor...) and a company's own network count as good signs, so adidas.com and allbirds.com come out green even when they block page reads; short links followed; server IP recorded and every check logged (origin "link"); wording matched as whole words, weak words (copy, cheap, outlet) only in titles (a YouTube description with "copyright" / "get your copy" was flagged before). Layer 2, similar listings: Brave instead of the failing DuckDuckGo; retailer pages that block reads (Amazon, Dick's, eBay) kept by marketplace / product-URL pattern; product photo with an "Open in Google Lens" link (checked: opens Lens with the photo); Lens results automatic once SERPAPI_KEY is set; "Scan the web for copies of this photo" runs the full scan on the listing's own photo (`photo_url` on `/api/scan`), with the starting site treated as the brand's own. Layer 3, manufacturers, user's choice (`/api/listing/suppliers`): "Who makes it" (maker named on the page or the site's own name, plus factory listings) and "Where copies are sourced" (wholesale listings on Alibaba, 1688, Made-in-China, DHgate, Global Sources, IndiaMART, searched without the brand, kept only when they share the product's distinctive words). Live on Allbirds Tree Runner: green; similar listings Allbirds, Dick's, Amazon, eBay; sources found a DHgate "TREEPERI" Tree Runner lookalike listing. 230 Python + 11 agent tests pass |
+
+## Test log: browser run 2026-10-10
+
+Tested with real clicks in Chrome (Claude in Chrome, the thiofedor Chrome profile), local app on port 8011, commits 89e1a85 and 808f668 (both on `main`).
+
+### Web app (local): works, with problems
+| Check | Result |
+|---|---|
+| Upload photo, brand "lucky fours", official domain luckyfours.com, Scan | Done in 146 s (search 17 s, checking 127 s, first match at 50 s). 284 candidates: 1 verified, 3 low-res, 11 blocked |
+| Findings | One real outside hit: valeen.co, risk 60, "lookalike", low-res check. 0 high risk |
+| Collapse "Hide scan setup" at 1366 px | Folds to a 46 px rail, chevron points right, state remembered after reload |
+| Collapse at 390 px (app in a 390 px frame; the window could not be resized) | Becomes a full-width "Scan setup" bar above the map, no sideways scroll |
+| Takedown draft for valeen.co | Draft generated. No abuse email found, so no mailto link to check the %20 fix in the UI (unit test only) |
+
+Problems found, and their status after the fix round the same day (see "Review of the live test, fixed" above):
+1. **Counts disagree on one screen**: counter "4 flagged" vs status line "5 flagged"; map header "2 sources / 4 signals" vs side panel "3 sources / 5 signals". **Fixed**: one shared count; checked in the browser in every toggle state.
+2. **The brand's own site appears as matches** in the table and map (3 of 4 rows were luckyfours.com, category "official") and counts toward "flagged", even with the official domain entered. **Fixed**: own-site and reseller pages are skipped before download and only counted; older recordings hide such rows behind "Show your own sites".
+3. Weak demo result for this brand (one outside hit, nothing high risk). **Worked around**: the Replay list now offers "Demo: Adidas · 22 flagged, 2 high" (`data/demo.json`). Live results stay weak while Brave Search is out of credit (see Known limits).
+4. A scan takes about 2.5 minutes, long for a live demo. **Fixed**: the time went to 116 downloads from luckyfours.com itself, which throttled us. Now 28 s for the same scan, 45 s for Adidas.
+5. At about 900 px wide the scan form is squeezed into a small scroll box. **Fixed**: full-height form under 1180 px; map legend and stage strip no longer overlap (checked 390-1600 px).
+6. Minor: the map does not re-spread when the form collapses; on phones the chevron points right while the panel opens downward. **Fixed**: the map settles and refits after a collapse and after every scan; the phone arrow points up/down.
+7. Found during the fix round: notices too long for an email link were sent with the body "See attached takedown draft and evidence PDFs." although a mailto link cannot attach anything. **Fixed**: "Open in email" copies the full notice to the clipboard and the email body says to paste it. The %20 encoding was confirmed in the browser on a real draft (rarefoot.com, abuse@namecheap.com).
+
+### iMessage agent: logic works live; real iMessage not tested
+| Check | Result |
+|---|---|
+| Agent boots on Spectrum (terminal provider, piped input) | Yes, replies to "help" |
+| Full conversation with stand-in chat against the live server, iPhone-style HEIC photo | domains -> photo -> "What's the brand name?" -> brand -> scan (145 s) -> summary + top-match.jpg + PDF report (35 KB) -> watch -> stop. All worked |
+| Photo through Spectrum's terminal chat | Not tested (needs drag-and-drop in a real terminal; readline mode passes paths as text) |
+| Real iMessage | Not tested. Photon project "brand-guard" created (Free plan, iMessage), but Photon shows "NO PHONE ON YOUR ACCOUNT": a phone number must be added to the Photon account first |
+
+Bugs found and fixed (commit 808f668, `npm test` 6 pass):
+- The reply listed the brand's own sites as "matches" (thumbnail and PDF were the brand's own product). Official and reseller matches are now counted, not listed.
+- A caption on a later photo did not change the brand.
+- Every unrecognised message re-sent the full help text; now a short hint after the first help.
+
+Open weaknesses: shared-pool numbers on the free plan; needs an always-on server. Addressed in the fix round (tests only, real iMessage still untested): one "Halfway" message during a scan, and `ALLOWED_SENDERS` so only listed numbers can run scans (set it before giving out the number).
+
+### Replit: not working yet
+- Imported from GitHub as `@portnoif/brand-guard` (Replit account portnoif, chosen by the user; not thiofedor). `main` was fast-forwarded to the test branch first so the import has today's work.
+- The workspace stayed on "Loading project..." for over 2 minutes, including after a reload; the Tools panel kept spinning. `start.sh` never ran. **Replit setup unproven.**
+- Free Starter plan: "Publish 1 live project". Whether a Reserved VM needs a paid plan was not checked.
+
+### Incident
+While closing Replit's "Compare plans" dialog, a click aimed at its "Dismiss" button (found by the page reader, clicked without a screenshot) opened a Stripe checkout for Replit Pro ($100/month). Nothing was typed there and no payment was made; the page was left immediately. **Check Replit billing to confirm no charge.** From then on: screenshot before every click, no billing or plan screens.
+
+### Open items from this run
+1. ~~Web app: hide or separate own-site rows, and make the counts agree.~~ Done (fix round).
+2. Photon: add a phone number to the account, then test real iMessage.
+3. Replit: open the Repl again to see whether it loads; otherwise demo locally.
+4. ~~Pick a demo brand with strong real copies, or use the synthetic demo copies.~~ Demo from the "Demo: Adidas" recording; for live scans, restore Brave Search first.
+5. ~~Top up Brave Search~~ Done: new prepaid key.
 
 ## Calibration results (forensics)
 
@@ -114,6 +169,12 @@ Validated on 34 real Wikimedia photos (1,190 unrelated pairs) plus 159 synthetic
 
 ## Known limits
 
+- Brave Search API: the old key hit its $1 monthly usage limit on 2026-10-10 (HTTP 402). Replaced the same day with a new prepaid key (one-off credits, automatic reload off): when the balance reaches $0 Brave stops and scans continue on the other sources. Prepaid credits expire one year after purchase. About $0.06 a scan (up to 12 requests at about $5 per 1,000).
+- Live Stan Smith rescan with Brave restored (2026-10-10): 537 candidates, no third-party pixel copies. The old and new pipeline were run on the same captured candidate list: identical third-party results; the old code's only extra matches were 3 images on Adidas's own sites, which are now skipped on purpose. So the demo's third-party copies are simply no longer in today's search results.
+- Layer 3 supplier search is text search on supplier sites: results are leads, not proof, and many are category pages (labelled "search page"). Matching the product photo against supplier listings is not done yet. Lens results in the app need a SerpApi key (free plan: 250 searches a month, about 80 checks); without it the "Open in Google Lens" link does the same by hand.
+- Instagram usually needs a login, so its posts often cannot be read; TikTok and YouTube posts can.
+- Server IPs link sites only off shared platforms. Of 8 sample listing sites checked on 2026-10-10, all were on Shopify, Cloudflare, Amazon CloudFront or Alibaba Cloud, where unrelated sites share addresses; such repeats are recorded but not counted as links. Expect real "same server" links mostly from shops on rented servers (VPS / dedicated hosting). The IP is the one at scan time (sites move), and only the first IP's network is looked up.
+- Replay history (`data/scans/`) keeps only the newest 20 scans and deletes older files outright; the investigation log keeps every scan's listings but not their images. On 2026-10-10 a new test posted to `/api/scan` and wrote 3 fake "Acme" scans into the real history, which pushed out 3 real ones (`20261010-142251-nike`, `20261010-142737-stanley`, `20261010-143753-apple`); they could not be recovered (no shadow copies or File History). The test now writes to a temporary folder.
 - Reverse search (SerpApi) is untested against the live API, since there is no key. The response parsing follows SerpApi's docs.
 - CLIP threshold is based on a small real set (34 photos, 92 same-category pairs). Live on the official Stan Smith photo it found 8-10 same-product listings, all plausible on inspection of the hosts; not yet labelled.
 - Monitoring runs in-process: watches only run while the server is up, one at a time, 2-3 minutes each.
@@ -130,7 +191,9 @@ Validated on 34 real Wikimedia photos (1,190 unrelated pairs) plus 159 synthetic
 - Unverified (image blocked, text-only) rows are often noise from ambiguous brand words ("Apple" + "replica" finds an Apple-1 computer replica kit); they are hidden by default.
 - Instagram profile pages need a login in a browser; single public reels open and download fine.
 - AI-image detection is hints only. Results are signals for human review, not findings of infringement.
-- `data/last_scan.json` now holds the 2026-10-10 Adidas logo rescan; the older 10-match Stan Smith scan was overwritten and lost (scan history in `data/scans/` prevents this from now on). `data/demo.json` (Adidas logo, 3 real copies + 5 synthetic) is unchanged.
+- `data/last_scan.json` holds a live Adidas Stan Smith test scan from the fix round (0 matches, because Brave was out of credit). Every scan is also kept in `data/scans/` (newest 20) and appears in the Replay list. `data/demo.json` (Adidas Stan Smith, 22 flagged including 5 synthetic copies, 2 high risk) is unchanged and is the one to demo.
+- Images on pages of the official domains and authorised resellers are not downloaded, so the app never says whether the brand's own pages carry the image; it only counts them.
+- Live search results change from day to day: the third-party Stan Smith copies in `data/demo.json` no longer come back from Bing. Demo from the recording, not a live scan.
 - A flat logo is a weak demo image: its copies are mostly logo/wallpaper sites, scored low (correctly). The demo needs a product photo that sellers reuse.
 
 ## Plan (decided 2026-10-10)
@@ -144,13 +207,14 @@ prototype is ready in time, present it; if not, present Brand Guard.
 
 ## Next steps (priority order)
 
+0. ~~Brave Search API: restore it~~ Done 2026-10-10: new prepaid key in `.env`, checked live.
 1. Get a SerpApi free key and run one scan with a public image URL to confirm reverse search live.
 1b. eBay developer account registered 2026-10-10, **pending approval** (at least one business day). Once approved: create the Production keyset at developer.ebay.com/my/keys (opt out of marketplace account deletion notices, since no eBay user data is stored), put `EBAY_CLIENT_ID` / `EBAY_CLIENT_SECRET` in `.env`, and run one scan to confirm eBay image search live. 
 2. Label 20-50 real matches with the UI buttons, then run `python -m app.calibrate --real`.
 3. ~~Test same-product search on a real case~~ Done 2026-10-10: 8-10 real same-product listings on the Stan Smith scan.
 4. ~~Check the takedown report links~~ Done 2026-10-10 (17 of 18). Remaining: confirm Amazon's form while signed in.
 5. ~~Test C2PA with a signed image~~ Done 2026-10-10.
-6. ~~Pick a demo product photo~~ Done 2026-10-10 (Stan Smith official photo). Note: the UI has no button for `demo.json`; "Replay last scan" replays `last_scan.json`, which currently holds the same scan.
+6. ~~Pick a demo product photo~~ Done 2026-10-10 (Stan Smith official photo). The Replay list under "Scan the web" now plays `demo.json` ("Demo: Adidas"), the last scan, or any scan in the history.
 
 ## Ideas backlog
 
@@ -164,9 +228,9 @@ prototype is ready in time, present it; if not, present Brand Guard.
 
 ## Demo checklist
 
-- [ ] Pick a branded product photo with known fakes (better than a flat logo)
-- [ ] Run a scan with "Add 5 synthetic demo copies" ticked
-- [ ] Confirm `data/demo.json` holds a good scan for offline replay
+- [x] Pick a branded product photo with known fakes (better than a flat logo): Adidas Stan Smith
+- [x] Run a scan with "Add 5 synthetic demo copies" ticked
+- [x] Confirm `data/demo.json` holds a good scan for offline replay: 22 flagged, 2 high risk; plays from the Replay list in a few seconds
 - [ ] Show the Sellers tab, then "Takedown all" on the top seller, then download the evidence pack
 - [ ] Show Monitoring: start a watch and point at the Alerts badge
 - [ ] Rehearse the line: "Brands spend millions on creative, then lose control of it online. We find likely copies, show which look fake or stolen, group them by seller, and draft the takedown."

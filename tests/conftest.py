@@ -14,3 +14,11 @@ def offline_sources(monkeypatch):
         monkeypatch.delenv(k, raising=False)
     monkeypatch.setenv("BG_ALIEXPRESS", "0")
     monkeypatch.setenv("BG_PHISHSTATS", "0")
+    monkeypatch.setenv("BG_IP_LOOKUP", "0")  # no DNS or RDAP lookups for listing servers
+
+
+@pytest.fixture(autouse=True)
+def investigation_log(tmp_path, monkeypatch):
+    """Each test writes its own investigation log, never data/investigations.db."""
+    from app import investigations
+    monkeypatch.setattr(investigations, "DB", tmp_path / "investigations.db")
