@@ -246,6 +246,11 @@ async def run_watch(watch_id: str) -> dict:
 
             watches = await _load_file(MON_DIR / "watches.json")
             if watch_id in watches:
+                # Push the next run out by the interval so a failing watch isn't retried every tick
+                now = datetime.now(timezone.utc)
+                interval_hours = watches[watch_id].get("interval_hours", 24)
+                next_run_at = datetime.fromtimestamp(now.timestamp() + interval_hours * 3600, tz=timezone.utc)
+                watches[watch_id]["next_run_at"] = next_run_at.isoformat(timespec="seconds")
                 watches[watch_id]["running"] = False
                 _atomic_write(MON_DIR / "watches.json", watches)
 

@@ -9,7 +9,7 @@ Last updated: 2026-10-10
 ```
 cd C:\Users\fedor\projects\brand-guard
 .venv\Scripts\python -m uvicorn app.main:app --port 8000
-.venv\Scripts\python -m pytest tests -q      # 183 tests, offline, about 40 s (tests/conftest.py turns every network source off)
+.venv\Scripts\python -m pytest tests -q      # 193 tests, offline, about 40 s (tests/conftest.py turns every network source off)
 ```
 Open http://localhost:8000.
 
@@ -27,6 +27,10 @@ Optional environment variables (all off by default). Put them in `.env` in the p
 - `BG_MONITOR=0`: turn off the monitoring scheduler. `BG_CLIP=0`: turn off same-product matching.
 
 Optional install for "same product, different photo" (about 1 GB): see `requirements-clip.txt`.
+
+**On Replit:** import the repo; the Run button runs `bash start.sh` (installs `requirements.txt` on first run, serves on port 8000, uses the Repl's public address as `PUBLIC_BASE_URL`). Put API keys in Replit Secrets. Publish as a **Reserved VM**: monitoring and the iMessage agent must keep running. Leave out the optional CLIP install there.
+
+**iMessage agent** (`imessage-agent/`, Photon Spectrum): `cd imessage-agent && npm install && npm start` next to a running Brand Guard. Without `SPECTRUM_PROJECT_ID` / `SPECTRUM_PROJECT_SECRET` it opens Spectrum's terminal chat for testing; with them it answers real iMessages. `start.sh` starts it automatically when both are set. See `imessage-agent/README.md`.
 
 ## Current state (2026-10-09)
 
@@ -92,6 +96,13 @@ Optional install for "same product, different photo" (about 1 GB): see `requirem
 | 2026-10-10 | Unverified rows hidden by default | "Show unverified rows (N)" toggle above the Matches table; hides text-only rows in the table, graph and Sellers tab; "flagged" count and Select all cover visible rows only. Checked with real clicks in the browser |
 | 2026-10-10 | Narrow-screen graph fix | Under 1000 px wide the graph was sized as 55 % of a column that grows with the table, so it stretched (300 -> 880 px) and its nodes sat off-screen ("empty graph"). Now a fixed 340 px there |
 | 2026-10-10 | Put on GitHub | Public repo FedorPortnoi/brand-guard. Not committed: `.env` (API keys), `.venv`, runtime data (`data/scans/`, `data/last_scan.json`, `data/monitor/`, `data/labels/`, `data/rdap_cache.json`) |
+| 2026-10-10 | Brand book applied to the product UI | Re-skinned the existing interface with the supplied Obsidian, Archive Ivory and Alert Crimson system; added the shield lockup, editorial / interface / evidence type hierarchy, numbered investigation fields, archival paper texture, square severity labels and a dark evidence rail. Preserved all IDs and product flows. Browser-checked at 1440 px and 390 px; 183 tests pass. |
+| 2026-10-10 | Visual evidence map | Rebuilt the scan graph as an ink-black investigation canvas: large evidence thumbnails, a crimson original node, labeled domain hubs with signal counts, risk-weighted directional paths, live source/signal/high-risk totals, fit controls and animated focus when a table row or node is selected. Added visible running/progress/failure states. Checked with the Lucky Fours scan at desktop and mobile widths; 183 tests pass. |
+| 2026-10-10 | Branded investigation sequence | Turned the identity system into the live scan experience: rotating evidence sweep, moving crimson scan line, animated evidence marks, four-stage Discover/Investigate/Verify/Act rail, active primary action, and a live black-ink briefing rail using "The hunt is on" and "Evidence over assumption." Motion reflects real scan state and stops on completion; reduced-motion preferences are respected. |
+| 2026-10-10 | Review fixes (10) | Platform names match whole hostname parts (betsyjohnson.com is not Etsy, fedex.com is not x.com); a failing watch waits a full interval; "verified" no longer counts same-product hits; mailto links use %20; same-product leftovers kept at 800 px; newest 50 scans kept in memory; DuckDuckGo image search dropped; seller merges keep the full date range |
+| 2026-10-10 | Faster scans | Separate limits for downloads (32) and comparisons (one per core), each image decoded once, duplicate image+page dropped across sources, identical bytes compared once, reverse/marketplace candidates checked first, per-stage timings in the done event and status line. Live "lucky fours" scan: 371 s before, 157 s and 153 s after, same findings. Downloads are now the bottleneck (about 12 s per image summed) |
+| 2026-10-10 | Collapsible scan setup | "Hide scan setup" folds the form into a 46 px rail; remembered per browser. Checked in the browser at 1440 px; not checked at phone width |
+| 2026-10-10 | Replit + iMessage agent | `.replit` + `start.sh` for Replit. `imessage-agent/` on Photon Spectrum: photo in, top matches + thumbnail out, `report` sends the PDF, `watch` forwards monitoring alerts to the chat. HEIC photos supported (`pillow-heif`). Client checked live against a real scan; agent boots on Spectrum's terminal provider; real iMessage not yet run (needs Photon project credentials) |
 
 ## Calibration results (forensics)
 

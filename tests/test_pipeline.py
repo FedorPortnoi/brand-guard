@@ -48,7 +48,22 @@ def test_pixel_copy_matches_and_unrelated_does_not(monkeypatch):
     done = [d for e, d in ev if e == "done"][0]
     assert [m["title"] for m in matches] == ["copy"]
     assert done["unrelated"] == 1 and done["semantic"] == 0
+    assert done["verified"] == 1
     assert set(store.SESSIONS[done["scan_id"]]["items"]) == {0}
+
+
+def test_old_sessions_are_dropped(monkeypatch):
+    from fastapi.testclient import TestClient
+    from app.main import app
+    monkeypatch.setattr(store, "SESSIONS", {})
+    monkeypatch.setattr("app.main.SESSIONS", store.SESSIONS)
+    for i in range(store.MAX_SESSIONS + 3):
+        store.add_session(f"s{i}", {"original": b"jpeg", "items": {}})
+    assert len(store.SESSIONS) == store.MAX_SESSIONS
+    assert "s0" not in store.SESSIONS and f"s{store.MAX_SESSIONS + 2}" in store.SESSIONS
+    c = TestClient(app)
+    assert c.get("/api/original/s0.jpg").status_code == 404
+    assert c.get(f"/api/original/s{store.MAX_SESSIONS + 2}.jpg").status_code == 200
 
 
 def test_semantic_pass_finds_same_product_other_photo(monkeypatch):
@@ -67,6 +82,7 @@ def test_semantic_pass_finds_same_product_other_photo(monkeypatch):
     assert f["kind"] == "same_product" and f["similarity"] >= semantic.SEMANTIC_MIN
     assert f["c2pa"]["state"] in ("not_present", "valid", "invalid", "trusted", "error", "unknown")
     assert done["semantic"] == 1 and done["unrelated"] == 1
+    assert done["verified"] == 0 and done["thumbnail_only"] == 0  # a same-product match is not a pixel copy
 
 
 def test_lookalikes_reputation_and_canonical_url(monkeypatch):
@@ -125,3 +141,79 @@ def test_one_same_product_row_per_page(monkeypatch):
     matches = [d for e, d in _run(orig, cands, monkeypatch, semantic_search=True) if e == "match"]
     pages = [m["page_url"] for m in matches]
     assert sorted(pages) == ["https://another.example.net/coke", "https://shop.example.com/coke"]
+
+
+def test_same_product_leftovers_are_kept_small(monkeypatch):
+    """Images waiting for the same-product pass are held at evidence size; the row still describes the full-size original."""
+    import base64
+    import hashlib
+    orig, other_photo, _ = _photos()
+    big, size = other_photo, list(Image.open(io.BytesIO(other_photo)).size)
+    assert max(size) > 800
+    small, fp = pipeline.small_copy(big)
+    assert max(Image.open(io.BytesIO(small)).size) <= 800 and small == pipeline.shrink(big)
+    assert fp["size"] == size and fp["sha256"] == hashlib.sha256(big).hexdigest()
+    if not semantic.enabled():
+        pytest.skip("CLIP dependencies not installed")
+    ev = _run(orig, [_cand("big photo", big, "https://bottles.example.shop/coke")], monkeypatch, semantic_search=True)
+    matches = [d for e, d in ev if e == "match"]
+    scan_id = [d for e, d in ev if e == "done"][0]["scan_id"]
+    assert len(matches) == 1
+    m = matches[0]
+    assert m["forensics"]["kind"] == "same_product" and m["forensics"]["size"] == size
+    assert m["sha256"] == hashlib.sha256(big).hexdigest()
+    evidence = store.SESSIONS[scan_id]["items"][m["idx"]]["evidence"]
+    assert max(Image.open(io.BytesIO(base64.b64decode(evidence))).size) <= 800
+
+
+def test_duplicates_and_identical_bytes_are_checked_once(monkeypatch):
+    """The same image+page from two sources gives one row, kept from the stronger source; the same bytes at another
+    address get their own row but are compared once. done reports the dedup counts and stage timings."""
+    from app import forensics
+    orig, _, _ = _photos()
+    crop = Image.open(io.BytesIO(orig)); w, h = crop.size
+    copy = _jpg(crop.crop((0, 0, int(w * .9), int(h * .9))))
+    calls = []
+    real = forensics.compare_best
+    monkeypatch.setattr(forensics, "compare_best", lambda refs, data: calls.append(1) or real(refs, data))
+    cands = [{**_cand("copy", copy, "https://shop.example.xyz/p/1"), "source": "bing:q"},
+             {**_cand("copy", copy, "https://shop.example.xyz/p/1"), "source": "lens-exact"},
+             {**_cand("mirror", copy, "https://mirror.example.net/p/9"), "source": "brave:q"}]
+    ev = _run(orig, cands, monkeypatch)
+    rows = [d for e, d in ev if e == "match"]
+    done = [d for e, d in ev if e == "done"][0]
+    assert sorted((r["page_url"], r["source"]) for r in rows) == [("https://mirror.example.net/p/9", "brave:q"),
+                                                                    ("https://shop.example.xyz/p/1", "lens-exact")]
+    assert rows[0]["forensics"] is not rows[1]["forensics"]
+    assert len(calls) == 1
+    assert done["dedup"] == {"duplicate_candidates": 1, "same_bytes": 1}
+    assert done["scanned"] == 2 and done["sources"] == {"bing": 1, "lens-exact": 1, "brave": 1}
+    assert {"search", "verify", "total", "download", "compare", "evidence", "first_match"} <= set(done["timings"])
+
+
+def test_strongest_sources_are_checked_first():
+    cands = [{"source": s} for s in ("bing:q", "page-crawl", "brave-api:q", "aliexpress:q", "lens-visual", "lens-exact",
+                                     "ebay-image", "you-api:q")]
+    assert [c["source"] for c in sorted(cands, key=pipeline.source_rank)] == [
+        "lens-exact", "lens-visual", "aliexpress:q", "ebay-image", "page-crawl", "bing:q", "brave-api:q", "you-api:q"]
+
+
+def test_compare_decodes_the_candidate_once(monkeypatch):
+    from app import forensics
+    orig, _, unrelated = _photos()
+    ref = forensics.Reference(orig)
+    loads = []
+    real = forensics.load
+    monkeypatch.setattr(forensics, "load", lambda data: loads.append(1) or real(data))
+    assert forensics.compare(ref, unrelated) is None
+    assert len(loads) == 1
+
+
+def test_heic_original_from_an_iphone_is_scanned(monkeypatch):
+    """iPhones (and so the iMessage agent) send HEIC; it must scan like a JPEG."""
+    pillow_heif = pytest.importorskip("pillow_heif")
+    orig, _, _ = _photos()
+    b = io.BytesIO(); pillow_heif.from_pillow(Image.open(io.BytesIO(orig)).convert("RGB")).save(b, format="HEIF")
+    ev = _run(b.getvalue(), [_cand("copy", orig, "https://shop.example.xyz/p/1")], monkeypatch)
+    assert not [d for e, d in ev if e == "error"]
+    assert [d["title"] for e, d in ev if e == "match"] == ["copy"]

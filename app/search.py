@@ -17,7 +17,7 @@ from ddgs import DDGS
 
 from . import net
 
-IMAGE_BACKENDS = ("duckduckgo", "bing", "brave")
+IMAGE_BACKENDS = ("bing", "brave")  # duckduckgo dropped: it raised DDGSException on every live scan
 
 
 def expand_queries(brand: str, keywords: list[str], official: list[str]) -> list[str]:

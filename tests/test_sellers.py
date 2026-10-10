@@ -358,6 +358,45 @@ class TestEnrichSellers:
             assert groups[0]["domain_age_days"] == 2200
             assert groups[0]["registrar"] == "Example Registrar"
 
+    def test_merge_into_existing_seller_merges_dates_and_avg_risk(self):
+        def base(**kw):
+            g = {"domains": ["ebay.com"], "max_risk": 0, "categories": {}, "demo": False}
+            g.update(kw)
+            return g
+
+        seller_group = base(
+            key="ebay.com:BadSeller", name="BadSeller", kind="marketplace_seller",
+            idxs=[0, 1], listings=2, verified_listings=2, avg_risk=40.0, max_risk=50,
+            first_seen="2026-10-05T10:00:00+00:00", last_seen="2026-10-06T10:00:00+00:00",
+        )
+        listing_group = base(
+            key="ebay.com/itm/9", name="ebay.com", kind="marketplace_listing",
+            idxs=[2], listings=1, verified_listings=1, avg_risk=70.0, max_risk=70,
+            first_seen="2026-10-01T10:00:00+00:00", last_seen="2026-10-09T10:00:00+00:00",
+        )
+        undated_group = base(
+            key="ebay.com/itm/10", name="ebay.com", kind="marketplace_listing",
+            idxs=[3], listings=1, verified_listings=0, avg_risk=0.0,
+            first_seen=None, last_seen="",
+        )
+        groups = [seller_group, listing_group, undated_group]
+        matches_by_idx = {
+            2: {"page_url": "https://ebay.com/itm/9"},
+            3: {"page_url": "https://ebay.com/itm/10"},
+        }
+
+        with patch("app.sellers.net.fetch_html", new=AsyncMock(return_value="<html></html>")), \
+             patch("app.sellers.seller_from_html", return_value="BadSeller"):
+            asyncio.run(sellers.enrich_sellers(groups, matches_by_idx, client=MagicMock()))
+
+        assert groups == [seller_group]
+        assert seller_group["listings"] == 4
+        assert seller_group["verified_listings"] == 3
+        assert seller_group["first_seen"] == "2026-10-01T10:00:00+00:00"
+        assert seller_group["last_seen"] == "2026-10-09T10:00:00+00:00"
+        # (40*2 + 70*1) / 3 = 50.0; the unverified listing does not dilute it
+        assert seller_group["avg_risk"] == 50.0
+
 
 class TestSellersForScan:
     """Test sellers_for_scan function."""
@@ -480,6 +519,32 @@ class TestDemoData:
             # All groups should have a score
             assert "seller_score" in group
             assert 0 <= group["seller_score"] <= 100
+
+
+class TestPlatformHostMatching:
+    """Marketplace/social/channel names match whole hostname labels, not substrings."""
+
+    NOT_PLATFORMS = ["betsyjohnson.com", "artemus.com", "sheinberg-law.com", "joomla.org", "fedex.com", "dropbox.com"]
+
+    def test_lookalike_names_are_not_platforms(self):
+        from app import risk, takedown
+        for host in self.NOT_PLATFORMS:
+            assert not any(risk.host_matches(host, n) for n in risk.MARKETPLACES + risk.SOCIAL), host
+            assert takedown._extract_channel(f"https://{host}/page") is None, host
+            assert sellers.seller_identity({"page_url": f"https://www.{host}/page"})["kind"] == "website", host
+
+    def test_real_platforms_still_match(self):
+        from app import risk, takedown
+        assert risk.host_matches("etsy.com", "etsy")
+        assert risk.host_matches("etsy.co.uk", "etsy")
+        assert risk.host_matches("www.temu.com", "temu")
+        assert risk.host_matches("us.shein.com", "shein")
+        assert risk.host_matches("x.com", "x.com")
+        assert risk.host_matches("mobile.x.com", "x.com")
+        assert takedown._extract_channel("https://www.etsy.com/listing/1") == "etsy"
+        assert takedown._extract_channel("https://us.shein.com/item") == "shein"
+        assert sellers.seller_identity({"page_url": "https://www.temu.com/item.html"})["kind"] != "website"
+        assert sellers.seller_identity({"page_url": "https://x.com/someone"})["kind"] == "social"
 
 
 if __name__ == "__main__":

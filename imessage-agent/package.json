@@ -1,0 +1,24 @@
+{
+  "name": "brand-guard-imessage-agent",
+  "version": "0.1.0",
+  "description": "Brand Guard in iMessage, built on Photon Spectrum",
+  "scripts": {
+    "start": "tsx src/agent.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test test/*.test.ts"
+  },
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "spectrum-ts": "^12.10.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  }
+}

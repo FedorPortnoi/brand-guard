@@ -7,6 +7,12 @@ import imagehash
 import numpy as np
 from PIL import ExifTags, Image
 
+try:  # iPhone photos (HEIC), e.g. sent to the iMessage agent
+    from pillow_heif import register_heif_opener
+    register_heif_opener()
+except ImportError:
+    pass
+
 # === Threshold constants for relatedness and classification ===
 # Relatedness decision (any one met -> related):
 HASH_RELATED_MAX = 35  # max hash distance for related via hashes
@@ -234,11 +240,12 @@ def _template_score(ref: Reference, cand_gray: np.ndarray) -> float:
         return 0.0
 
 
-def features(ref: Reference, data: bytes) -> dict:
+def features(ref: Reference, data: bytes, cand: Image.Image | None = None) -> dict:
     """Compute forensic features for a candidate against a reference.
     Returns: {hash_dist, inliers, ratio, tmpl, changed, degenerate, hull_frac}
-    Note: changed is computed lazily in compare() only for related candidates."""
-    cand = load(data)
+    Note: changed is computed lazily in compare() only for related candidates.
+    cand: the already-decoded image, so callers that have one skip a second decode."""
+    cand = load(data) if cand is None else cand
     ph = ref.phash - imagehash.phash(cand, hash_size=16)
     dh = ref.dhash - imagehash.dhash(cand, hash_size=16)
     cg = _gray(cand)
@@ -256,10 +263,10 @@ def features(ref: Reference, data: bytes) -> dict:
     }
 
 
-def compare(ref: Reference, data: bytes) -> dict | None:
+def compare(ref: Reference, data: bytes, cand: Image.Image | None = None) -> dict | None:
     """Return None if the candidate is unrelated to the original."""
-    cand = load(data)
-    feats = features(ref, data)
+    cand = load(data) if cand is None else cand
+    feats = features(ref, data, cand)
     hash_dist = feats["hash_dist"]
     inliers = feats["inliers"]
     ratio = feats["ratio"]
@@ -332,7 +339,7 @@ def compare_best(refs: list[Reference], data: bytes) -> tuple[dict | None, int |
     order = sorted(range(len(refs)), key=lambda i: refs[i].phash - ph)
     best, best_i = None, None
     for i in [order[0]] + [i for i in order[1:] if could_match(refs[i])]:
-        f = compare(refs[i], data)
+        f = compare(refs[i], data, cand)
         if f and (best is None or (_KIND_RANK.get(f["kind"], 0), -f["hash_distance"])
                   > (_KIND_RANK.get(best["kind"], 0), -best["hash_distance"])):
             best, best_i = f, i

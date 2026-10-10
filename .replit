@@ -1,0 +1,14 @@
+modules = ["python-3.12", "nodejs-20"]
+run = ["bash", "start.sh"]
+
+[nix]
+channel = "stable-24_05"
+
+[deployment]
+# choose "Reserved VM" when publishing: monitoring and the iMessage agent must keep running between requests
+build = ["bash", "-c", "pip install -q -r requirements.txt && cd imessage-agent && npm ci --no-audit --no-fund"]
+run = ["bash", "start.sh"]
+
+[[ports]]
+localPort = 8000
+externalPort = 80

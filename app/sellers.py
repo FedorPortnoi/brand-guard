@@ -41,14 +41,14 @@ def seller_identity(match: dict) -> dict:
     # Check if it's a marketplace
     marketplace = None
     for m in risk.MARKETPLACES:
-        if m in host:
+        if risk.host_matches(host, m):
             marketplace = m
             break
 
     if not marketplace:
         # Check if it's a social platform
         for s in risk.SOCIAL:
-            if s in host:
+            if risk.host_matches(host, s):
                 return {
                     "key": host,
                     "name": host,
@@ -435,7 +435,17 @@ async def enrich_sellers(groups: list[dict], matches_by_idx: dict[int, dict], cl
                         # Merge into existing
                         seller_group["idxs"].extend(group["idxs"])
                         seller_group["listings"] += group["listings"]
+                        # avg_risk is the mean over verified listings, so weight by verified count
+                        v_old, v_new = seller_group["verified_listings"], group["verified_listings"]
+                        if v_old + v_new:
+                            total = seller_group.get("avg_risk", 0.0) * v_old + group.get("avg_risk", 0.0) * v_new
+                            seller_group["avg_risk"] = round(total / (v_old + v_new), 1)
                         seller_group["verified_listings"] += group["verified_listings"]
+                        # Widen the seen-window; empty/None dates are ignored
+                        firsts = [d for d in (seller_group.get("first_seen"), group.get("first_seen")) if d]
+                        lasts = [d for d in (seller_group.get("last_seen"), group.get("last_seen")) if d]
+                        seller_group["first_seen"] = min(firsts) if firsts else ""
+                        seller_group["last_seen"] = max(lasts) if lasts else ""
                         seller_group["max_risk"] = max(seller_group["max_risk"], group["max_risk"])
                         for cat, count in group["categories"].items():
                             seller_group["categories"][cat] = seller_group["categories"].get(cat, 0) + count

@@ -3,6 +3,7 @@ uvicorn[standard]
 python-multipart
 httpx
 pillow
+pillow-heif
 imagehash
 numpy
 opencv-python-headless

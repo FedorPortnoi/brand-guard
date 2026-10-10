@@ -12,7 +12,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from PIL import Image
 
-from app import takedown, takedown_api
+from app import sellers, takedown, takedown_api
 from app.store import SESSIONS
 
 
@@ -174,10 +174,10 @@ def test_channels_verified():
 
 def test_registrable_domain():
     """Test registrable domain extraction."""
-    assert takedown._registrable_domain("shop.example.com") == "example.com"
-    assert takedown._registrable_domain("example.co.uk") == "example.co.uk"
-    assert takedown._registrable_domain("shop.example.com.au") == "example.com.au"
-    assert takedown._registrable_domain("example.com") == "example.com"
+    assert sellers.registrable_domain("shop.example.com") == "example.com"
+    assert sellers.registrable_domain("example.co.uk") == "example.co.uk"
+    assert sellers.registrable_domain("shop.example.com.au") == "example.com.au"
+    assert sellers.registrable_domain("example.com") == "example.com"
 
 
 def test_notice_type_copyright():
@@ -382,20 +382,26 @@ def test_build_drafts_evidence_pdfs_in_draft(test_session):
     assert all("/api/report/" in url for url in draft["evidence_pdfs"])
 
 
-def test_build_drafts_mailto_properly_encoded(test_session):
-    """Test mailto uses %20 for spaces and is under 1800 chars."""
-    drafts = asyncio.run(takedown.build_drafts(
-        test_session,
-        [0, 1],
-        {"name": "Test User Name"},
-        "http://localhost:8000",
-    ))
+def test_build_drafts_mailto_properly_encoded():
+    """Test mailto uses %20 for spaces, keeps "@" literal, and is under 1800 chars."""
+    mailto = takedown._build_mailto(
+        "abuse@example.com",
+        "Report of suspected misuse",
+        "Hello there,\nplease remove this.",
+    )
 
-    # Find a draft with mailto
-    for draft in drafts:
-        if draft.get("mailto"):
-            assert len(draft["mailto"]) <= 1800
-            break
+    assert mailto.startswith("mailto:abuse@example.com?")
+    query = mailto.split("?", 1)[1]
+    assert "subject=Report%20of%20suspected%20misuse" in query
+    assert "body=Hello%20there%2C%0Aplease%20remove%20this." in query
+    assert "+" not in query
+    assert len(mailto) <= 1800
+
+    # Long bodies fall back to the short body, still %20-encoded
+    long_mailto = takedown._build_mailto("abuse@example.com", "Subject line", "word " * 1000)
+    assert len(long_mailto) <= 1800
+    assert "See%20attached%20takedown%20draft" in long_mailto
+    assert "+" not in long_mailto
 
 
 def test_build_drafts_trademark_with_recipient_gets_mailto(test_session):
@@ -611,7 +617,6 @@ def test_api_endpoint_bundle_zip_404_unknown_scan(client):
 
 def test_registrable_domain_country_endings():
     """Two-part country endings keep the site name (sears.com.mx, not com.mx), same as the Sellers tab."""
-    from app import takedown, sellers
     for host, want in (("www.sears.com.mx", "sears.com.mx"), ("shop.example.co.uk", "example.co.uk"),
                        ("a.b.example.com.tr", "example.com.tr"), ("example.com", "example.com"), ("x.y.shop", "y.shop")):
-        assert takedown._registrable_domain(host) == want == sellers.registrable_domain(host)
+        assert sellers.registrable_domain(host) == want

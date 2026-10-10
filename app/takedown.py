@@ -9,6 +9,7 @@ from typing import Optional
 from urllib.parse import quote, urlencode, urlparse
 
 from . import rdap, report
+from .risk import host_matches
 from .sellers import registrable_domain
 from .store import SESSIONS, original_for
 
@@ -148,14 +149,9 @@ def _extract_channel(url: str) -> Optional[str]:
     host = urlparse(url).hostname or ""
     host_lower = host.lower().removeprefix("www.")
     for key in CHANNELS:
-        if key in host_lower:
+        if host_matches(host_lower, key):
             return key
     return None
-
-
-def _registrable_domain(hostname: str) -> str:
-    """Registrable domain, e.g. shop.x.co.uk -> x.co.uk. Same rule as the Sellers tab (sellers.registrable_domain)."""
-    return registrable_domain(hostname)
 
 
 def notice_type(matches: list[dict]) -> str:
@@ -224,7 +220,7 @@ async def build_drafts(scan_id: str, idxs: list[int], rights_holder: dict, base_
         else:
             # Non-platform website: group by registrable domain
             host = urlparse(page_url).hostname or "unknown"
-            reg_domain = _registrable_domain(host)
+            reg_domain = registrable_domain(host)
             groups.setdefault(reg_domain, []).append(idx)
 
     # Collect all group keys for concurrent RDAP lookups
@@ -412,21 +408,22 @@ def _build_notice_body(notice_type: str, matches: list[tuple[int, dict]], brand:
 def _build_mailto(recipient: str, subject: str, body: str) -> Optional[str]:
     """Build a mailto: link, encoding carefully. Fall back to short body if over 1800 chars.
 
-    Uses quote(..., safe="") so spaces become %20, not +.
+    Uses quote (not quote_plus) so spaces become %20, not +, and keeps the
+    "@" in the recipient address literal.
     """
     # Build with full body first
     params = {"subject": subject, "body": body}
-    mailto_base = "mailto:" + quote(recipient, safe="")
+    mailto_base = "mailto:" + quote(recipient, safe="@")
 
     # Encode with quote for safe spaces
-    encoded_params = urlencode(params, safe="")
+    encoded_params = urlencode(params, safe="", quote_via=quote)
     full_mailto = mailto_base + "?" + encoded_params
 
     # If over 1800 chars, use short body
     if len(full_mailto) > 1800:
         short_body = "See attached takedown draft and evidence PDFs."
         params = {"subject": subject, "body": short_body}
-        encoded_params = urlencode(params, safe="")
+        encoded_params = urlencode(params, safe="", quote_via=quote)
         full_mailto = mailto_base + "?" + encoded_params
 
     return full_mailto

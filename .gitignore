@@ -12,3 +12,8 @@ data/last_scan.json
 data/monitor/
 data/labels/
 data/rdap_cache.json
+
+# Replit
+.pythonlibs/
+.cache/
+.upm/

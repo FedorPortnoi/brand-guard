@@ -16,7 +16,7 @@ from fastapi.responses import FileResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import archive_api, labels_api, monitor, monitor_api, pipeline, report, risk, sellers_api, takedown_api, video_api
-from .store import DATA, ROOT, SESSIONS, original_for
+from .store import DATA, ROOT, SESSIONS, add_session, original_for
 
 
 @asynccontextmanager
@@ -97,10 +97,10 @@ async def replay(name: str = Form("last_scan")):
     for ev, d in rec["events"]:
         if ev == "match":
             items[d["idx"]] = {"match": d, "evidence": rec["evidence"].get(str(d["idx"]))}
-    SESSIONS[scan_id] = {"brand": rec["brand"], "original": base64.b64decode(rec["original"]),
-                         "official_domains": rec.get("official_domains", []), "resellers": rec.get("resellers", []),
-                         "items": items,
-                         "frames": [base64.b64decode(f) for f in rec.get("frames", [])]}
+    add_session(scan_id, {"brand": rec["brand"], "original": base64.b64decode(rec["original"]),
+                          "official_domains": rec.get("official_domains", []), "resellers": rec.get("resellers", []),
+                          "items": items,
+                          "frames": [base64.b64decode(f) for f in rec.get("frames", [])]})
 
     async def stream():
         yield _sse("original", {"image": "data:image/jpeg;base64," + rec["original"], "scan_id": scan_id, "brand": rec["brand"]})
