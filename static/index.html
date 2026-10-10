@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2358a6ff'/%3E%3Cpath d='M16 5l9 4v7c0 5-4 9-9 11-5-2-9-6-9-11V9z' fill='%230d1117'/%3E%3C/svg%3E">
+<title>Brand Guard</title>
+<script src="/static/vendor/vis-network.min.js"></script>
+<style>
+:root{--bg:#0d1117;--panel:#161b22;--line:#30363d;--text:#e6edf3;--mute:#8b949e;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--acc:#58a6ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,sans-serif}
+header{padding:16px 24px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+h1{font-size:18px;margin:0}header span{color:var(--mute)}
+#bell{margin-left:auto;width:auto;margin-top:0;padding:4px 12px;font-size:12px}
+main{display:grid;grid-template-columns:300px 1fr 360px;gap:16px;padding:16px;height:calc(100vh - 58px)}
+@media(max-width:1000px){main{grid-template-columns:1fr;height:auto}main #net{height:340px}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;overflow:auto}
+label{display:block;margin:10px 0 4px;color:var(--mute);font-size:12px}
+input[type=text],input[type=number],textarea{width:100%;padding:8px;background:var(--bg);border:1px solid var(--line);border-radius:6px;color:var(--text);font:inherit}
+button{margin-top:10px;width:100%;padding:10px;background:var(--acc);border:0;border-radius:6px;font-weight:600;cursor:pointer;color:#04101f}
+button.ghost{background:var(--panel);color:var(--text);border:1px solid var(--line)}
+button.sm{width:auto;margin:0;padding:4px 10px;font-size:12px}
+button:disabled{opacity:.5}
+#preview,#vpreview{max-width:100%;max-height:140px;margin-top:8px;border-radius:6px;display:none}
+#frames{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}#frames figure{margin:0;text-align:center}#frames img{height:44px;border-radius:4px}#frames figcaption{font-size:10px;color:var(--mute)}
+#net{height:55%;min-height:300px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);font-size:13px}
+tr.row{cursor:pointer}tr.row:hover{background:#1c2330}tr.unv td{color:var(--mute)}#rows.hide-unv tr.unv{display:none}#unv-wrap{display:none;gap:6px;align-items:center;margin:0 0 6px;font-size:12px}
+.pill{padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;display:inline-block}
+.high{background:#5a1d1d;color:var(--bad)}.mid{background:#4a3a10;color:var(--warn)}.low{background:#17381f;color:var(--ok)}.gray{background:#272c34;color:var(--mute)}
+.imgs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.imgs img{width:100%;border-radius:6px;background:#000}
+.imgs small{color:var(--mute)}ul{padding-left:18px;margin:6px 0}a{color:var(--acc)}
+#status{margin-top:12px;color:var(--mute);font-size:12px}
+.stats{display:flex;gap:10px;margin-top:12px}.stat{flex:1;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px;text-align:center}
+.stat b{display:block;font-size:20px}
+#banner{display:none;background:#4a3a10;color:var(--warn);padding:6px 12px;border-radius:6px;margin-bottom:8px;font-size:12px}
+.tabs{display:flex;gap:4px;margin-bottom:10px;align-items:center}
+.tab{width:auto;margin:0;padding:6px 12px;background:transparent;color:var(--mute);border:1px solid transparent;border-radius:6px;font-size:13px}
+.tab.on{background:var(--bg);color:var(--text);border-color:var(--line)}
+.tabs .sp{flex:1}
+.card{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.card h4{margin:0;display:flex;gap:8px;align-items:center;font-size:14px}
+.card .meta{color:var(--mute);font-size:12px}
+.row-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.muted{color:var(--mute);font-size:12px}
+.badge{background:var(--bad);color:#fff;border-radius:99px;padding:0 6px;font-size:11px;margin-left:4px}
+#modal{display:none;position:fixed;inset:0;background:#000a;z-index:10;padding:24px;overflow:auto}
+#modal .box{max-width:860px;margin:0 auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px}
+#modal pre{white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px;font-size:12px;max-height:320px;overflow:auto}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+input[type=checkbox]{accent-color:var(--acc)}
+</style>
+</head>
+<body>
+<header><h1>Brand Guard</h1><span>Find where your brand's images are copied online (marketplaces, social media, websites) and prioritise the ones that look fake, altered or stolen for review.</span>
+  <button id="bell" class="ghost">Alerts<span id="unread" class="badge" style="display:none"></span></button></header>
+<main>
+  <section class="panel">
+    <label for="file">Original image (logo, product photo, ad creative or listing photo)</label>
+    <input type="file" id="file" accept="image/*,video/*"><img id="preview" alt=""><video id="vpreview" muted controls playsinline></video><div id="frames"></div>
+    <label for="brand">Brand name</label><input type="text" id="brand" placeholder="e.g. Acme">
+    <label for="kw">Extra keywords (comma separated)</label><input type="text" id="kw" placeholder="product or model name, campaign, slogan">
+    <label for="dom">Your official domains</label><input type="text" id="dom" placeholder="acme.com, shop.acme.com, acme.co.uk">
+    <label for="resellers">Authorised resellers (optional)</label><input type="text" id="resellers" placeholder="retailer.com, partner-shop.com">
+    <label for="imgurl">Public URL of the image (enables reverse image search)</label><input type="text" id="imgurl">
+    <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="demo"> Add 5 synthetic demo copies</label>
+    <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="sem"> Also find the same product in different photos (slower)</label>
+    <button id="go">Scan the web</button>
+    <button id="replay" class="ghost">Replay last scan (offline)</button>
+    <div id="status"></div>
+    <div class="stats"><div class="stat"><b id="s-all">0</b>flagged</div><div class="stat"><b id="s-bad" style="color:var(--bad)">0</b>high risk</div><div class="stat"><b id="s-sel">0</b>sellers</div></div>
+    <div id="lookalikes"></div>
+  </section>
+  <section style="display:flex;flex-direction:column;min-height:0">
+    <div id="banner">Synthetic local demonstration: rows marked DEMO are generated copies of your own image, not real offenders.</div>
+    <div id="net"></div>
+    <div class="panel" style="margin-top:12px;flex:1">
+      <div class="tabs">
+        <button class="tab on" data-tab="matches">Matches</button><button class="tab" data-tab="sellers">Sellers</button><button class="tab" data-tab="watches">Monitoring</button><button class="tab" data-tab="video">Video check</button>
+        <span class="sp"></span><button id="td-sel" class="sm ghost" disabled>Draft takedown (<span id="n-sel">0</span>)</button>
+      </div>
+      <div id="t-matches"><label id="unv-wrap" class="muted"><input type="checkbox" id="show-unv"> Show unverified rows (<span id="n-unv">0</span>): image could not be downloaded, flagged on page wording only</label><table><thead><tr><th><input type="checkbox" id="all" aria-label="Select all"></th><th>Risk</th><th>Domain</th><th>Finding</th><th>Type</th></tr></thead><tbody id="rows" class="hide-unv"></tbody></table></div>
+      <div id="t-sellers" style="display:none"><div class="muted" id="sellers-note">Run or replay a scan to group matches by seller.</div><div id="sellers"></div></div>
+      <div id="t-video" style="display:none">
+        <div class="card"><b>Check a suspect video</b><div class="muted">Compares a suspect clip with your original commercial frame by frame: which parts were copied, and whether it was mirrored, cropped, reframed to vertical or sped up.</div>
+          <label for="v-orig">Your original video (if empty, uses the video chosen on the left)</label><input type="file" id="v-orig" accept="video/*">
+          <input type="text" id="v-orig-url" placeholder="or a link to your original">
+          <label for="v-sus">Suspect video</label><input type="file" id="v-sus" accept="video/*">
+          <input type="text" id="v-sus-url" placeholder="or an Instagram, TikTok or YouTube link (experimental)">
+          <button id="v-go">Compare videos</button>
+          <div class="muted" id="v-note">Links are downloaded with yt-dlp. Public Instagram reels, TikTok and YouTube videos usually work; private or deleted posts do not. If a link fails, save the video and upload the file.</div></div>
+        <div id="v-out"></div>
+      </div>
+      <div id="t-watches" style="display:none">
+        <div class="card"><b>Watch this brand</b><div class="muted">Re-scans on a schedule with the image and settings on the left, and alerts you to copies that are new since the last run.</div>
+          <div class="grid2"><div><label for="w-int">Every (hours)</label><input type="number" id="w-int" value="24" min="1"></div>
+          <div><label for="w-min">Alert at risk ≥</label><input type="number" id="w-min" value="40" min="0" max="100"></div></div>
+          <label for="w-hook">Slack / Discord webhook (optional, https)</label><input type="text" id="w-hook" placeholder="https://hooks.slack.com/...">
+          <button id="w-add">Start watching</button></div>
+        <div id="watches"></div><h4 style="margin:14px 0 6px">Alerts</h4><div id="alerts" class="muted">No alerts yet.</div>
+      </div>
+    </div>
+  </section>
+  <section class="panel" id="detail"><span style="color:var(--mute)">Click a node or row to inspect a match.</span></section>
+</main>
+<div id="modal"><div class="box" id="mbox"></div></div>
+<script>
+const $=id=>document.getElementById(id);
+const nodes=new vis.DataSet(),edges=new vis.DataSet(),matches=[],selected=new Set();
+const net=new vis.Network($('net'),{nodes,edges},{physics:{solver:'forceAtlas2Based',stabilization:{iterations:60}},
+  nodes:{font:{color:'#e6edf3',size:11},borderWidth:2},edges:{color:{color:'#30363d'},smooth:false}});
+const col=m=>m.verification==='unverified'?'#8b949e':m.risk.score>=65?'#f85149':m.risk.score>=40?'#d29922':'#3fb950';
+const tier=s=>s>=65?'high':s>=40?'mid':'low';
+const cls=m=>m.verification==='unverified'?'gray':tier(m.risk.score);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const safeHref=u=>/^https?:\/\//i.test(u||'')?esc(u):'#';
+const safeImg=u=>/^(https?:\/\/|data:image\/)/i.test(u||'')?esc(u):'';
+const BROKEN_IMG='data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" fill="#272c34"/><text x="20" y="27" font-size="22" text-anchor="middle" fill="#8b949e" font-family="sans-serif">?</text></svg>');
+let rootDataUrl='',scanId='';
+const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+async function api(url,opt){const r=await fetch(url,opt);if(!r.ok)throw new Error((await r.json().catch(()=>({}))).detail||('HTTP '+r.status));return r}
+
+let keyframes=[];
+const mmss=t=>Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0');
+$('file').onchange=e=>{const f=e.target.files[0];if(!f)return;$('frames').innerHTML='';keyframes=[];
+  if(f.type.startsWith('video/')){$('preview').style.display='none';rootDataUrl='';
+    $('vpreview').src=URL.createObjectURL(f);$('vpreview').style.display='block';return}
+  $('vpreview').style.display='none';const r=new FileReader();
+  r.onload=()=>{rootDataUrl=r.result;$('preview').src=r.result;$('preview').style.display='block'};r.readAsDataURL(f)};
+function showFrames(F){keyframes=F;if(!F.length)return;rootDataUrl=F[0].thumb;nodes.update({id:'root',image:rootDataUrl});
+  $('frames').innerHTML=F.map(x=>`<figure><img src="${safeImg(x.thumb)}" alt=""><figcaption>${mmss(x.t)}</figcaption></figure>`).join('')}
+function videoReport(r){const c={copy:'high',partial:'mid',weak:'low'}[r.verdict]||'gray';
+  return `<div class="card"><h4><span class="pill ${c}">${esc(r.label)}</span></h4>
+  <div class="meta">${r.suspect_match_pct}% of the suspect clip matches · ${r.original_coverage_pct}% of your video appears in it · your video ${mmss(r.original_seconds)}, suspect ${mmss(r.suspect_seconds)}${r.truncated?' · only the first 10 minutes were checked':''}</div>
+  ${r.flags.length?`<ul>${r.flags.map(f=>`<li>${esc(f)}</li>`).join('')}</ul>`:''}
+  ${r.segments.length?`<table><thead><tr><th>Suspect clip</th><th>Your video</th><th>Speed</th></tr></thead><tbody>${r.segments.map(x=>`<tr><td>${mmss(x.suspect_start)}–${mmss(x.suspect_end)}</td><td>${mmss(x.original_start)}–${mmss(x.original_end)}</td><td>${x.speed?x.speed+'x':'normal'}</td></tr>`).join('')}</tbody></table>`:''}
+  ${r.pixel_check?`<div class="meta">Pixel check of the closest frame: ${esc(r.pixel_check)}</div>`:''}
+  ${r.evidence.length?`<div class="imgs">${r.evidence.map(x=>`<div><img src="${safeImg(x.suspect_thumb)}" alt=""><small>Suspect at ${mmss(x.suspect_t)}</small></div><div><img src="${safeImg(x.original_thumb)}" alt=""><small>Your video at ${mmss(x.original_t)}</small></div>`).join('')}</div>`:''}
+  ${r.suspect_url?`<div class="meta">Checked link: ${esc(r.suspect_url)}</div>`:''}</div>`}
+$('v-go').onclick=async()=>{const fd=new FormData(),left=$('file').files[0];
+  const of=$('v-orig').files[0]||(left&&left.type.startsWith('video/')?left:null);
+  if(of)fd.append('original',of);fd.append('original_url',$('v-orig-url').value.trim());
+  if($('v-sus').files[0])fd.append('suspect',$('v-sus').files[0]);fd.append('suspect_url',$('v-sus-url').value.trim());
+  $('v-out').innerHTML='<p class="muted">Comparing… downloading from a link can take a minute.</p>';$('v-go').disabled=true;
+  try{$('v-out').innerHTML=videoReport(await(await api('/api/video/compare',{method:'POST',body:fd})).json())}
+  catch(e){$('v-out').innerHTML=`<p class="muted">${esc(e.message)}</p>`}finally{$('v-go').disabled=false}};
+
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>tab(b.dataset.tab));
+function tab(t){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
+  for(const k of['matches','sellers','watches','video'])$('t-'+k).style.display=k===t?'':'none';
+  if(t==='watches')loadWatches()}
+
+function reset(){nodes.clear();edges.clear();matches.length=0;selected.clear();syncSel();$('rows').innerHTML='';$('s-all').textContent=0;$('n-unv').textContent=0;$('unv-wrap').style.display='none';$('s-bad').textContent=0;$('s-sel').textContent=0;
+  $('banner').style.display='none';$('sellers').innerHTML='';sellersData=[];$('lookalikes').innerHTML='';$('sellers-note').textContent='Grouping sellers when the scan finishes…';
+  nodes.add({id:'root',label:'YOUR IMAGE',shape:'circularImage',image:rootDataUrl,size:34,color:{border:'#58a6ff'}})}
+
+const isUnv=m=>m.verification==='unverified';
+const visible=()=>matches.filter(m=>$('show-unv').checked||!isUnv(m));
+function syncSel(){$('n-sel').textContent=selected.size;$('td-sel').disabled=!selected.size;const v=visible();$('all').checked=v.length>0&&v.every(m=>selected.has(m.idx))}
+$('all').onchange=e=>{selected.clear();if(e.target.checked)visible().forEach(m=>selected.add(m.idx));
+  document.querySelectorAll('#rows tr').forEach((tr,i)=>tr.querySelector('input').checked=selected.has(matches[i].idx));syncSel()};
+function syncUnv(){const show=$('show-unv').checked,n=matches.filter(isUnv).length;
+  $('rows').classList.toggle('hide-unv',!show);$('n-unv').textContent=n;$('unv-wrap').style.display=n?'flex':'none';
+  const hostShown={};matches.forEach((m,i)=>{const hide=isUnv(m)&&!show;nodes.update({id:'m:'+i,hidden:hide});
+    const h='h:'+(m.risk.host||'unknown');hostShown[h]=hostShown[h]||!hide});
+  nodes.update(Object.entries(hostShown).map(([id,on])=>({id,hidden:!on})));
+  if(!show)matches.filter(isUnv).forEach(m=>selected.delete(m.idx));
+  document.querySelectorAll('#rows tr').forEach((tr,i)=>tr.querySelector('input').checked=selected.has(matches[i].idx));
+  $('s-all').textContent=visible().length;syncSel();if(sellersData.length)renderSellers()}
+$('show-unv').onchange=syncUnv;
+
+const srcLabel=m=>/^ebay/.test(m.source||'')?'eBay image search':/^aliexpress/.test(m.source||'')?'AliExpress':m.reverse?'reverse':'';
+function showLookalikes(L){if(!L.length)return;
+  $('lookalikes').innerHTML=`<div class="card"><h4>Lookalike domains <span class="muted">reported as phishing (PhishStats)</span></h4>
+    <ul>${L.slice(0,12).map(h=>`<li>${esc(h.host)} <span class="muted">· ${h.reports} report${h.reports===1?'':'s'} · last seen ${esc(h.last_seen||'?')}</span></li>`).join('')}</ul>
+    <div class="muted">Not links on purpose: these sites may be harmful. Report them to the registrar or hosting provider.</div></div>`}
+function archiveCell(a){return a&&a.url?`<a class="pill gray" href="${safeHref(a.url)}" target="_blank" rel="noopener noreferrer">Archived ${esc((a.captured_at||'').slice(0,10))}${a.state==='existing'?' (older copy)':''}</a>`:''}
+async function archive(idxs,out){const todo=idxs.filter(i=>{const m=matches[byIdx(i)];return m&&m.page_url&&!m.demo});
+  if(!todo.length){out.textContent='Nothing to archive (no source pages).';return}
+  let ok=0,fail=0;
+  for(let k=0;k<todo.length;k+=20){out.textContent=`Saving pages to the Wayback Machine… ${k}/${todo.length} (can take a minute each)`;
+    try{const d=await(await api(`/api/archive/${scanId}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idxs:todo.slice(k,k+20)})})).json();
+      for(const[i,a]of Object.entries(d.results)){const m=matches[byIdx(+i)];if(a.url){ok++;if(m)m.archive=a}else fail++}}
+    catch(e){fail+=Math.min(20,todo.length-k)}}
+  out.textContent=`Archived ${ok} of ${todo.length} page${todo.length===1?'':'s'}${fail?` (${fail} failed: archive.org may be rate-limiting, try again later)`:''}. Archived links now appear in drafts and evidence PDFs.`}
+function addMatch(m){
+  const i=matches.push(m)-1,r=m.risk,host=r.host||'unknown';
+  if(m.demo)$('banner').style.display='block';
+  if(!nodes.get('h:'+host)){nodes.add({id:'h:'+host,label:host,shape:'dot',size:10,color:{background:'#30363d',border:'#8b949e'}});edges.add({from:'root',to:'h:'+host})}
+  const img=m.thumb||(/^https?:/.test(m.image_url||'')?m.image_url:null);
+  nodes.add(img?{id:'m:'+i,label:'',shape:'image',image:img,brokenImage:BROKEN_IMG,size:16,color:{border:col(m)},shapeProperties:{useBorderWithImage:true},borderWidth:3}
+               :{id:'m:'+i,label:'?',shape:'dot',size:12,color:{background:'#272c34',border:col(m)}});
+  edges.add({from:'h:'+host,to:'m:'+i,color:{color:col(m)},dashes:m.verification==='unverified'});
+  const tr=document.createElement('tr');tr.className='row'+(m.verification==='unverified'?' unv':'');
+  const finding=m.forensics?m.forensics.label+(m.demo?' (DEMO)':''):'Unverified: image download blocked';
+  const src=srcLabel(m);
+  tr.innerHTML=`<td><input type="checkbox" aria-label="Select"></td><td><span class="pill ${cls(m)}">${m.forensics?r.score:'n/a'}</span></td><td>${esc(host)}</td><td>${esc(finding)}${src?` <span class="pill gray">${src}</span>`:''}</td><td>${esc(r.category.replace(/_/g,' '))}</td>`;
+  const cb=tr.querySelector('input');cb.onclick=e=>{e.stopPropagation();cb.checked?selected.add(m.idx):selected.delete(m.idx);syncSel()};
+  tr.onclick=()=>show(i);$('rows').appendChild(tr);
+  $('s-bad').textContent=matches.filter(x=>x.forensics&&x.risk.score>=65).length;syncUnv();
+}
+net.on('click',p=>{const id=p.nodes[0];if(id&&id.startsWith('m:'))show(+id.slice(2))});
+const byIdx=idx=>matches.findIndex(m=>m.idx===idx);
+
+function show(i){const m=matches[i],r=m.risk,f=m.forensics,unv=!f,pdf=`/api/report/${scanId}/${m.idx}.pdf`,kf=m.ref_frame&&keyframes[m.ref_frame.idx];
+  const thumb=safeImg(m.thumb||m.image_url);
+  const stats=unv?'':f.kind==='same_product'?`semantic similarity ${f.similarity} &middot; hash distance ${f.hash_distance}/256`
+    :`hash distance ${f.hash_distance}/256 &middot; feature inliers ${f.feature_inliers} &middot; template ${f.template_score}`;
+  $('detail').innerHTML=`<h3 style="margin:0 0 6px">${esc(r.host)} <span class="pill ${cls(m)}">${unv?'unverified':'risk '+r.score}</span></h3>
+  <div style="color:var(--mute)">${esc(m.title)}</div>
+  ${m.seller||m.price?`<div class="muted">${m.seller?'Seller: '+esc(m.seller):''}${m.seller&&m.price?' · ':''}${m.price?esc(m.price):''}${m.orders?' · '+esc(m.orders)+' orders':''}</div>`:''}
+  <div class="imgs"><div><img src="${safeImg(kf?kf.thumb:rootDataUrl)}" alt=""><small>${kf?'Your video at '+mmss(kf.t):'Your original'}</small></div>
+  <div>${thumb?`<img src="${thumb}" referrerpolicy="no-referrer" alt="">`:''}<small>Found copy${m.demo?' (DEMO SAMPLE)':''}</small></div>
+  ${unv||!f.heatmap?'':`<div style="grid-column:span 2"><img src="${esc(f.heatmap)}" alt=""><small>Difference map (bright = changed vs. your original, ${f.changed_pct}% of pixels)</small></div>`}</div>
+  <span class="pill gray">${esc(m.verification||'verified')}</span> ${srcLabel(m)?`<span class="pill gray">found by ${esc(srcLabel(m)==='reverse'?'reverse image search':srcLabel(m))}</span>`:''}<br><b>${unv?'Could not verify similarity':esc(f.label)}</b>
+  <ul>${r.reasons.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+  ${unv?'':`<small style="color:var(--mute)">${stats} &middot; C2PA: ${esc(f.c2pa.state)} &middot; synthetic hints: ${esc(f.ai_signal.level)}</small><br>`}
+  <div class="row-actions"><button class="sm" id="d-td">Draft takedown</button><a class="pill gray" href="${pdf}" target="_blank">Evidence PDF</a><a class="pill gray" href="${safeHref(m.page_url)}" target="_blank" rel="noopener noreferrer">Source page</a><span id="d-arc">${archiveCell(m.archive)}</span>${m.page_url&&!m.demo?'<button class="sm ghost" id="d-save">Save to Wayback Machine</button>':''}</div>
+  <div id="d-arc-msg" class="muted"></div>
+  <div class="row-actions" style="align-items:center"><span class="muted">Is this right?</span>
+    <button class="sm ghost" data-l="confirmed">Real copy</button><button class="sm ghost" data-l="false_positive">False positive</button><button class="sm ghost" data-l="not_sure">Not sure</button><span id="d-lab" class="muted"></span></div>
+  <p style="color:var(--mute);font-size:12px">Signals only. Review before taking enforcement action.</p>`;
+  $('d-td').onclick=()=>takedown([m.idx]);
+  if($('d-save'))$('d-save').onclick=async()=>{$('d-save').disabled=true;await archive([m.idx],$('d-arc-msg'));$('d-arc').innerHTML=archiveCell(m.archive);$('d-save').disabled=false};
+  document.querySelectorAll('#detail [data-l]').forEach(b=>b.onclick=async()=>{
+    try{await api('/api/labels',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scan_id:scanId,idx:m.idx,label:b.dataset.l,note:''})});
+      $('d-lab').textContent='Saved. Labels improve calibration.'}catch(e){$('d-lab').textContent='Could not save: '+e.message}})}
+
+async function loadSellers(){
+  if(!scanId)return;$('sellers-note').textContent='Grouping matches by seller and checking domain ages…';
+  try{const d=await(await api(`/api/sellers/${scanId}?enrich=1`)).json();sellersData=d.sellers||[];renderSellers()
+  }catch(e){$('sellers-note').textContent='Seller grouping failed: '+e.message}}
+let sellersData=[];
+function renderSellers(){const all=sellersData,S=$('show-unv').checked?all:all.filter(s=>s.verified_listings>0),hid=all.length-S.length;
+    $('s-sel').textContent=S.length;$('sellers-note').textContent=(S.length?'Sellers ranked by how much they use your image and how suspicious they look.':'No sellers to group.')
+      +(hid?` ${hid} seller${hid===1?'':'s'} with only unverified rows hidden (tick "Show unverified rows" on the Matches tab).`:'');
+    $('sellers').innerHTML=S.map((s,k)=>`<div class="card"><h4><span class="pill ${tier(s.seller_score)}">${s.seller_score}</span>${esc(s.name)}<span class="muted">${esc(s.kind.replace(/_/g,' '))}${s.demo?' · DEMO':''}</span></h4>
+      <div class="meta">${s.listings} listing${s.listings===1?'':'s'} · ${esc((s.domains||[]).join(', '))}${s.registrar?' · '+esc(s.registrar):''}</div>
+      <ul>${(s.flags||[]).map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+      <div class="row-actions"><button class="sm" data-k="${k}" data-a="td">Takedown all ${s.listings}</button><button class="sm ghost" data-k="${k}" data-a="sel">Select listings</button></div></div>`).join('');
+    $('sellers').querySelectorAll('button').forEach(b=>b.onclick=()=>{const s=S[+b.dataset.k];
+      if(b.dataset.a==='td')takedown(s.idxs);else{selected.clear();s.idxs.forEach(x=>selected.add(x));
+        document.querySelectorAll('#rows tr').forEach((tr,i)=>tr.querySelector('input').checked=selected.has(matches[i].idx));syncSel();tab('matches')}})}
+
+const RH=['name','company','email','phone','address','trademark_reg','original_url'];
+const RHL={name:'Your name',company:'Company / brand owner',email:'Email',phone:'Phone',address:'Postal address',trademark_reg:'Trademark reg. no. & jurisdiction',original_url:'Where your original is published'};
+function modal(html){$('mbox').innerHTML=html;$('modal').style.display='block'}
+$('modal').onclick=e=>{if(e.target.id==='modal')$('modal').style.display='none'};
+$('td-sel').onclick=()=>takedown([...selected]);
+function takedown(idxs){const rh=store.get('bg-rh',{});
+  modal(`<h3 style="margin-top:0">Draft takedown notices for ${idxs.length} listing${idxs.length===1?'':'s'}</h3>
+  <p class="muted">Brand Guard writes the drafts and builds the evidence pack. Nothing is sent: you review, edit and send them yourself. Your details are stored only in this browser.</p>
+  <div class="grid2">${RH.map(k=>`<div><label for="rh-${k}">${RHL[k]}</label><input type="text" id="rh-${k}" value="${esc(rh[k]||'')}"></div>`).join('')}</div>
+  <div class="row-actions"><button class="sm" id="td-go">Generate drafts</button><button class="sm ghost" id="td-arc">Save pages to Wayback Machine</button><button class="sm ghost" id="td-zip">Download evidence pack (.zip)</button><button class="sm ghost" id="td-x">Close</button></div>
+  <div id="td-arc-msg" class="muted"></div><div id="td-out"></div>`);
+  const body=()=>{const r={};RH.forEach(k=>{const v=$('rh-'+k).value.trim();if(v)r[k]=v});store.set('bg-rh',r);return JSON.stringify({idxs,rights_holder:r})};
+  const H={method:'POST',headers:{'Content-Type':'application/json'}};
+  $('td-x').onclick=()=>$('modal').style.display='none';
+  $('td-arc').onclick=async()=>{$('td-arc').disabled=true;await archive(idxs,$('td-arc-msg'));$('td-arc').disabled=false};
+  $('td-go').onclick=async()=>{$('td-out').innerHTML='<p class="muted">Drafting…</p>';
+    try{const d=await(await api(`/api/takedown/${scanId}`,{...H,body:body()})).json();
+      $('td-out').innerHTML=d.drafts.map((x,k)=>`<div class="card"><h4>${esc(x.channel)} <span class="pill gray">${esc(x.notice_type)}</span> <span class="muted">${x.idxs.length} listing${x.idxs.length===1?'':'s'}</span></h4>
+        <div class="meta">${x.recipient?'To: '+esc(x.recipient)+' · ':''}${x.report_url?`<a href="${safeHref(x.report_url)}" target="_blank" rel="noopener noreferrer">Open report form</a> · `:''}${esc(x.how_to||'')}</div>
+        <div class="meta"><b>Subject:</b> ${esc(x.subject)}</div><pre>${esc(x.body)}</pre>
+        <div class="row-actions"><button class="sm ghost" data-c="${k}">Copy text</button>${x.mailto?`<a class="pill gray" href="${esc(x.mailto)}">Open in email</a>`:''}</div></div>`).join('');
+      $('td-out').querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{const x=d.drafts[+b.dataset.c];
+        navigator.clipboard.writeText(`Subject: ${x.subject}\n\n${x.body}`).then(()=>b.textContent='Copied',()=>b.textContent='Copy failed')})
+    }catch(e){$('td-out').innerHTML=`<p class="muted">Could not draft: ${esc(e.message)}</p>`}};
+  $('td-zip').onclick=async()=>{try{const r=await api(`/api/takedown/${scanId}/bundle.zip`,{...H,body:body()});
+    const a=document.createElement('a');a.href=URL.createObjectURL(await r.blob());a.download=`takedown-${scanId}.zip`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
+    catch(e){$('td-out').innerHTML=`<p class="muted">Could not build the pack: ${esc(e.message)}</p>`}}}
+
+const ago=t=>{if(!t)return'never';const s=(Date.now()-new Date(t))/1000;return s<90?'just now':s<5400?Math.round(s/60)+' min ago':s<129600?Math.round(s/3600)+' h ago':Math.round(s/86400)+' days ago'};
+async function loadWatches(){
+  try{const W=await(await api('/api/watches')).json(),list=Array.isArray(W)?W:(W.watches||[]);
+    $('watches').innerHTML=list.map(w=>`<div class="card"><h4>${esc(w.brand)} ${w.running?'<span class="pill mid">scanning…</span>':''}</h4>
+      <div class="meta">every ${w.interval_hours} h · alert at risk ≥ ${w.min_score} · ${w.seen_count||0} known matches · last run ${ago(w.last_run_at)}${w.webhook_url?' · webhook on':''}</div>
+      <div class="row-actions"><button class="sm ghost" data-r="${esc(w.id)}" ${w.running?'disabled':''}>Run now</button><button class="sm ghost" data-d="${esc(w.id)}">Stop watching</button></div></div>`).join('')||'<p class="muted">No watches yet.</p>';
+    $('watches').querySelectorAll('[data-r]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{await api(`/api/watches/${b.dataset.r}/run`,{method:'POST'})}catch(e){}loadWatches()});
+    $('watches').querySelectorAll('[data-d]').forEach(b=>b.onclick=async()=>{await api(`/api/watches/${b.dataset.d}`,{method:'DELETE'}).catch(()=>{});loadWatches()});
+  }catch(e){$('watches').innerHTML=`<p class="muted">Monitoring unavailable: ${esc(e.message)}</p>`}
+  loadAlerts()}
+async function loadAlerts(){
+  try{const A=await(await api('/api/alerts')).json(),list=Array.isArray(A)?A:(A.alerts||[]),un=list.filter(a=>!a.read).length;
+    $('unread').textContent=un;$('unread').style.display=un?'':'none';
+    $('alerts').innerHTML=list.slice(0,30).map(a=>`<div class="card"><h4>${a.read?'':'<span class="badge">new</span>'}${esc(a.message)}</h4><div class="meta">${esc(a.brand)} · ${ago(a.created_at)}</div>
+      ${(a.items||[]).length?`<ul>${a.items.slice(0,8).map(x=>`<li><span class="pill ${tier(x.score)}">${x.score}</span> ${esc(x.host)}: ${esc(x.label)} · <a href="${safeHref(x.page_url)}" target="_blank" rel="noopener noreferrer">page</a></li>`).join('')}</ul>`:''}</div>`).join('')||'No alerts yet.';
+  }catch(e){}}
+$('bell').onclick=async()=>{tab('watches');await api('/api/alerts/read',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({all:true})}).catch(()=>{});setTimeout(loadAlerts,300)};
+$('w-add').onclick=async()=>{const f=$('file').files[0];
+  if(!f||!$('brand').value.trim()){$('watches').innerHTML='<p class="muted">Choose an image and a brand name on the left first.</p>';return}
+  const fd=new FormData();fd.append('image',f);fd.append('brand',$('brand').value);fd.append('keywords',$('kw').value);fd.append('official_domains',$('dom').value);fd.append('resellers',$('resellers').value);
+  fd.append('image_url',$('imgurl').value);fd.append('interval_hours',$('w-int').value);fd.append('min_score',$('w-min').value);fd.append('webhook_url',$('w-hook').value.trim());
+  try{await api('/api/watches?run_now=1',{method:'POST',body:fd});loadWatches()}catch(e){$('watches').innerHTML=`<p class="muted">Could not create the watch: ${esc(e.message)}</p>`}};
+setInterval(()=>{loadAlerts();if($('t-watches').style.display!=='none')loadWatches()},30000);loadAlerts();
+
+async function run(url,fd){
+  $('go').disabled=$('replay').disabled=true;
+  try{
+    const res=await fetch(url,{method:'POST',body:fd});
+    if(!res.ok){$('status').textContent='Request failed: '+res.status;return}
+    const rd=res.body.getReader(),dec=new TextDecoder();let buf='';
+    while(true){const{done,value}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});
+      let k;while((k=buf.indexOf('\n\n'))>=0){const blk=buf.slice(0,k);buf=buf.slice(k+2);
+        const ev=/event: (.*)/.exec(blk)?.[1],d=JSON.parse(/data: (.*)/.exec(blk)?.[1]||'{}');
+        if(ev==='original'){rootDataUrl=d.image;scanId=d.scan_id;$('preview').src=d.image;$('preview').style.display='block';$('vpreview').style.display='none';$('frames').innerHTML='';keyframes=[];reset();$('brand').value=d.brand}
+        else if(ev==='match')addMatch(d);
+        else if(ev==='lookalikes')showLookalikes(d.domains||[]);
+        else if(ev==='keyframes')showFrames(d.frames||[]);
+        else if(ev==='status'){$('status').textContent=d.message;if(d.scan_id)scanId=d.scan_id}
+        else if(ev==='progress')$('status').textContent='Checked '+d.done+'/'+d.total+'...';
+        else if(ev==='error')$('status').textContent=d.message;
+        else if(ev==='done'){$('status').textContent=`Done. Checked ${d.scanned}: ${d.verified||0} verified, ${d.semantic?d.semantic+' same-product, ':''}${d.thumbnail_only||0} low-res, ${d.unverified||0} blocked, ${matches.length} flagged.`;loadSellers()}}}
+  }finally{$('go').disabled=$('replay').disabled=false}}
+$('go').onclick=()=>{
+  const f=$('file').files[0];if(!f||!$('brand').value.trim()){$('status').textContent='Add an image or video and a brand name.';return}
+  if(f.type.startsWith('video/')){$('frames').innerHTML='';keyframes=[]}
+  reset();const fd=new FormData();fd.append('image',f);fd.append('brand',$('brand').value);fd.append('keywords',$('kw').value);
+  fd.append('official_domains',$('dom').value);fd.append('resellers',$('resellers').value);fd.append('image_url',$('imgurl').value);if($('demo').checked)fd.append('inject_demo','1');if($('sem').checked)fd.append('semantic_search','1');
+  run('/api/scan',fd)};
+$('replay').onclick=()=>{const fd=new FormData();fd.append('name','last_scan');run('/api/replay',fd)};
+</script>
+</body>
+</html>

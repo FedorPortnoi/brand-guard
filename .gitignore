@@ -1,0 +1,14 @@
+# secrets
+.env
+
+# local environment and caches
+.venv/
+__pycache__/
+.pytest_cache/
+
+# runtime data (rebuilt by the app; may contain your scans, labels and alerts)
+data/scans/
+data/last_scan.json
+data/monitor/
+data/labels/
+data/rdap_cache.json

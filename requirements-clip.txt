@@ -1,0 +1,5 @@
+# Optional: 'same product, different photo' matching (CLIP). Large download (~1 GB with torch).
+# Install CPU-only torch first:
+#   .venv/Scripts/pip install torch --index-url https://download.pytorch.org/whl/cpu
+torch>=2.4
+open_clip_torch>=3.3.0
