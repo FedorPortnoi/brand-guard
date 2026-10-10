@@ -31,6 +31,16 @@ test("summary lists the worst evidence matches first and leaves out unverified r
   assert.match(text, /https:\/\/bg\.example/);
 });
 
+test("the brand's own sites and resellers are counted but never listed as matches", () => {
+  const own = (idx: number, category: string) => m(idx, 0, { risk: { score: 0, category, host: "acme.com", reasons: [] } });
+  const r = result([own(0, "official"), own(1, "authorised_reseller"), m(2, 60)]);
+  assert.deepEqual(evidenceMatches(r).map(x => x.idx), [2]);
+  const text = summarize(r, "Acme");
+  assert.match(text, /1 visual match, 0 high risk/);
+  assert.ok(!text.includes("acme.com"));
+  assert.match(text, /2 more on your own sites or resellers \(not counted\)/);
+});
+
 test("summary with no matches and with an error", () => {
   assert.match(summarize(result([]), "Acme"), /No copies of your image found/);
   assert.equal(summarize({ scanId: "", matches: [], done: null, error: "Could not read that image." }, "Acme"),

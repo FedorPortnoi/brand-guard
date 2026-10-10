@@ -111,11 +111,16 @@ export class BrandGuard {
 export const riskWord = (m: Match) =>
   m.verification === "unverified" ? "unverified" : m.risk.score >= 65 ? "HIGH RISK" : m.risk.score >= 40 ? "review" : "low risk";
 
-/** Matches with real visual evidence, worst first. Unverified rows (image could not be downloaded) are left out,
- *  as the web app hides them by default. */
+const OWN = new Set(["official", "authorised_reseller"]);
+
+/** Matches with real visual evidence on someone else's site, worst first. Unverified rows (image could not be
+ *  downloaded) are left out, as the web app hides them by default, and so are the brand's own sites and resellers. */
 export function evidenceMatches(r: ScanResult): Match[] {
-  return r.matches.filter(m => m.forensics).sort((a, b) => b.risk.score - a.risk.score);
+  return r.matches.filter(m => m.forensics && !OWN.has(m.risk.category)).sort((a, b) => b.risk.score - a.risk.score);
 }
+
+/** Copies found on the brand's own sites or authorised resellers: expected, so only counted. */
+export const ownSiteMatches = (r: ScanResult) => r.matches.filter(m => m.forensics && OWN.has(m.risk.category)).length;
 
 /** The reply to a finished scan: counts, then the worst few matches with their links. */
 export function summarize(r: ScanResult, brand: string, appUrl = "", top = 3): string {
@@ -136,6 +141,8 @@ export function summarize(r: ScanResult, brand: string, appUrl = "", top = 3): s
                `${m.forensics!.label}${m.verification === "verified" ? "" : " (low-res check)"}`, where);
   });
   if (found.length > top) lines.push("", `+${found.length - top} more.`);
+  const own = ownSiteMatches(r);
+  if (own) lines.push("", `${own} more on your own sites or resellers (not counted).`);
   if (d?.unverified) lines.push("", `${d.unverified} image${d.unverified === 1 ? "" : "s"} could not be downloaded, so not counted.`);
   if (appUrl && found.length) lines.push("", `Full evidence and takedown drafts: ${appUrl}`);
   return lines.join("\n");
