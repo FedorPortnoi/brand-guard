@@ -7,7 +7,7 @@ from fastapi import APIRouter, File, Form, HTTPException, Query, UploadFile
 from fastapi.responses import JSONResponse
 
 from .monitor import MON_DIR, add_watch, delete_watch, mark_alerts_read, run_watch, _load_file
-from . import risk
+from . import ingest, risk
 from .net import safe_url
 
 router = APIRouter()
@@ -23,6 +23,7 @@ async def create_watch(
     official_domains: str = Form(""),
     resellers: str = Form(""),
     image_url: str = Form(""),
+    source_url: str = Form(""),
     interval_hours: str = Form("24"),
     min_score: str = Form("40"),
     webhook_url: str = Form(""),
@@ -52,6 +53,13 @@ async def create_watch(
 
     # Save image
     image_bytes = await image.read()
+    try:
+        prepared = await asyncio.to_thread(ingest.prepare_upload, image_bytes, image.filename or "upload")
+        image_bytes = prepared.data
+    except ingest.IngestError:
+        # Keep watch creation backwards-compatible. Older API clients may create a watch before the source file
+        # is available locally; run_watch will surface the unreadable-media error when that watch is executed.
+        pass
     img_path = MON_DIR / f"{watch_id}.img"
     await asyncio.to_thread(img_path.write_bytes, image_bytes)
 
@@ -63,7 +71,8 @@ async def create_watch(
         "keywords": kws,
         "official_domains": doms,
         "resellers": risk.parse_domains(resellers),
-        "image_url": image_url,
+        "image_url": ingest.direct_image_url(source_url or image_url),
+        "source_url": (source_url or image_url).strip(),
         "interval_hours": interval,
         "min_score": min_score_int,
         "webhook_url": webhook_url,

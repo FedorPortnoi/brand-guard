@@ -8,6 +8,7 @@ Every candidate is later VERIFIED visually; discovery only has to be generous, n
 """
 import asyncio
 import os
+import re
 from html import unescape
 from urllib.parse import urljoin, urlparse
 
@@ -76,10 +77,36 @@ async def brave_api(queries: list[str], errors: list) -> tuple[list[dict], list[
                 r.raise_for_status()
                 pages += [{"page_url": x["url"], "title": x.get("title", "")} for x in r.json().get("web", {}).get("results", []) if x.get("url")]
             except Exception as e:
-                errors.append(f"brave-api: {type(e).__name__}")
-                if isinstance(e, httpx.HTTPStatusError) and e.response.status_code in (401, 403, 429):
+                code = e.response.status_code if isinstance(e, httpx.HTTPStatusError) else None
+                errors.append("brave-api: usage limit reached (raise it in the Brave API dashboard)" if code == 402
+                              else f"brave-api: {type(e).__name__}{f' {code}' if code else ''}")
+                if code in (401, 402, 403, 429):  # the rest of the queries would fail the same way
                     break
     return imgs, pages
+
+
+async def brave_web(query: str, errors: list, count: int = 10, client: httpx.AsyncClient | None = None) -> list[dict] | None:
+    """One Brave web search: [{page_url, title, description}], or None when there is no key (the caller falls back)."""
+    key = os.getenv("BRAVE_API_KEY")
+    if not key:
+        return None
+    own = client is None
+    c = client or httpx.AsyncClient(timeout=15)
+    try:
+        r = await c.get(f"{BRAVE_API}/web/search", params={"q": query, "count": count},
+                        headers={"X-Subscription-Token": key, "Accept": "application/json"})
+        r.raise_for_status()
+        clean = lambda t: unescape(re.sub(r"<[^>]+>", "", t or ""))  # noqa: E731  (Brave sends HTML: &#039;, <strong>)
+        return [{"page_url": x["url"], "title": clean(x.get("title")), "description": clean(x.get("description"))}
+                for x in r.json().get("web", {}).get("results", []) if x.get("url")]
+    except Exception as e:
+        code = e.response.status_code if isinstance(e, httpx.HTTPStatusError) else None
+        errors.append("brave-api: usage limit reached (raise it in the Brave API dashboard)" if code == 402
+                      else f"brave-api: {type(e).__name__}{f' {code}' if code else ''}")
+        return []
+    finally:
+        if own:
+            await c.aclose()
 
 
 YOU_API = "https://ydc-index.io/v1/search"

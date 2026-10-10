@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { evidenceMatches, parseSse, summarize, type Match, type ScanResult } from "../src/brandguard.js";
+import { evidenceMatches, halfwayNote, parseSse, seenBefore, summarize, type Match, type ScanResult } from "../src/brandguard.js";
 
 test("parseSse splits events, parses JSON and keeps a partial block for the next chunk", () => {
   const { events, rest } = parseSse('event: status\ndata: {"message":"Searching"}\n\nevent: match\r\ndata: {"idx":0}\r\n\nevent: do');
@@ -45,4 +45,28 @@ test("summary with no matches and with an error", () => {
   assert.match(summarize(result([]), "Acme"), /No copies of your image found/);
   assert.equal(summarize({ scanId: "", matches: [], done: null, error: "Could not read that image." }, "Acme"),
                "The scan failed: Could not read that image.");
+});
+
+test("the halfway note counts only other people's copies", () => {
+  const own = m(0, 0, { risk: { score: 0, category: "official", host: "acme.com", reasons: [] } });
+  assert.equal(halfwayNote(140, 280, [own]), "Halfway: checked 140 of 280 images, no copies yet. About a minute to go.");
+  assert.equal(halfwayNote(140, 280, [own, m(1, 60), m(2, 70)]), "Halfway: checked 140 of 280 images, 2 possible copies so far. About a minute to go.");
+});
+
+test("own-site candidates skipped by the scan are counted with the own-site rows", () => {
+  const r = result([m(0, 60)]);
+  r.done!.own_site = 7;
+  assert.ok(summarize(r, "Acme").includes("7 more on your own sites or resellers (not counted)."));
+});
+
+test("a match seen in an earlier investigation says so; a shared Shopify IP does not count", () => {
+  const seen = (x: Partial<import("../src/brandguard.js").Seen>) => ({ host: "shop-a.example", brand: "Acme", started_at: "2026-10-09",
+    same_site: false, same_url: false, same_ips: [], this_investigation: false, ...x });
+  const onServer = m(1, 70, { server: { shared: null, seen_before: [seen({ same_ips: ["203.0.113.7"] })] } });
+  const onShopify = m(2, 60, { server: { shared: "Shopify", seen_before: [seen({ same_ips: ["23.227.38.65"] })] } });
+  const again = m(3, 50, { server: { seen_before: [seen({ same_site: true })] } });
+  assert.equal(seenBefore(onServer), "Same server as shop-a.example, found before.");
+  assert.equal(seenBefore(onShopify), "");
+  assert.equal(seenBefore(again), "Found in an earlier investigation.");
+  assert.ok(summarize(result([onServer]), "Acme").includes("Same server as shop-a.example, found before."));
 });

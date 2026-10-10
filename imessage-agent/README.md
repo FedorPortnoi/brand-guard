@@ -11,7 +11,7 @@ thin TypeScript service; all scanning happens in the Brand Guard API (`../app`).
 
 | You send | The agent |
 |---|---|
-| a photo (with the brand as caption, or answer "What's the brand name?") | scans (about 2-3 minutes, typing indicator on), replies with counts and the top 3 matches |
+| a photo (with the brand as caption, or answer "What's the brand name?") | scans (about 2-3 minutes, typing indicator on, one "Halfway" update), replies with counts and the top 3 matches |
 | `brand Acme` | sets the brand; rescans the last photo if there is one |
 | `domains acme.com, shop.acme.com` | your own sites, never flagged |
 | `report` | the PDF evidence report for the top match |
@@ -35,6 +35,7 @@ through a shared pool of numbers) and set:
 | `SPECTRUM_PROJECT_ID`, `SPECTRUM_PROJECT_SECRET` | project credentials; their presence switches the agent from terminal to iMessage |
 | `BRAND_GUARD_URL` | Brand Guard API, default `http://127.0.0.1:8000` |
 | `PUBLIC_BASE_URL` | public address of the web app, linked under each result (set automatically on Replit) |
+| `ALLOWED_SENDERS` | optional: phone numbers or emails that may use the agent, comma separated (`+1 555 010 2345, me@example.com`). Anyone else is told once that the agent is private, and their messages never start a scan. Set it before giving out the number: every scan uses your search API keys |
 | `AGENT_TERMINAL=1` | force the terminal chat even when credentials are set |
 
 On Replit, `bash start.sh` runs Brand Guard and this agent together; put the two Spectrum values in Replit Secrets.

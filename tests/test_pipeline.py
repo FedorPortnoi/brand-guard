@@ -217,3 +217,103 @@ def test_heic_original_from_an_iphone_is_scanned(monkeypatch):
     ev = _run(b.getvalue(), [_cand("copy", orig, "https://shop.example.xyz/p/1")], monkeypatch)
     assert not [d for e, d in ev if e == "error"]
     assert [d["title"] for e, d in ev if e == "match"] == ["copy"]
+
+
+def test_a_hanging_host_cannot_hold_the_scan_open(monkeypatch):
+    """A host that never answers costs one download budget, then the thumbnail is tried; the scan still finishes."""
+    import time
+    from app import net
+    orig, _, _ = _photos()
+    monkeypatch.setattr(pipeline, "DOWNLOAD_BUDGET", 0.3)
+    monkeypatch.setattr(pipeline, "THUMB_BUDGET", 0.3)
+    tried = []
+
+    async def hangs(client, url, referer=None):
+        tried.append(url)
+        if url and "thumb" in url:
+            return orig, 200
+        await asyncio.sleep(60)
+    monkeypatch.setattr(net, "fetch_image", hangs)
+    cands = [{"image_url": "https://slow.example.com/a.jpg", "thumbnail": "https://cdn.example.com/thumb.jpg",
+              "page_url": "https://slow.example.com/p", "title": "a", "source": "bing"}]
+    t = time.perf_counter()
+    ev = _run(orig, cands, monkeypatch)
+    assert time.perf_counter() - t < 10
+    rows = [d for e, d in ev if e == "match"]
+    assert len(rows) == 1 and rows[0]["verification"].startswith("thumbnail-only")
+    assert tried == ["https://slow.example.com/a.jpg", "https://cdn.example.com/thumb.jpg"]
+
+
+def test_host_safety_is_checked_once_per_host(monkeypatch):
+    from app import net
+    calls = []
+    monkeypatch.setattr(net, "_safe_hosts", {})
+    monkeypatch.setattr(net, "_safe_host", lambda h: calls.append(h) or True)
+
+    async def go():
+        return [await net.safe_url_async(u) for u in
+                ("https://cdn.example.com/1.jpg", "https://CDN.example.com/2.jpg", "ftp://cdn.example.com/x", "https://b.example.com/")]
+    assert asyncio.run(go()) == [True, True, False, True]
+    assert calls == ["cdn.example.com", "b.example.com"]
+
+
+def test_own_site_pages_are_not_downloaded(monkeypatch):
+    """Pages on the brand's own domains and resellers are skipped before any download, and counted."""
+    from app import net
+    orig, _, _ = _photos()
+    fetched = []
+
+    async def fetch(client, url, referer=None):
+        fetched.append(url)
+        return orig, 200
+    monkeypatch.setattr(net, "fetch_image", fetch)
+    cands = [{"image_url": f"https://cdn.shop.example/{i}.jpg", "page_url": f"https://www.coca-cola.com/p/{i}",
+              "title": "x", "source": "bing"} for i in range(3)]
+    cands += [{"image_url": "https://cdn.coca-cola.com/a.jpg", "page_url": "https://partner.example/p", "title": "x",
+               "source": "bing"},
+              {"image_url": "https://img.example.org/b.jpg", "page_url": "https://reseller.example/p", "title": "x",
+               "source": "bing"}]
+
+    async def fake_discover(*a, **k): return cands
+    async def no_reverse(*a, **k): return []
+    monkeypatch.setattr(search, "discover", fake_discover)
+    monkeypatch.setattr(search, "reverse_candidates", no_reverse)
+
+    async def go():
+        return [e async for e in pipeline.run_scan(orig, "Coca-Cola", [], ["coca-cola.com"], resellers=["reseller.example"])]
+    ev = asyncio.run(go())
+    done = [d for e, d in ev if e == "done"][0]
+    # a copy of the brand's image on someone else's page is still checked, wherever the image is hosted
+    assert fetched == ["https://cdn.coca-cola.com/a.jpg"]
+    assert done["own_site"] == 4 and done["scanned"] == 1
+    assert any("4 on your own sites skipped" in d.get("message", "") for e, d in ev if e == "status")
+
+
+def test_a_host_that_keeps_timing_out_is_given_up(monkeypatch):
+    """After SLOW_HOST timeouts a host's other images are not requested; their thumbnails are still checked."""
+    from app import net
+    orig, _, _ = _photos()
+    monkeypatch.setattr(pipeline, "SLOW_HOST", 2)
+    asked = []
+
+    async def fetch(client, url, referer=None):
+        asked.append(url)
+        if url and "stalls.example" in url:
+            return None, -2
+        return orig, 200
+    monkeypatch.setattr(net, "fetch_image", fetch)
+    monkeypatch.setattr(asyncio, "sleep", _no_sleep(asyncio.sleep))
+    cands = [{"image_url": f"https://stalls.example/{i}.jpg", "thumbnail": f"https://thumbs.example/{i}.jpg",
+              "page_url": f"https://stalls.example/p/{i}", "title": "x", "source": "bing"} for i in range(6)]
+    ev = _run(orig, cands, monkeypatch)
+    done = [d for e, d in ev if e == "done"][0]
+    # each early candidate tries the image 3 times (two count as timeouts), so the host is given up after one
+    assert len([u for u in asked if "stalls.example" in u]) <= 6
+    assert len([u for u in asked if "thumbs.example" in u]) == 6
+    assert done["slow_hosts"] == ["stalls.example"] and done["thumbnail_only"] == 6
+
+
+def _no_sleep(real):
+    async def sleep(t, *a, **k):
+        return await real(0)
+    return sleep

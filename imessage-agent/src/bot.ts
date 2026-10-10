@@ -2,7 +2,7 @@
 // with stand-in spaces and messages.
 import { readFileSync, writeFileSync } from "node:fs";
 import { attachment, type Message, type Space } from "spectrum-ts";
-import { BrandGuard, evidenceMatches, summarize, type ScanRequest } from "./brandguard.js";
+import { BrandGuard, evidenceMatches, halfwayNote, summarize, type Match, type ScanRequest } from "./brandguard.js";
 
 export const HELP = [
   "Brand Guard finds copies of your product photos online.",
@@ -36,9 +36,17 @@ export type BotOptions = {
   appUrl?: string;  // public web app, linked under results
   statePath: string | URL;  // chat settings and watch ownership (JSON)
   lookupSpace: (id: string) => Promise<Space | undefined>;  // a chat by id, to deliver alerts after a restart
+  allowedSenders?: string[];  // phone numbers or emails that may use the agent; empty or missing: anyone
 };
 
-export function createBot({ bg, appUrl: APP_URL = "", statePath, lookupSpace }: BotOptions) {
+export const PRIVATE = "This Brand Guard agent is private. Ask its owner to add your number.";
+
+/** "+1 (555) 010-2345" and "+15550102345" are the same sender; so are emails in any case. */
+export const senderKey = (id: string) => id.toLowerCase().replace(/[\s\-().]/g, "");
+
+export function createBot({ bg, appUrl: APP_URL = "", statePath, lookupSpace, allowedSenders = [] }: BotOptions) {
+  const allowed = new Set(allowedSenders.map(senderKey).filter(Boolean));
+  const refused = new Set<string>();  // told once that the agent is private; later messages are ignored
   const state: State = (() => {
     try {
       return JSON.parse(readFileSync(statePath, "utf8")) as State;
@@ -92,7 +100,16 @@ export function createBot({ bg, appUrl: APP_URL = "", statePath, lookupSpace }: 
     busy.add(key);
     try {
       await space.send(`Scanning the web for copies of your ${chat.brand} image. This takes about 2-3 minutes.`);
-      const result = await space.responding(() => bg.scan({ ...photo, brand: chat.brand!, officialDomains: chat.domains }));
+      const sofar: Match[] = [];
+      let halfway = false;
+      const onEvent = (event: string, d: Record<string, any>) => {
+        if (event === "match") sofar.push(d as Match);
+        else if (event === "progress" && !halfway && d.total >= 40 && d.done * 2 >= d.total) {
+          halfway = true;
+          space.send(halfwayNote(d.done, d.total, sofar)).catch(() => {});
+        }
+      };
+      const result = await space.responding(() => bg.scan({ ...photo, brand: chat.brand!, officialDomains: chat.domains }, onEvent));
       const top = evidenceMatches(result)[0];
       chat.lastScanId = result.scanId;
       chat.lastTopIdx = top?.idx;
@@ -111,6 +128,14 @@ export function createBot({ bg, appUrl: APP_URL = "", statePath, lookupSpace }: 
   }
 
   async function handle(space: Space, message: Message) {
+    if (allowed.size && !allowed.has(senderKey(message.sender?.id ?? ""))) {
+      const who = senderKey(message.sender?.id ?? space.id);
+      if (!refused.has(who)) {
+        refused.add(who);
+        await space.send(PRIVATE);
+      }
+      return;
+    }
     const chat = chatFor(space, message.platform);
     const key = chatKey(chat.platform, chat.spaceId);
     const media = await mediaOf(message);

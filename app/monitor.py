@@ -92,7 +92,7 @@ async def run_watch(watch_id: str) -> dict:
         scan_id = None
 
         async for event, payload in run_scan(image_bytes, brand, keywords, official_domains, image_url, inject_demo=False,
-                                             resellers=watch.get("resellers", [])):
+                                             resellers=watch.get("resellers", []), origin="watch"):
             if event == "done":
                 total = payload.get("scanned", 0)
                 scan_id = payload.get("scan_id", "")
