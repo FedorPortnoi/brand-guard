@@ -68,7 +68,7 @@ def post_label(body: LabelIn):
     # Save evidence images if available
     if item.get("evidence"):
         try:
-            evidence_data = base64.b64decode(item["evidence"].split(",", 1)[1] if "," in item["evidence"] else item["evidence"])
+            evidence_data = base64.b64decode(item["evidence"])
             evidence_hash = hashlib.sha256(evidence_data).hexdigest()
             (LABELS_DIR / f"{evidence_hash}.jpg").write_bytes(evidence_data)
         except Exception:

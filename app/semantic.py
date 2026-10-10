@@ -3,7 +3,8 @@
 Contract used by pipeline.py:
     enabled() -> bool
     Embedding(data: bytes)                 # precomputed embedding of the original
-    compare(ref: Embedding, data: bytes) -> dict | None   # forensics-shaped dict, or None if not the same product
+    compare(ref: Embedding, data: bytes, original=None) -> dict | None   # forensics-shaped dict, or None if not the same product
+    fingerprint(data: bytes) -> dict       # what compare() reads from the full-size image, so a caller can keep a small copy
 
 Batch screening:
     embed_many(datas: list[bytes]) -> list[np.ndarray | None]   # normalised vectors; dot with the reference
@@ -197,8 +198,18 @@ def _embed_batches(model, processor, datas: list[bytes], batch_size: int) -> lis
     return embeddings
 
 
-def compare(ref: Embedding, data: bytes) -> Optional[dict]:
-    """Return None unless cosine similarity >= SEMANTIC_MIN. On a match, return forensics-shaped dict."""
+def fingerprint(data: bytes, img=None) -> dict:
+    """Everything compare() takes from the full-size image (pass the decoded image as img to skip a second decode).
+    Lets the caller keep only a downscaled copy of the candidate and still report the original's hash, size and metadata."""
+    from . import forensics
+    img = img if img is not None else forensics.load(data)
+    return {"phash": imagehash.phash(img, hash_size=16), "size": list(img.size),
+            "c2pa": forensics.c2pa_status(data), "ai_signal": forensics.ai_signal(data, img)}
+
+
+def compare(ref: Embedding, data: bytes, original: Optional[dict] = None) -> Optional[dict]:
+    """Return None unless cosine similarity >= SEMANTIC_MIN. On a match, return forensics-shaped dict.
+    original: fingerprint() of the full-size image when data is a downscaled copy of it."""
     try:
         from . import forensics
         import torch
@@ -245,6 +256,10 @@ def compare(ref: Embedding, data: bytes) -> Optional[dict]:
     if similarity < SEMANTIC_MIN:
         return None
 
+    if original is not None:
+        return _result(similarity, int(ref.phash - original["phash"]), original["c2pa"], original["ai_signal"],
+                       original["size"])
+
     try:
         from . import forensics
         cand_full = forensics.load(data)
@@ -258,6 +273,11 @@ def compare(ref: Embedding, data: bytes) -> Optional[dict]:
     cand_phash = imagehash.phash(cand_full, hash_size=16)
     hash_distance = int(ref.phash - cand_phash)
 
+    return _result(similarity, hash_distance, forensics.c2pa_status(data), forensics.ai_signal(data, cand_full),
+                   list(cand_full.size))
+
+
+def _result(similarity: float, hash_distance: int, c2pa: dict, ai_signal: dict, size: list) -> dict:
     return {
         "kind": "same_product",
         "label": "Same product, different photo",
@@ -268,7 +288,7 @@ def compare(ref: Embedding, data: bytes) -> Optional[dict]:
         "changed_pct": 0.0,
         "heatmap": None,
         "template_score": 0.0,
-        "c2pa": forensics.c2pa_status(data),
-        "ai_signal": forensics.ai_signal(data, cand_full),
-        "size": list(cand_full.size),
+        "c2pa": c2pa,
+        "ai_signal": ai_signal,
+        "size": size,
     }

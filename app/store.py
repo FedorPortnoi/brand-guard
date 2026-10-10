@@ -9,6 +9,15 @@ UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.3
 # scan_id -> {"brand": str, "original": jpeg bytes, "official_domains": [str],
 #             "items": {idx: {"match": match dict, "evidence": base64 jpeg | None}}}
 SESSIONS: dict[str, dict] = {}
+MAX_SESSIONS = 50  # each holds images and evidence; monitoring runs add one per run, so keep only the newest
+
+
+def add_session(scan_id: str, sess: dict) -> dict:
+    """Register a scan, dropping the oldest ones past MAX_SESSIONS (an evicted scan then 404s like an unknown one)."""
+    SESSIONS[scan_id] = sess
+    while len(SESSIONS) > MAX_SESSIONS:
+        SESSIONS.pop(next(iter(SESSIONS)))
+    return sess
 
 
 def original_for(sess: dict, match: dict) -> bytes:

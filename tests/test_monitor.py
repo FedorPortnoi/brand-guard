@@ -262,6 +262,43 @@ def test_error_handling(tmp_mon_dir):
     asyncio.run(run_test())
 
 
+def test_error_pushes_next_run_forward(tmp_mon_dir):
+    """A failed scan moves next_run_at out by the interval, so the scheduler doesn't retry every tick."""
+    async def run_test():
+        now = datetime.now(timezone.utc)
+        due_time = datetime.fromtimestamp(now.timestamp() - 1, tz=timezone.utc).isoformat(timespec="seconds")
+        watch = {
+            "id": "w1", "brand": "Acme", "keywords": [], "official_domains": [], "image_url": "",
+            "interval_hours": 2, "min_score": 40, "webhook_url": "",
+            "created_at": "2026-10-01T00:00:00", "last_run_at": None, "next_run_at": due_time,
+            "last_scan_id": None, "running": False, "seen": [], "history": [],
+        }
+        watches_file = tmp_mon_dir / "watches.json"
+        watches_file.write_text(json.dumps({"w1": watch}), encoding="utf8")
+        # Missing image file will cause an error
+
+        result = await run_watch("w1")
+        assert "error" in result
+
+        watch_after = json.loads(watches_file.read_text(encoding="utf8"))["w1"]
+        next_run = datetime.fromisoformat(watch_after["next_run_at"]).timestamp()
+        expected = now.timestamp() + 2 * 3600
+        assert abs(next_run - expected) < 60
+
+        # Further scheduler ticks right away must not re-run the failing watch
+        stop = asyncio.Event()
+        scheduler_task = asyncio.create_task(monitor_module.scheduler_loop(stop, tick=0.05))
+        await asyncio.sleep(0.3)
+        stop.set()
+        await scheduler_task
+
+        alerts = json.loads((tmp_mon_dir / "alerts.json").read_text(encoding="utf8"))
+        assert len(alerts) == 1
+        assert alerts[0]["type"] == "error"
+
+    asyncio.run(run_test())
+
+
 def test_scheduler(tmp_mon_dir, fake_run_scan):
     """Scheduler runs due watches one at a time."""
     async def run_test():

@@ -27,6 +27,14 @@ def on_domains(host: str, domains) -> bool:
     return any(host == d or host.endswith("." + d) for d in domains or () if d)
 
 
+def host_matches(host: str, name: str) -> bool:
+    """Whole-label match, not substring: 'etsy' hits etsy.com / www.etsy.co.uk but not betsyjohnson.com;
+    'x.com' hits x.com / www.x.com but not fedex.com."""
+    if "." in name:
+        return on_domains(host, (name,))
+    return name in (host or "").split(".")
+
+
 def host_of(url: str) -> str:
     try:
         return (urlparse(url).hostname or "").lower().removeprefix("www.")
@@ -50,9 +58,9 @@ def assess(page_url: str, title: str, official_domains: list[str], forensic: dic
     reasons.append(forensic["label"])
 
     category = "unknown"
-    if any(m in host for m in MARKETPLACES):
+    if any(host_matches(host, m) for m in MARKETPLACES):
         category = "marketplace"; score += 20; reasons.append("Third-party marketplace listing")
-    elif any(s in host for s in SOCIAL):
+    elif any(host_matches(host, s) for s in SOCIAL):
         category = "social"; score -= 10; reasons.append("Social/UGC platform (often fan or repost)")
     hits = [w for w in SUSPICIOUS_WORDS if w in text]
     if hits:
@@ -95,7 +103,7 @@ def context_only(page_url: str, title: str, official_domains: list[str], reselle
         return None
     text = f"{title} {page_url}".lower()
     reasons, score = [], 0
-    if any(m in host for m in MARKETPLACES):
+    if any(host_matches(host, m) for m in MARKETPLACES):
         score += 25; reasons.append("Third-party marketplace listing")
     hits = [w for w in SUSPICIOUS_WORDS if w in text]
     if hits:
