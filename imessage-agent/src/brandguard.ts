@@ -25,6 +25,8 @@ export type Check = {
   alternatives_for?: { what: string; kind: "product" | "category" } | Record<string, never>;
   /** Other sites showing the same product photo (a sign the photo was taken from somewhere else). */
   same_photo?: { url: string; host: string; title: string }[];
+  /** Not legit only: what to do if the shopper already paid, by the payment methods seen, and where to report it. */
+  already_paid?: { methods: string[]; steps: string[]; report: string[] } | Record<string, never>;
 };
 
 export type Alternative = { url: string; host: string; title: string; price: number | null; currency: string | null; verdict: Check["verdict"] };
@@ -103,6 +105,9 @@ export function replyText(c: Check): string {
 export function verdictText(c: Check): string {
   const what = c.found.how === "screenshot" ? `${c.found.what} (from your screenshot)` : c.found.what || c.domain;
   const extras = extrasText(c);
-  return [`${HEADLINE[c.verdict]}  ${what}`, "", ...reasonLines(c), "", ADVICE[c.verdict],
+  const ap = c.already_paid;
+  const paid = c.verdict === "red" && ap && "steps" in ap && ap.steps.length
+    ? ["", "Already paid?", ...ap.steps.map(s => `- ${s}`), ...ap.report.map(r => `- ${r}`)] : [];
+  return [`${HEADLINE[c.verdict]}  ${what}`, "", ...reasonLines(c), "", ADVICE[c.verdict], ...paid,
     ...(extras.length ? ["", ...extras] : [])].join("\n");
 }
