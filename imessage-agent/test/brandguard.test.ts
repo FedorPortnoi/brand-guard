@@ -85,3 +85,21 @@ test("one reply answers every thing the message named, and says why one couldn't
   assert.equal(parts[2], "Zzqxv: I couldn't find a website for \"Zzqxv\". Send me the link instead.");
   assert.equal(replyText(check("red", [])), verdictText(check("red", [])));
 });
+
+
+test("each reason shows its proof on the line below; same photo elsewhere is shown unless Legit", async () => {
+  const proofed = {
+    ...check("red", [
+      { label: "Very new domain", detail: "The domain was registered 4 days ago.", tone: "bad", impact: 50,
+        proof: { text: "Registered 2026-10-06", url: "https://lookup.icann.org/en/lookup?name=luxe-kicks.store" } },
+      { label: "Payment off the platform", detail: "Asks buyers to pay or talk elsewhere: zelle. That removes buyer protection.",
+        tone: "bad", impact: 20, proof: { text: "\"DM to order, Zelle only\" (from your screenshot)", url: null } },
+    ]),
+    same_photo: [{ url: "https://www.adidas.com/us/samba", host: "www.adidas.com", title: "Samba OG" }],
+  };
+  const text = verdictText(proofed);
+  assert.ok(text.includes("- The domain was registered 4 days ago.\n  ↳ Registered 2026-10-06: https://lookup.icann.org/en/lookup?name=luxe-kicks.store\n"));
+  assert.ok(text.includes("- Asks buyers to pay or talk elsewhere: zelle.\n  ↳ \"DM to order, Zelle only\" (from your screenshot)\n"));
+  assert.ok(text.includes("Same photo also on:\n- www.adidas.com: https://www.adidas.com/us/samba"));
+  assert.ok(!verdictText({ ...proofed, verdict: "green" }).includes("Same photo"));
+});

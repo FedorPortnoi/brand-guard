@@ -382,3 +382,74 @@ def test_the_footprint_is_not_searched_when_the_page_can_be_read(monkeypatch):
     async def rows(domain): raise AssertionError("no search needed")
     monkeypatch.setattr(listing, "_web_rows", rows)
     assert asyncio.run(listing.check_url("https://shop.example/trail-shoe", log=False))["footprint"] is None
+
+
+# --- step 4: proof under each reason ---------------------------------------------------------------------------
+
+def _proof(r, label):
+    return _labels(r)[label].get("proof")
+
+
+def test_domain_age_and_registrar_reasons_carry_the_registration_date():
+    r = listing.assess("https://deal.example.xyz/p", PRODUCT_HTML,
+                       {"age_days": 4, "created": "2026-10-06T12:00:00Z", "registrar": "CSC Corporate Domains"}, [], [])
+    assert _proof(r, "Very new domain") == {"text": "Registered 2026-10-06", "url": "https://lookup.icann.org/en/lookup?name=example.xyz"}
+    old = listing.assess("https://brand.example/p", PRODUCT_HTML, {"age_days": 9000, "created": "2001-08-01T00:00:00Z",
+                                                                   "registrar": "CSC Corporate Domains"}, [], [])
+    assert _proof(old, "Established domain")["text"] == "Registered 2001-08-01"
+    assert _proof(old, "Brand-protection registrar")["text"] == "Registrar: CSC Corporate Domains"
+
+
+def test_a_threat_report_links_to_googles_public_lookup():
+    r = listing.assess("http://deal.example/win", PRODUCT_HTML, {"age_days": 900}, ["SOCIAL_ENGINEERING"], [])
+    assert _proof(r, "Known threat warning") == {
+        "text": "Safe Browsing: social engineering",
+        "url": "https://transparencyreport.google.com/safe-browsing/search?url=http%3A%2F%2Fdeal.example%2Fwin"}
+
+
+def test_wording_reasons_quote_where_the_words_were_seen():
+    shot = listing.assess("https://www.instagram.com/p/x/", None, {}, [], [],
+                          social={"account": "@kicks", "account_url": "https://www.instagram.com/kicks/"},
+                          seen_text="Fresh pairs every week. DM to order, Zelle only. Ships fast")
+    assert _proof(shot, "Payment off the platform") == {"text": '"Fresh pairs every week. DM to order, Zelle only. Ships fast" (from your screenshot)',
+                                                       "url": None}
+    assert _proof(shot, "Posted by") == {"text": "@kicks", "url": "https://www.instagram.com/kicks/"}
+    page = listing.assess("https://prize.example/win", b"<title>Pay with gift card to claim your prize</title>", {"age_days": 900}, [], [])
+    assert _proof(page, "Scam-style language") == {"text": '"Pay with gift card to claim your prize"', "url": "https://prize.example/win"}
+
+
+def test_quotes_keep_whole_words():
+    text = "Fresh pairs. DM to order, Zelle only. 1:1 replica, ships fast and cheap all over the world today"
+    assert listing._quote(text, "replica", 20) == "…order, Zelle only. 1:1 replica, ships fast and cheap…"
+
+
+def test_servers_archives_and_footprint_link_to_their_source():
+    server = {"ips": ["198.51.100.9"], "org": "Example Corp", "network": "EXAMPLECORP"}
+    own = listing.assess("https://examplecorp.example/p", PRODUCT_HTML, {"age_days": 2000}, [], [], server=server)
+    assert _proof(own, "Runs its own network") == {"text": "Server 198.51.100.9: Example Corp", "url": "https://bgp.he.net/ip/198.51.100.9"}
+    flagged = [{"host": "fake-a.example", "same_ips": ["203.0.113.7"], "same_site": False, "same_url": False, "score": 80}]
+    shared = listing.assess("https://fake-b.example/p", PRODUCT_HTML, {"age_days": 400}, [], flagged, server={"ips": ["203.0.113.7"]})
+    assert _proof(shared, "Shares a server with flagged sites") == {"text": "Shared IP 203.0.113.7", "url": "https://bgp.he.net/ip/203.0.113.7"}
+    copy = listing.assess("https://shop.example/p", PRODUCT_HTML, {"age_days": 900}, [], [], archived="2026-08-19T10:20:30+00:00")
+    assert _proof(copy, "Read an archived copy") == {"text": "Wayback Machine copy from 2026-08-19",
+                                                    "url": "https://web.archive.org/web/20260819102030/https://shop.example/p"}
+    fp = listing.web_footprint(FOOTPRINT_ROWS, "brightowls.com")
+    r = listing.assess("https://brightowls.com/", None, {}, [], [], footprint=fp)
+    assert _proof(r, "Following elsewhere") == {"text": "351,000 followers on Instagram", "url": "https://www.instagram.com/brightowls/"}
+    assert fp["accounts"][1]["url"] == "https://www.facebook.com/brightowlsco/"  # the profile, not the video the search found
+    assert _proof(r, "Review-site page") == {"text": "trustpilot.com, 1,184 reviews", "url": "https://www.trustpilot.com/review/brightowls.com"}
+    assert _proof(r, "Discussed online")["url"] == "https://www.reddit.com/r/Lamps/comments/1/bright_owls_a_good_buy/"
+
+
+def test_earlier_findings_say_how_many_and_when():
+    before = [{"host": "shop.example", "same_site": True, "same_url": False, "score": 80, "found_at": "2026-10-09T08:00:00",
+               "verification": "verified"},
+              {"host": "shop.example", "same_site": True, "same_url": False, "score": 70, "found_at": "2026-10-10T09:00:00",
+               "verification": "verified"}]
+    r = listing.assess("https://shop.example/p", PRODUCT_HTML, {"age_days": 900}, [], before)
+    assert _proof(r, "Seen in prior investigations") == {"text": "2 earlier finding(s), latest 2026-10-10", "url": None}
+
+
+def test_reasons_without_evidence_have_no_proof():
+    r = listing.assess("https://shop.example/p", PRODUCT_HTML, {}, [], [])
+    assert "proof" not in _labels(r)["Encrypted connection"] and "proof" not in _labels(r)["Domain age unavailable"]

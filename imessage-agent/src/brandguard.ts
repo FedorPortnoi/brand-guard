@@ -1,6 +1,8 @@
 // Client for the Brand Guard HTTP API (the FastAPI app in ../app), plus the text the agent sends back.
 
-export type Signal = { label: string; detail: string; tone: "good" | "bad" | "warn" | "neutral"; impact: number };
+/** What backs a reason: a date, a link anyone can open, or a quote. */
+export type Proof = { text: string; url: string | null };
+export type Signal = { label: string; detail: string; tone: "good" | "bad" | "warn" | "neutral"; impact: number; proof?: Proof };
 
 /** The link check's answer (POST /api/listing/ask), plus how the address was found. */
 export type Check = {
@@ -21,6 +23,8 @@ export type Check = {
   others?: (Check | { error: string; found: Check["found"] })[];
   /** What the alternatives are for: the same product, or (when only the store is known) what the store sells. */
   alternatives_for?: { what: string; kind: "product" | "category" } | Record<string, never>;
+  /** Other sites showing the same product photo (a sign the photo was taken from somewhere else). */
+  same_photo?: { url: string; host: string; title: string }[];
 };
 
 export type Alternative = { url: string; host: string; title: string; price: number | null; currency: string | null; verdict: Check["verdict"] };
@@ -54,10 +58,22 @@ const ADVICE = {
 
 const firstSentence = (s: string) => (s.match(/^.*?[.!?](?=\s|$)/)?.[0] ?? s).trim();
 
-/** The reasons worth texting: warnings for Not legit or Couldn't check, good signs for Legit. */
-export function reasons(c: Check, top = 3): string[] {
+/** The signals worth texting: warnings for Not legit or Couldn't check, good signs for Legit. */
+function picked(c: Check, top = 3): Signal[] {
   const wanted = c.verdict === "green" ? ["good"] : ["bad", "warn"];
-  return c.signals.filter(s => wanted.includes(s.tone)).slice(0, top).map(s => firstSentence(s.detail));
+  return c.signals.filter(s => wanted.includes(s.tone)).slice(0, top);
+}
+
+/** The reasons worth texting, one sentence each. */
+export function reasons(c: Check, top = 3): string[] {
+  return picked(c, top).map(s => firstSentence(s.detail));
+}
+
+/** A reason with its proof on the line below: "- reason" / "  ↳ Registered 2026-10-01: https://…". */
+export function reasonLines(c: Check, top = 3): string[] {
+  return picked(c, top).map(s => `- ${firstSentence(s.detail)}` +
+    (s.proof ? `
+  ↳ ${s.proof.text}${s.proof.url ? `: ${s.proof.url}` : ""}` : ""));
 }
 
 const price = (a: Alternative) =>
@@ -72,6 +88,8 @@ export function extrasText(c: Check): string[] {
     ? `Trusted stores for ${c.alternatives_for.what.toLowerCase()}:` : "Other places to buy it:";
   if (alts.length) lines.push(forWhat, ...alts.map(a => `- ${a.host}${price(a)}: ${a.url}`));
   else if (c.alternatives_note) lines.push(c.alternatives_note);
+  const photos = c.verdict === "green" ? [] : (c.same_photo ?? []).slice(0, 2);
+  if (photos.length) lines.push("Same photo also on:", ...photos.map(p => `- ${p.host}: ${p.url}`));
   return lines;
 }
 
@@ -85,6 +103,6 @@ export function replyText(c: Check): string {
 export function verdictText(c: Check): string {
   const what = c.found.how === "screenshot" ? `${c.found.what} (from your screenshot)` : c.found.what || c.domain;
   const extras = extrasText(c);
-  return [`${HEADLINE[c.verdict]}  ${what}`, "", ...reasons(c).map(r => `- ${r}`), "", ADVICE[c.verdict],
+  return [`${HEADLINE[c.verdict]}  ${what}`, "", ...reasonLines(c), "", ADVICE[c.verdict],
     ...(extras.length ? ["", ...extras] : [])].join("\n");
 }
