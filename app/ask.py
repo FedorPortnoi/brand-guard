@@ -38,6 +38,16 @@ PDF_PAGES = 5  # pages read from a PDF (a receipt, an invoice, an order confirma
 NOT_THE_SELLER = ("paypal.com", "stripe.com", "squareup.com", "square.site", "shopify.com", "myshopify.com", "klarna.com",
                   "afterpay.com", "affirm.com", "zelle.com", "venmo.com", "cash.app", "google.com", "apple.com",
                   "microsoft.com", "adobe.com", "w3.org", "schema.org", "bit.ly")
+_PRICE = re.compile(r"(?<![\w])(?:US)?\$\s?(\d{1,5}(?:,\d{3})*(?:\.\d{2})?)(?!\d)")
+# shop-screen words that are not the product's name
+_NOT_A_NAME = re.compile(r"^(?:add to (?:cart|bag)|buy (?:it )?now|shop now|sold out|in stock|only \d+ left!?|free shipping|"
+                         r"free returns|size|qty|quantity|sale|new|order (?:here|now):?|ships? (?:today|fast)|"
+                         r"\d+% off|reviews?|share|follow|like|comment|send|save)$", re.I)
+FAR_BELOW = 0.5  # a price under half of what trusted stores ask is a classic fake-shop sign
+NO_TEXT = "There's no text in that photo to go on. Send me the link, or a screenshot that shows the shop's name or address."
+NO_SELLER = "I couldn't tell who's selling it from that. Send me the link, or a screenshot that shows the shop's name or address."
+NO_ADDRESS = ("I couldn't find a web address or an @account in that {what}, so I can't tell who's selling it. "
+              "Send me the link, or a screenshot that shows the shop's name or address.")
 VIDEO_FRAMES = 8  # distinct frames read from a video (a screen recording, a saved reel)
 VIDEO_SIZE = 1600  # long side of a frame read for text: phone screen text is small
 
@@ -80,6 +90,61 @@ def video_frames(data: bytes, limit: int = VIDEO_FRAMES) -> list[Image.Image]:
     if len(picked) > limit:
         picked = [picked[round(i * (len(picked) - 1) / (limit - 1))] for i in range(limit)]
     return picked
+
+
+def product_from_text(lines: list[str]) -> tuple[str, float | None]:
+    """The product a shop screen or photo shows, and its price: the line with the price (its name sits next to it),
+    else the longest line that reads like a name. ("Samba OG $49" -> ("Samba OG", 49.0))."""
+    price, product = None, ""
+    for i, line in enumerate(lines):
+        m = _PRICE.search(line)
+        if m:
+            price = float(m.group(1).replace(",", ""))
+            name = _PRICE.sub(" ", line).strip(" -|:,")
+            if len(re.findall(r"[A-Za-z]{2,}", name)) == 0 and i > 0:
+                name = lines[i - 1]  # the price on its own line: the name is just above it
+            product = name
+            break
+    if not product:
+        names = [ln for ln in lines if re.search(r"[A-Za-z]{3}", ln) and not _NOT_A_NAME.match(ln.strip())
+                 and not addresses(ln) and len(ln) <= 80]
+        product = max(names, key=len, default="")
+    product = re.sub(r"\s+", " ", product).strip()[:80]
+    return (product if len(re.findall(r"[A-Za-z0-9]{2,}", product)) >= 2 else ""), price  # one stray word isn't a product
+
+
+def _price_signal(price: float | None, alts: list[dict]) -> dict | None:
+    """The photo's price against what the trusted stores ask (US dollars only)."""
+    asks = sorted(a["price"] for a in alts if a.get("price") and (a.get("currency") or "USD") == "USD")
+    if price is None or not asks:
+        return None
+    typical = asks[len(asks) // 2]
+    if price < typical * FAR_BELOW:
+        return listing._signal("Price far below trusted stores", f"${price:,.2f} here, about ${typical:,.2f} at trusted stores. "
+                               "Prices this low are a classic fake-shop sign.", "bad", 0)
+    return listing._signal("Price in line", f"${price:,.2f} here, about ${typical:,.2f} at trusted stores.", "neutral")
+
+
+async def _check_photo(how: str, lines: list[str]) -> dict:
+    """A photo or screen with no address and no @account but a product with a price: there is no seller to judge,
+    so the answer is Couldn't check, with trusted places that sell the product and how its price compares.
+    Without a price it isn't treated as a product (any two words would be: "Thanks for shopping")."""
+    product, price = product_from_text(lines)
+    if not lines:
+        raise ListingError(NO_TEXT)
+    if not product or price is None:
+        raise ListingError(NO_ADDRESS.format(what="PDF" if how == "pdf" else how))
+    facts = {**listing.page_facts(None, ""), "product": product, "price": price, "currency": "USD" if price else None}
+    result = {"verdict": "yellow", "headline": "Couldn't check", "score": 0, "url": "", "domain": "", "host": "",
+              "platform": None, "facts": facts, "sells": None, "send_screenshot": False, "crowd": {}, "already_paid": {},
+              "summary": "There is no seller to check in what you sent.", "ask_for": NO_SELLER,
+              "signals": [listing._signal("No seller shown", "It doesn't show a web address or an account, so there's no seller to check.", "warn", 0)],
+              "found": {"how": how, "what": product, "read": lines[:40]}}
+    result.update(await extras(result))
+    signal = _price_signal(price, result.get("alternatives") or [])
+    if signal:
+        result["signals"].insert(0, signal)
+    return result
 
 
 def is_pdf(data: bytes) -> bool:
@@ -392,6 +457,8 @@ async def ask(text: str = "", image: bytes | None = None) -> dict:
         jobs = [_check(value, shot, risk.host_of(listing.normalize_url(value)), seen, lines)]
     elif lines and (acct := account_url(lines)):
         jobs = [_check(acct[0], "account", acct[1], seen, lines)]
+    elif image:  # a product photo or shop screen with no address and no @account
+        jobs = [_check_photo(shot, lines)]
     else:
         raise ListingError(f"I couldn't find a web address or an @account in that {shot_name}. "
                            "Send me the link, or the store's name.")
