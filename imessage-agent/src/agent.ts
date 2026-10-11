@@ -7,7 +7,7 @@ import { Spectrum, type Message, type Space } from "spectrum-ts";
 import { imessage } from "spectrum-ts/providers/imessage";
 import { terminal } from "spectrum-ts/providers/terminal";
 import { BrandGuard } from "./brandguard.js";
-import { createBot } from "./bot.js";
+import { createBot, SETTLE_MS } from "./bot.js";
 
 const BRAND_GUARD_URL = (process.env.BRAND_GUARD_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
 const cloud = !!(process.env.SPECTRUM_PROJECT_ID && process.env.SPECTRUM_PROJECT_SECRET) && process.env.AGENT_TERMINAL !== "1";
@@ -23,6 +23,7 @@ const bot = createBot({
   bg: new BrandGuard(BRAND_GUARD_URL),
   allowedSenders: (process.env.ALLOWED_SENDERS || "").split(",").map(s => s.trim()).filter(Boolean),
   localFiles: !cloud,  // terminal testing: paste a file's path to send it
+  settleMs: SETTLE_MS,
 });
 
 for await (const [space, message] of inbox) {
