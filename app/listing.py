@@ -435,8 +435,9 @@ def rank_alternatives(items: list[dict]) -> list[dict]:
                                         x.get("price") if x.get("price") is not None else float("inf")))
 
 
-async def deep_research(value: str) -> dict:
-    source = await check_url(value, log=False)
+async def deep_research(value: str, source: dict | None = None) -> dict:
+    """Trusted places to buy the same item. source: a link check already done for value (saves checking it twice)."""
+    source = source or await check_url(value, log=False)
     facts = source["facts"]
     product = _query_name(source)
     maker = facts.get("manufacturer") or facts.get("brand")
@@ -461,7 +462,7 @@ async def deep_research(value: str) -> dict:
             continue
         host = risk.host_of(url)
         key = registrable_domain(host)
-        if not key or key in seen or url == source["url"]:
+        if not key or key in seen or url == source["url"] or key == source.get("domain"):  # not the shop itself
             continue
         seen.add(key)
         unique.append({"url": url, "search_title": row.get("title") or ""})
