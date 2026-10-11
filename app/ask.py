@@ -29,7 +29,8 @@ _NOT_THE_STORE = ("trustpilot", "sitejabber", "scamadviser", "scam-detector", "b
 # words around a name in "is Lucky Fours legit?"
 _FILLER = re.compile(r"\b(is|are|this|that|the|site|store|shop|website|legit|legitimate|real|fake|scam|safe|"
                      r"trustworthy|a|an|or|not|check|please|can you|tell me|if|and|also|what about|how about|"
-                     r"for|me|my|it|its|one|these|those|them|of|on|to|from|with|about|should i|buy|buying|here|too)\b"
+                     r"for|me|my|it|its|one|these|those|them|of|on|to|from|with|about|should i|buy|buying|here|too|"
+                     r"hi|hello|hey|yo|thanks|thank you|pls|plz|lol)\b"
                      r"|[?!.,:;\"']", re.I)
 LOCAL_PATH = re.compile(r"""^["']?(?:[a-zA-Z]:[\\/]|\\\\|~/|/(?:Users|home|tmp|var|private)/)""")  # C:\..., \\server, ~/, /Users/...
 MAX_ITEMS = 3  # things checked from one message ("is Lucky Fours legit? and kith.com")
@@ -46,6 +47,7 @@ _NOT_A_NAME = re.compile(r"^(?:add to (?:cart|bag)|buy (?:it )?now|shop now|sold
 FAR_BELOW = 0.5  # a price under half of what trusted stores ask is a classic fake-shop sign
 NO_TEXT = "There's no text in that photo to go on. Send me the link, or a screenshot that shows the shop's name or address."
 NO_SELLER = "I couldn't tell who's selling it from that. Send me the link, or a screenshot that shows the shop's name or address."
+NOTHING_TO_CHECK = "I didn't see a link, a screenshot or a store's name in that. Send me one of those and I'll check it."
 NO_ADDRESS = ("I couldn't find a web address or an @account in that {what}, so I can't tell who's selling it. "
               "Send me the link, or a screenshot that shows the shop's name or address.")
 VIDEO_FRAMES = 8  # distinct frames read from a video (a screen recording, a saved reel)
@@ -254,6 +256,35 @@ def account_url(lines: list[str]) -> tuple[str, str] | None:
     return f"https://www.instagram.com/{handle}/", f"@{handle} on Instagram"
 
 
+def _name_key(line: str) -> str:
+    return re.sub(r"\s+", " ", re.sub(r"[®™©]", "", line)).strip(" .,:;|-…")
+
+
+def name_on_screen(lines: list[str]) -> str:
+    """The store or brand a screen names more than once (a shopping result shows the brand in its title and again
+    as the seller under the price): a short line of words seen at least twice. Empty when nothing repeats."""
+    counts: dict[str, int] = {}
+    for line in lines:
+        counts[_name_key(line).lower()] = counts.get(_name_key(line).lower(), 0) + 1
+    for line in lines:
+        name = _name_key(line)
+        if (counts[name.lower()] >= 2 and 1 <= len(name.split()) <= 4 and len(re.findall(r"[A-Za-z]", name)) >= 3
+                and not _PRICE.search(name) and not addresses(name) and not _NOT_A_NAME.match(name) and store_name(name)):
+            return name
+    return ""
+
+
+async def _check_screen_name(how: str, name: str, seen: str, lines: list[str]) -> dict:
+    """A screen with no address and no @account that names a store: check the store's own site, as a typed name is.
+    With no site found, answer as for a product photo."""
+    target = await find_store(name, [])
+    if not target:
+        return await _check_photo(how, lines)
+    result = await _check(target, how, name, seen, lines, name=name)
+    result["found"]["what"] = f"{name}: {result['domain']}"
+    return result
+
+
 def store_name(text: str) -> str:
     return re.sub(r"\s+", " ", _FILLER.sub(" ", text)).strip()
 
@@ -440,7 +471,6 @@ async def ask(text: str = "", image: bytes | None = None) -> dict:
     lines = await asyncio.to_thread(reader, image) if image else []
     seen = " ".join(lines)
     shot = kind or "screenshot"
-    shot_name = "PDF" if shot == "pdf" else shot
 
     links = [v for v in addresses(text) if pick_address([v])]
     rest = text
@@ -457,11 +487,12 @@ async def ask(text: str = "", image: bytes | None = None) -> dict:
         jobs = [_check(value, shot, risk.host_of(listing.normalize_url(value)), seen, lines)]
     elif lines and (acct := account_url(lines)):
         jobs = [_check(acct[0], "account", acct[1], seen, lines)]
+    elif lines and (named := name_on_screen(lines)):
+        jobs = [_check_screen_name(shot, named, seen, lines)]
     elif image:  # a product photo or shop screen with no address and no @account
         jobs = [_check_photo(shot, lines)]
-    else:
-        raise ListingError(f"I couldn't find a web address or an @account in that {shot_name}. "
-                           "Send me the link, or the store's name.")
+    else:  # words only, none of them a link or a name ("how about this?" arriving apart from its link)
+        raise ListingError(NOTHING_TO_CHECK)
 
     results = await asyncio.gather(*jobs)
     answered = [r for r in results if "error" not in r]
