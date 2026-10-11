@@ -9,7 +9,7 @@ Last updated: 2026-10-10. Day-by-day story (tests, incidents, decisions): `sessi
 ```
 cd D:\brand-guard
 .venv\Scripts\python -m uvicorn app.main:app --port 8000
-.venv\Scripts\python -m pytest tests -q      # 193 tests, offline, about 40 s (tests/conftest.py turns every network source off)
+.venv\Scripts\python -m pytest tests -q      # 269 tests, offline, about 70 s (tests/conftest.py turns every network source off)
 ```
 Open http://localhost:8000.
 

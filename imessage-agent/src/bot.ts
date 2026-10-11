@@ -8,14 +8,18 @@ export const HELP = "Is it legit? Send me a link, a screenshot of what you're lo
 export type BotOptions = {
   bg: BrandGuard;
   allowedSenders?: string[];  // phone numbers or emails that may use the agent; empty or missing: anyone
+  slowAfterMs?: number;  // an answer not ready by then gets a DOUBLE_CHECKING note first (owner, 10.10: 15 s)
 };
+
+/** Sent once when an answer takes longer than slowAfterMs, so a long check doesn't look like a frozen chat. */
+export const DOUBLE_CHECKING = "Double checking…";
 
 export const PRIVATE = "This Brand Guard agent is private. Ask its owner to add your number.";
 
 /** "+1 (555) 010-2345" and "+15550102345" are the same sender; so are emails in any case. */
 export const senderKey = (id: string) => id.toLowerCase().replace(/[\s\-().]/g, "");
 
-export function createBot({ bg, allowedSenders = [] }: BotOptions) {
+export function createBot({ bg, allowedSenders = [], slowAfterMs = 15_000 }: BotOptions) {
   const allowed = new Set(allowedSenders.map(senderKey).filter(Boolean));
   const refused = new Set<string>();  // told once that the agent is private; later messages are ignored
 
@@ -67,13 +71,19 @@ export function createBot({ bg, allowedSenders = [] }: BotOptions) {
         return;
       }
     }
+    let notice: Promise<unknown> | undefined;
+    const timer = setTimeout(() => { notice = space.send(DOUBLE_CHECKING).catch(() => {}); }, slowAfterMs);
+    let reply: string;
     try {
-      const check = await space.responding(() => bg.ask({ text, image: media ?? undefined }));
-      await space.send(replyText(check));
+      reply = replyText(await space.responding(() => bg.ask({ text, image: media ?? undefined })));
     } catch (e) {
-      if (e instanceof AskError) await space.send(e.message);
-      else await space.send(`Brand Guard is not reachable right now (${(e as Error).message}). Try again in a minute.`);
+      reply = e instanceof AskError ? e.message
+        : `Brand Guard is not reachable right now (${(e as Error).message}). Try again in a minute.`;
+    } finally {
+      clearTimeout(timer);
     }
+    await notice;  // the note, if it went out, always arrives before the answer
+    await space.send(reply);
   }
 
   return { handle };
