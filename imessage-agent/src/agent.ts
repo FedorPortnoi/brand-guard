@@ -22,6 +22,7 @@ console.log(`Brand Guard agent on ${cloud ? "iMessage (Spectrum Cloud)" : "the t
 const bot = createBot({
   bg: new BrandGuard(BRAND_GUARD_URL),
   allowedSenders: (process.env.ALLOWED_SENDERS || "").split(",").map(s => s.trim()).filter(Boolean),
+  localFiles: !cloud,  // terminal testing: paste a file's path to send it
 });
 
 for await (const [space, message] of inbox) {

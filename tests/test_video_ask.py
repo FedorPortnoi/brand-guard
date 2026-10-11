@@ -75,3 +75,12 @@ def test_a_video_with_nothing_to_check_says_video(monkeypatch):
 def test_a_broken_video_asks_for_a_screenshot_instead():
     with pytest.raises(listing.ListingError, match="Send a screenshot or the link instead"):
         ask.video_frames(b"\x00\x00\x00\x18ftypmp42" + b"\x00" * 64)
+
+
+def test_a_pasted_file_path_is_never_a_store_name(monkeypatch):
+    async def search(*a, **k):
+        raise AssertionError("a file path must not be searched as a store name")
+    monkeypatch.setattr(listing, "web_search", search)
+    for path in (r'"D:\brand-guard-samples\test-recording.mp4"', "C:/Users/me/shot.png", "/Users/me/Desktop/a.mov"):
+        with pytest.raises(listing.ListingError, match="file on your computer"):
+            asyncio.run(ask.ask(path))

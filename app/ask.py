@@ -31,6 +31,7 @@ _FILLER = re.compile(r"\b(is|are|this|that|the|site|store|shop|website|legit|leg
                      r"trustworthy|a|an|or|not|check|please|can you|tell me|if|and|also|what about|how about|"
                      r"for|me|my|it|its|one|these|those|them|of|on|to|from|with|about|should i|buy|buying|here|too)\b"
                      r"|[?!.,:;\"']", re.I)
+LOCAL_PATH = re.compile(r"""^["']?(?:[a-zA-Z]:[\\/]|\\\\|~/|/(?:Users|home|tmp|var|private)/)""")  # C:\..., \\server, ~/, /Users/...
 MAX_ITEMS = 3  # things checked from one message ("is Lucky Fours legit? and kith.com")
 VIDEO_FRAMES = 8  # distinct frames read from a video (a screen recording, a saved reel)
 VIDEO_SIZE = 1600  # long side of a frame read for text: phone screen text is small
@@ -319,6 +320,8 @@ async def ask(text: str = "", image: bytes | None = None) -> dict:
     once the links are taken out, are checked side by side, in the order written, up to MAX_ITEMS. The first that
     could be checked is the result; the rest are in `others` (each a result, or {"error", "found"})."""
     text = (text or "").strip()
+    if not image and LOCAL_PATH.match(text):
+        raise ListingError("That's the path of a file on your computer, not a link. Send me the file itself.")
     is_video = bool(image) and video.is_video(image)
     lines = await asyncio.to_thread(video_text if is_video else read_text, image) if image else []
     seen = " ".join(lines)

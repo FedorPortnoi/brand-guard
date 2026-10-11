@@ -120,3 +120,24 @@ test("the double-check note waits 15 seconds by default", async () => {
   await createBot({ bg }).handle(space, text("kith.com"));
   assert.equal(sent.length, 1);
 });
+
+test("terminal testing: a pasted file path is sent as that file; on iMessage it stays text", async () => {
+  const { mkdtempSync, writeFileSync } = await import("node:fs");
+  const { join } = await import("node:path");
+  const { tmpdir } = await import("node:os");
+  const dir = mkdtempSync(join(tmpdir(), "bg-"));
+  const file = join(dir, "test-recording.mp4");
+  writeFileSync(file, Buffer.from("video bytes"));
+
+  const local = stubBg();
+  await createBot({ bg: local.bg, localFiles: true }).handle(fakeSpace().space, text(`"${file}"`));
+  assert.deepEqual(local.calls, ['ask "" video/mp4']);
+
+  const cloud = stubBg();
+  await createBot({ bg: cloud.bg }).handle(fakeSpace().space, text(`"${file}"`));
+  assert.deepEqual(cloud.calls, [`ask ""${file}""`]);
+
+  const missing = stubBg();
+  await createBot({ bg: missing.bg, localFiles: true }).handle(fakeSpace().space, text(join(dir, "nope.mp4")));
+  assert.deepEqual(missing.calls, [`ask "${join(dir, "nope.mp4")}"`]);  // no such file: left to the API to explain
+});
