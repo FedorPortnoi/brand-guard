@@ -97,6 +97,21 @@ def earlier(inv_id: str, host: str, page_url: str, ips: list[str], platform: boo
              "shared": r["shared"], "this_investigation": r["investigation_id"] == inv_id} for r in rows]
 
 
+def crowd(host: str, page_url: str, platform: bool = False, days: int = 7) -> dict:
+    """How many link checks looked at this site (or, on a marketplace or social site, this listing) in the last `days`
+    days, and how many came out Not legit: {"checked", "flagged", "days"}."""
+    key = site_key(host, platform)
+    since = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat(timespec="seconds")
+    with _db() as con:
+        row = con.execute("""
+            select count(distinct investigation_id) as checked,
+                   count(distinct case when category = 'likely_counterfeit' then investigation_id end) as flagged
+            from listings
+            where verification = 'link-check' and found_at >= ? and (case when ? != '' then domain = ? else page_url = ? end)""",
+            (since, key, key, page_url or "")).fetchone()
+    return {"checked": row["checked"], "flagged": row["flagged"], "days": days}
+
+
 def link_reasons(server: dict, seen: list[dict]) -> list[str]:
     """Risk reasons for a listing whose server or site is already in the log. An IP shared with other sites counts
     only off shared platforms (two Shopify shops share IPs without being related)."""
