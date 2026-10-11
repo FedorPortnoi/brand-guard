@@ -344,7 +344,7 @@ def _proofs(url: str, host: str, domain: dict, threats: list[str], server: dict,
         out["Read an archived copy"] = {"text": f"Wayback Machine copy from {archived[:10]}" if stamp else "Wayback Machine copy",
                                         "url": f"https://web.archive.org/web/{stamp or '*'}/{url}"}
     if social and social.get("account_url"):
-        out["Posted by"] = {"text": social.get("account") or "The account", "url": social["account_url"]}
+        out["Posted by"] = out["The account"] = {"text": social.get("account") or "The account", "url": social["account_url"]}
     if footprint:
         accounts = footprint.get("accounts") or []
         known = [a for a in accounts if a.get("followers")]
@@ -559,9 +559,10 @@ def assess(url: str, html: bytes | None, domain: dict, threats: list[str], histo
             fol = social.get("followers")
             detail = f"{social['account']}" + (f", {fol:,} followers" if isinstance(fol, int) else "") + (
                 ", verified account" if social.get("verified") else "") + (f", posted {social['posted']}" if social.get("posted") else "")
-            signals.append(_signal("Posted by", detail + ".", "good" if social.get("verified") else "neutral",
-                                   -10 if social.get("verified") else 0))
-            score -= 10 if social.get("verified") else 0
+            sway = -10 if social.get("verified") else -6 if isinstance(fol, int) and fol >= BIG_FOLLOWING else 0
+            signals.append(_signal("Posted by" if not profile_handle(url) else "The account", detail + ".",
+                                   "good" if sway else "neutral", sway))
+            score += sway
     off: list[str] = []
     if kind == "social" or seen_text:
         off = _hits(OFF_PLATFORM, text)
@@ -574,7 +575,8 @@ def assess(url: str, html: bytes | None, domain: dict, threats: list[str], histo
             signals.append(_signal("Read an archived copy", "The live site didn't answer us, so BrandGuard read the Wayback Machine's copy"
                                    + (f" from {archived[:10]}." if archived else "."), "neutral"))
         else:
-            signals.append(_signal("Page reached", "BrandGuard could inspect the live page." if html else "BrandGuard read the post's details.", "good", -2))
+            signals.append(_signal("Page reached", "BrandGuard could inspect the live page." if html else
+                                   "BrandGuard read the account's details." if profile_handle(url) else "BrandGuard read the post's details.", "good", -2))
     else:
         score += 12
         signals.append(_signal("Page not inspectable", f"{platform} didn't show us this post without a login." if kind == "social" else
@@ -651,8 +653,9 @@ async def check_url(value: str, brand: str = "", official: list[str] = (), resel
         archived, footprint = "", None
         if kind == "social" and not shows_post(html):
             html = None  # a login wall or app shell ("TikTok - Make Your Day"): it says nothing about this post
-        if kind == "social" and profile_handle(url) and not (social or {}).get("followers"):
-            found = await profile_from_search(url, _platform(host)[1])  # a profile's followers, from search
+        profile = url if profile_handle(url) else (social or {}).get("account_url") or ""
+        if kind == "social" and profile_handle(profile) and not (social or {}).get("followers"):
+            found = await profile_from_search(profile, _platform(host)[1])  # the account's followers, from search
             social = {**found, **{k: v for k, v in (social or {}).items() if v}} if found else social
         if html is None and kind != "social":  # unreachable from here (blocked network, bot wall): read the archived copy,
             # and, for a store's own site, look for it elsewhere on the web in case there is no copy either

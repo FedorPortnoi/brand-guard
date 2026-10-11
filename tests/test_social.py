@@ -116,3 +116,52 @@ def test_an_app_shell_never_supplies_the_posts_title(monkeypatch):
     monkeypatch.setattr(listing, "social_info", lambda url: {"account": "Kith", "title": "Kith x adidas, available now"})
     r = asyncio.run(listing.check_url("https://www.tiktok.com/@kith/video/1", log=False))
     assert r["facts"]["title"] == "Kith x adidas, available now" and r["verdict"] == "green"
+
+
+def test_an_accounts_big_following_is_a_reason_with_proof():
+    social = {"account": "@shoptemu", "account_url": "https://www.facebook.com/shoptemu/", "followers": 12_123_214}
+    r = listing.assess("https://www.facebook.com/shoptemu/", None, {}, [], [], social=social)
+    acct = {s["label"]: s for s in r["signals"]}["The account"]
+    assert acct["tone"] == "good" and acct["detail"] == "@shoptemu, 12,123,214 followers."
+    assert acct["proof"] == {"text": "@shoptemu", "url": "https://www.facebook.com/shoptemu/"}
+    post = listing.assess("https://www.tiktok.com/@kith/video/1", None, {}, [], [], social={**social, "followers": 900})
+    assert {s["label"]: s for s in post["signals"]}["Posted by"]["tone"] == "neutral"  # a small following proves nothing
+
+
+def test_a_posts_author_gets_followers_from_their_profile(monkeypatch):
+    searched = []
+
+    async def found(url, platform):
+        searched.append(url)
+        return {"account": "@kith", "account_url": "https://www.tiktok.com/@kith/", "followers": 3_100_000}
+    _offline_social(monkeypatch, {"account": "Kith", "account_url": "https://www.tiktok.com/@kith", "title": "Kith x adidas"})
+    monkeypatch.setattr(listing, "profile_from_search", found)
+    r = asyncio.run(listing.check_url("https://www.tiktok.com/@kith/video/1", log=False))
+    assert searched == ["https://www.tiktok.com/@kith"]
+    assert r["facts"]["followers"] == 3_100_000 and r["facts"]["account"] == "Kith"  # what the post said wins
+
+
+def _offline_social(monkeypatch, social):
+    async def fetch_html(client, url): return None
+    async def lookup(domain, client=None): return {}
+    async def describe(host, client):
+        return {"ips": [], "network": None, "org": None, "range": None, "shared": None, "platform": True}
+    async def safe(url): return True
+    async def final(client, url): return url
+    monkeypatch.setattr(net, "fetch_html", fetch_html)
+    monkeypatch.setattr(net, "safe_url_async", safe)
+    monkeypatch.setattr(rdap, "lookup", lookup)
+    monkeypatch.setattr(infra, "describe", describe)
+    monkeypatch.setattr(listing, "final_url", final)
+    monkeypatch.setattr(listing, "social_info", lambda url: social)
+
+
+def test_a_social_link_is_named_by_its_account_and_an_account_link_is_not_a_product(monkeypatch):
+    from app import ask
+    _offline_social(monkeypatch, {"account": "@shoptemu", "account_url": "https://www.facebook.com/shoptemu/", "followers": 12_123_214})
+
+    async def none(*a, **k): return None
+    monkeypatch.setattr(ask, "real_brand", none)
+    r = asyncio.run(ask.ask("https://www.facebook.com/shoptemu/"))
+    assert r["found"]["what"] == "@shoptemu on Facebook"
+    assert r["alternatives"] == [] and r["alternatives_note"] == ask.AN_ACCOUNT
