@@ -411,7 +411,7 @@ def test_wording_reasons_quote_where_the_words_were_seen():
     shot = listing.assess("https://www.instagram.com/p/x/", None, {}, [], [],
                           social={"account": "@kicks", "account_url": "https://www.instagram.com/kicks/"},
                           seen_text="Fresh pairs every week. DM to order, Zelle only. Ships fast")
-    assert _proof(shot, "Payment off the platform") == {"text": '"Fresh pairs every week. DM to order, Zelle only. Ships fast" (from your screenshot)',
+    assert _proof(shot, "Payment off the platform") == {"text": '"Fresh pairs every week. DM to order, Zelle only. Ships fast" (from what you sent)',
                                                        "url": None}
     assert _proof(shot, "Posted by") == {"text": "@kicks", "url": "https://www.instagram.com/kicks/"}
     page = listing.assess("https://prize.example/win", b"<title>Pay with gift card to claim your prize</title>", {"age_days": 900}, [], [])

@@ -52,16 +52,22 @@ test("a link, a screenshot (with or without a caption) and a name are each check
   assert.ok(sent.every(s => s.startsWith("NOT LEGIT ❌")));
 });
 
-test("help, thanks and videos never cost a check", async () => {
+test("help and thanks never cost a check", async () => {
   const { bg, calls } = stubBg();
   const { space, sent } = fakeSpace();
   const bot = createBot({ bg });
   await bot.handle(space, text("hi"));
   await bot.handle(space, text("Thanks!"));
-  await bot.handle(space, media("", "video/quicktime"));
   assert.deepEqual(calls, []);
-  assert.deepEqual(sent, [HELP, "Anytime. Send another link or screenshot whenever.",
-                          "I can't read videos. Send a screenshot or the link instead."]);
+  assert.deepEqual(sent, [HELP, "Anytime. Send another link or screenshot whenever."]);
+});
+
+test("a video (a screen recording, a saved reel) is checked like a screenshot", async () => {
+  const { bg, calls } = stubBg();
+  const { space, sent } = fakeSpace();
+  await createBot({ bg }).handle(space, media("is this legit?", "video/quicktime"));
+  assert.deepEqual(calls, ['ask "is this legit?" video/quicktime']);
+  assert.equal(sent.length, 1);
 });
 
 test("the server's own explanation is passed on; an outage says so", async () => {
@@ -113,4 +119,25 @@ test("the double-check note waits 15 seconds by default", async () => {
   const { space, sent } = fakeSpace();
   await createBot({ bg }).handle(space, text("kith.com"));
   assert.equal(sent.length, 1);
+});
+
+test("terminal testing: a pasted file path is sent as that file; on iMessage it stays text", async () => {
+  const { mkdtempSync, writeFileSync } = await import("node:fs");
+  const { join } = await import("node:path");
+  const { tmpdir } = await import("node:os");
+  const dir = mkdtempSync(join(tmpdir(), "bg-"));
+  const file = join(dir, "test-recording.mp4");
+  writeFileSync(file, Buffer.from("video bytes"));
+
+  const local = stubBg();
+  await createBot({ bg: local.bg, localFiles: true }).handle(fakeSpace().space, text(`"${file}"`));
+  assert.deepEqual(local.calls, ['ask "" video/mp4']);
+
+  const cloud = stubBg();
+  await createBot({ bg: cloud.bg }).handle(fakeSpace().space, text(`"${file}"`));
+  assert.deepEqual(cloud.calls, [`ask ""${file}""`]);
+
+  const missing = stubBg();
+  await createBot({ bg: missing.bg, localFiles: true }).handle(fakeSpace().space, text(join(dir, "nope.mp4")));
+  assert.deepEqual(missing.calls, [`ask "${join(dir, "nope.mp4")}"`]);  // no such file: left to the API to explain
 });
