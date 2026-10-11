@@ -27,7 +27,18 @@ export type Check = {
   same_photo?: { url: string; host: string; title: string }[];
   /** Not legit only: what to do if the shopper already paid, by the payment methods seen, and where to report it. */
   already_paid?: { methods: string[]; steps: string[]; report: string[] } | Record<string, never>;
+  /** Link checks of this site (or listing) in the last `days` days, this one included, and how many were Not legit. */
+  crowd?: { checked: number; flagged: number; days: number } | Record<string, never>;
 };
+
+/** "Checked 5 times in the last 7 days; 3 came out Not legit." Only once someone else has checked it too. */
+export function crowdText(c: Check): string {
+  const cr = c.crowd;
+  if (!cr || !("checked" in cr) || cr.checked < 2) return "";
+  const when = cr.days === 7 ? "this week" : `in the last ${cr.days} days`;
+  return `👥 Checked ${cr.checked} times ${when}; ` +
+    (cr.flagged ? `${cr.flagged} came out Not legit.` : "never flagged.");
+}
 
 export type Alternative = { url: string; host: string; title: string; price: number | null; currency: string | null; verdict: Check["verdict"] };
 
@@ -108,6 +119,7 @@ export function verdictText(c: Check): string {
   const ap = c.already_paid;
   const paid = c.verdict === "red" && ap && "steps" in ap && ap.steps.length
     ? ["", "Already paid?", ...ap.steps.map(s => `- ${s}`), ...ap.report.map(r => `- ${r}`)] : [];
-  return [`${HEADLINE[c.verdict]}  ${what}`, "", ...reasonLines(c), "", ADVICE[c.verdict], ...paid,
+  const crowd = crowdText(c);
+  return [`${HEADLINE[c.verdict]}  ${what}`, "", ...reasonLines(c), ...(crowd ? [crowd] : []), "", ADVICE[c.verdict], ...paid,
     ...(extras.length ? ["", ...extras] : [])].join("\n");
 }
