@@ -201,6 +201,77 @@ def _signal(label: str, detail: str, tone: str, impact: int = 0) -> dict:
     return {"label": label, "detail": detail, "tone": tone, "impact": impact}
 
 
+def _quote(text: str, word: str, width: int = 40) -> str:
+    """The words around `word` in text, as the shopper would see them: '…DM to order, Zelle only…'."""
+    m = re.search(re.escape(word), text, re.I)
+    if not m:
+        return ""
+    a, b = max(0, m.start() - width), min(len(text), m.end() + width)
+    while 0 < a < m.start() and not text[a - 1].isspace():  # whole words only
+        a -= 1
+    while m.end() < b < len(text) and not text[b].isspace():
+        b += 1
+    return ("…" if a else "") + re.sub(r"\s+", " ", text[a:b]).strip() + ("…" if b < len(text) else "")
+
+
+def _proofs(url: str, host: str, domain: dict, threats: list[str], server: dict, social: dict | None,
+            footprint: dict | None, archived: str, page_text: str, seen_text: str, hits: dict[str, list[str]],
+            linked_ips: list[str], earlier: list[dict]) -> dict[str, dict]:
+    """What backs each reason, by its label: {text, url}. A date, a link anyone can open, or a quote."""
+    out: dict[str, dict] = {}
+    site = registrable_domain(host)
+    registry = f"https://lookup.icann.org/en/lookup?name={site}"
+    if domain.get("created"):
+        for label in ("Very new domain", "New domain", "Young domain", "Established domain"):
+            out[label] = {"text": f"Registered {domain['created'][:10]}", "url": registry}
+    if domain.get("registrar"):
+        out["Brand-protection registrar"] = {"text": f"Registrar: {domain['registrar']}", "url": registry}
+    if threats:
+        out["Known threat warning"] = {"text": "Safe Browsing: " + ", ".join(t.replace("_", " ").lower() for t in threats),
+                                       "url": f"https://transparencyreport.google.com/safe-browsing/search?url={quote(url, safe='')}"}
+    ips = server.get("ips") or []
+    if ips:
+        out["Runs its own network"] = {"text": f"Server {ips[0]}: {server.get('org') or server.get('network')}",
+                                       "url": f"https://bgp.he.net/ip/{ips[0]}"}
+    if linked_ips:
+        out["Shares a server with flagged sites"] = {"text": f"Shared IP {linked_ips[0]}", "url": f"https://bgp.he.net/ip/{linked_ips[0]}"}
+    for label, words in hits.items():
+        for w in words:
+            if q := _quote(seen_text, w):
+                out[label] = {"text": f"\"{q}\" (from your screenshot)", "url": None}
+            elif q := _quote(page_text, w):
+                out[label] = {"text": f"\"{q}\"", "url": url}
+            elif w.lower() in url.lower():
+                out[label] = {"text": f"In the address: {url}", "url": None}
+            else:
+                continue
+            break
+    if archived:
+        stamp = re.sub(r"\D", "", archived)[:14]
+        out["Read an archived copy"] = {"text": f"Wayback Machine copy from {archived[:10]}" if stamp else "Wayback Machine copy",
+                                        "url": f"https://web.archive.org/web/{stamp or '*'}/{url}"}
+    if social and social.get("account_url"):
+        out["Posted by"] = {"text": social.get("account") or "The account", "url": social["account_url"]}
+    if footprint:
+        accounts = footprint.get("accounts") or []
+        known = [a for a in accounts if a.get("followers")]
+        if known:
+            out["Following elsewhere"] = {"text": f"{known[0]['followers']:,} followers on {known[0]['platform']}", "url": known[0]["url"]}
+        if accounts:
+            out["Accounts elsewhere"] = {"text": f"@{accounts[0]['handle']} on {accounts[0]['platform']}", "url": accounts[0]["url"]}
+        if footprint.get("reviews"):
+            r = footprint["reviews"][0]
+            out["Review-site page"] = {"text": f"{r['site']}" + (f", {r['count']:,} reviews" if r.get("count") else ""), "url": r["url"]}
+        if footprint.get("threads"):
+            t = footprint["threads"][0]
+            out["Discussed online"] = {"text": t["title"][:80], "url": t["url"]}
+    if earlier:
+        dates = sorted(d for x in earlier if (d := x.get("found_at") or x.get("started_at")))
+        text = f"{len(earlier)} earlier finding(s)" + (f", latest {dates[-1][:10]}" if dates else "")
+        out["Seen in prior investigations"] = out["Seen before"] = {"text": text, "url": None}
+    return out
+
+
 NOT_LEGIT = 35  # the one cut-off: a score this high is Not legit, lower is Legit (owner, 10.10; tune from real results)
 VERY_NEW_DOMAIN = 50  # registered under 30 days ago (owner, 10.10)
 REVIEW_SITES = ("trustpilot.com", "sitejabber.com", "bbb.org", "reviews.io", "resellerratings.com")
@@ -259,7 +330,8 @@ def web_footprint(rows: list[dict], domain: str) -> dict:
             if same:
                 same["followers"] = max(same["followers"] or 0, followers or 0) or None
             else:
-                out["accounts"].append({"platform": platform, "handle": handle, "url": url, "followers": followers})
+                # the profile itself, even when the row was one of its videos or posts
+                out["accounts"].append({"platform": platform, "handle": handle, "url": f"https://{urlparse(url).netloc}/{path[0]}/", "followers": followers})
     out["accounts"].sort(key=lambda a: -(a["followers"] or 0))
     return out
 
@@ -397,6 +469,7 @@ def assess(url: str, html: bytes | None, domain: dict, threats: list[str], histo
             signals.append(_signal("Posted by", detail + ".", "good" if social.get("verified") else "neutral",
                                    -10 if social.get("verified") else 0))
             score -= 10 if social.get("verified") else 0
+    off: list[str] = []
     if kind == "social" or seen_text:
         off = _hits(OFF_PLATFORM, text)
         if off:
@@ -421,6 +494,7 @@ def assess(url: str, html: bytes | None, domain: dict, threats: list[str], histo
 
     linked = sorted({x["host"] for x in history if x.get("same_ips") and not x.get("same_site") and not x.get("same_url")
                      and (x.get("score") or 0) >= 40})
+    linked_ips = [ip for x in history if x.get("host") in linked for ip in x.get("same_ips") or []]
     if linked and not server.get("shared"):
         score += 20
         signals.append(_signal("Shares a server with flagged sites", "Same IP address as " + ", ".join(linked[:3]) + ", flagged in earlier BrandGuard investigations.", "bad", 20))
@@ -434,6 +508,14 @@ def assess(url: str, html: bytes | None, domain: dict, threats: list[str], histo
     elif history:
         score += 6
         signals.append(_signal("Seen before", "This site or listing appeared in an earlier BrandGuard investigation.", "warn", 6))
+
+    proofs = _proofs(url, host, domain, threats, server, social, footprint, archived,
+                     f"{visible_title} {visible_desc}", seen_text,
+                     {"Scam-style language": scam_hits, "High-risk sales language": suspect_hits, "Payment off the platform": off},
+                     linked_ips, previous_high or history)
+    for s in signals:
+        if s["label"] in proofs:
+            s["proof"] = proofs[s["label"]]
 
     score = max(0, min(100, score))
     # Couldn't check: nothing to judge by. No page (live or archived), no screenshot text, no domain age,
