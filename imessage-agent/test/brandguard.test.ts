@@ -103,3 +103,14 @@ test("each reason shows its proof on the line below; same photo elsewhere is sho
   assert.ok(text.includes("Same photo also on:\n- www.adidas.com: https://www.adidas.com/us/samba"));
   assert.ok(!verdictText({ ...proofed, verdict: "green" }).includes("Same photo"));
 });
+
+test("Not legit answers end with what to do if you already paid; other verdicts never do", () => {
+  const already_paid = { methods: ["zelle"], steps: ["Zelle: call your bank now and report it as fraud."],
+                         report: ["Report it to the FTC: https://reportfraud.ftc.gov"] };
+  const red = { ...check("red", [sig("bad", "The domain was registered 4 days ago.", 50)]), already_paid };
+  const text = verdictText(red);
+  assert.ok(text.includes("Don't pay or share your details.\n\nAlready paid?\n- Zelle: call your bank now and report it as fraud.\n- Report it to the FTC: https://reportfraud.ftc.gov"));
+  assert.ok(!verdictText({ ...red, verdict: "green" }).includes("Already paid?"));
+  assert.ok(!verdictText({ ...red, verdict: "yellow" }).includes("Already paid?"));
+  assert.ok(!verdictText({ ...red, already_paid: {} }).includes("Already paid?"));
+});

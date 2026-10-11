@@ -15,7 +15,7 @@ from urllib.parse import quote, urlparse
 import httpx
 from bs4 import BeautifulSoup
 
-from . import archive, infra, investigations, net, rdap, reputation, risk, search
+from . import archive, infra, investigations, net, paid, rdap, reputation, risk, search
 from .sellers import registrable_domain
 from .store import UA
 
@@ -578,6 +578,9 @@ async def check_url(value: str, brand: str = "", official: list[str] = (), resel
                    "image_url": image, "lens_url": lens_url(image), "brand_settings": bool(brand or official or resellers),
                    "server": {"ips": server["ips"][:4], "network": server.get("network"), "org": server.get("org"),
                               "shared": server.get("shared"), "platform": server.get("platform")}})
+    red = result["verdict"] == "red"  # "Already paid?" steps by the payment methods the shopper could see
+    result["already_paid"] = paid.steps(result["verdict"], paid.methods(html, seen_text, (social or {}).get("caption") or "") if red else [],
+                                        result["platform"], kind)
     result["deep_action"] = "Find safer options" if result["verdict"] == "red" else (
         "Compare trusted options" if result["verdict"] == "yellow" else "Trace maker and prices")
     if log:
