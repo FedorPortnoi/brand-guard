@@ -174,7 +174,7 @@ async def describe_store(result: dict, errors: list[str]) -> str:
 
 async def alternatives(result: dict) -> tuple[dict, list[dict], dict]:
     """Trusted places to buy the same item (or, when only the store is known, trusted stores selling what it sells),
-    whatever the verdict (none rated red); the maker deep research named; and what the alternatives are for."""
+    whatever the verdict (only ones rated Legit); the maker deep research named; and what the alternatives are for."""
     facts = result.get("facts") or {}
     known = facts.get("product") or facts.get("title") or facts.get("brand")
     wanted = {"what": known or "", "kind": "product"}
@@ -209,9 +209,9 @@ async def _search_alternatives(result: dict, facts: dict, wanted: dict) -> tuple
         deep = await listing.deep_research(result["url"], source={**result, "facts": facts})
     except (ListingError, KeyError):
         return {}, [], {}
-    # never suggest a shop with a serious warning (rated red, or e.g. the brand's name padded in its address)
+    # only shops rated Legit, and none with a serious warning (e.g. the brand's name padded in its address)
     safe = [a for a in deep.get("alternatives", [])
-            if a.get("verdict") != "red" and not any(s.get("tone") == "bad" for s in a.get("signals") or [])]
+            if a.get("verdict") == "green" and not any(s.get("tone") == "bad" for s in a.get("signals") or [])]
     return deep, safe, wanted
 
 

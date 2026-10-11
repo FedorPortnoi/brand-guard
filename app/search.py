@@ -44,7 +44,8 @@ def _text(query: str, n: int, errors: list) -> list[dict]:
     for backend in ("brave", "auto"):  # Brave's index differs from Bing's; fall back if it returns nothing
         try:
             rows = DDGS(timeout=12).text(query, backend=backend, max_results=n)
-            out = [{"page_url": r.get("href"), "title": r.get("title", "")} for r in rows if r.get("href")]
+            out = [{"page_url": r.get("href"), "title": r.get("title", ""), "description": r.get("body", "")}
+                   for r in rows if r.get("href")]
             if out:
                 return out
         except Exception as e:

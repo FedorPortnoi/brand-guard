@@ -25,15 +25,16 @@ def test_extracts_product_facts_from_json_ld():
 def test_verdicts_are_signal_based_and_never_claim_certainty():
     green = listing.assess("https://established.example/item", PRODUCT_HTML, {"age_days": 2200}, [], [])
     assert green["verdict"] == "green"
-    assert "not a guarantee" in green["summary"].lower()
+    assert "not a guarantee" in green["summary"].lower() and green["headline"] == "Legit"
 
-    yellow = listing.assess("https://etsy.com/listing/1", PRODUCT_HTML, {"age_days": 7200}, [], [])
-    assert yellow["verdict"] == "yellow"
-    assert any(s["label"] == "Third-party marketplace" for s in yellow["signals"])
+    # a marketplace listing is no longer held at "not sure" for being on a marketplace: it is a warning, not a verdict
+    etsy = listing.assess("https://etsy.com/listing/1", PRODUCT_HTML, {"age_days": 7200}, [], [])
+    assert etsy["verdict"] == "green"
+    assert any(s["label"] == "Third-party marketplace" for s in etsy["signals"])
 
     red = listing.assess("http://deal.example.xyz/win", b"<title>Pay with gift card to claim your prize</title>",
                          {"age_days": 4}, ["SOCIAL_ENGINEERING"], [])
-    assert red["verdict"] == "red"
+    assert red["verdict"] == "red" and red["headline"] == "Not legit"
     assert any(s["label"] == "Known threat warning" for s in red["signals"])
 
 
@@ -82,8 +83,10 @@ def _labels(r):
 def test_brand_settings_settle_a_page_that_blocks_reading():
     """adidas.com blocks automated visits; with the brand's official list it is still clearly the brand's own site."""
     url = "https://www.adidas.com/us/stan-smith-shoes/FX5502.html"
-    plain = listing.assess(url, None, {"age_days": 11000}, [], [])
-    assert plain["verdict"] == "yellow"
+    nothing = listing.assess(url, None, {}, [], [])
+    assert nothing["verdict"] == "yellow"  # no page, no domain age: nothing to judge by
+    aged = listing.assess(url, None, {"age_days": 11000}, [], [])
+    assert aged["verdict"] == "green"  # the page is blocked, but a 30-year-old domain is evidence
     vouched = listing.assess(url, None, {"age_days": 11000}, [], [], brand="Adidas", official=["adidas.com"])
     assert vouched["verdict"] == "green" and "The brand's own site" in _labels(vouched)
     reseller = listing.assess("https://www.footlocker.com/p/1", None, {"age_days": 9000}, [], [], resellers=["footlocker.com"])
@@ -262,3 +265,108 @@ def test_weak_words_count_only_in_titles():
     assert _labels(fake)["High-risk sales language"]["detail"] == "Found: replica, 1:1."
     titled = listing.assess("https://shop.example/p", b"<title>Cheap outlet copy bags</title>", {"age_days": 900}, [], [])
     assert "copy" in _labels(titled)["High-risk sales language"]["detail"]
+
+
+# --- step 2: three verdicts (Legit / Not legit / Couldn't check) and the web footprint ---------------------------
+
+def test_one_cut_off_decides_legit_or_not(monkeypatch):
+    """No middle band: the same evidence is Not legit at the cut-off and Legit one point below it."""
+    url, html, domain = "https://young.example/p", PRODUCT_HTML, {"age_days": 100}
+    score = listing.assess(url, html, domain, [], [])["score"]
+    monkeypatch.setattr(listing, "NOT_LEGIT", score)
+    assert listing.assess(url, html, domain, [], [])["verdict"] == "red"
+    monkeypatch.setattr(listing, "NOT_LEGIT", score + 1)
+    assert listing.assess(url, html, domain, [], [])["verdict"] == "green"
+
+
+def test_the_owners_cut_off_is_35():
+    assert listing.NOT_LEGIT == 35
+
+
+def test_social_posts_are_not_forced_to_not_sure():
+    post = listing.assess("https://www.instagram.com/p/abc/", None, {}, [], [],
+                          social={"account": "@shop", "followers": 900, "title": "New drop", "caption": "Link in bio"})
+    assert post["verdict"] == "green" and "Social media listing" in _labels(post)
+
+
+def test_couldnt_check_only_with_no_evidence_at_all():
+    url = "https://hidden.example/"
+    nothing = listing.assess(url, None, {}, [], [])
+    assert nothing["verdict"] == "yellow" and nothing["headline"] == "Couldn't check"
+    assert listing.assess(url, None, {}, ["MALWARE"], [])["verdict"] == "red"  # a threat report is evidence
+    assert listing.assess(url, None, {"age_days": 3}, [], [])["verdict"] == "red"  # so is the domain's age
+    assert listing.assess(url, PRODUCT_HTML, {}, [], [])["verdict"] == "green"  # and the page itself
+    seen = {"accounts": [{"platform": "Instagram", "handle": "hidden", "url": "https://www.instagram.com/hidden/",
+                          "followers": 40_000}], "reviews": [], "threads": []}
+    r = listing.assess(url, None, {}, [], [], footprint=seen)
+    assert r["verdict"] == "green" and "Following elsewhere" in _labels(r)
+    empty = {"accounts": [], "reviews": [], "threads": []}
+    assert listing.assess(url, None, {}, [], [], footprint=empty)["verdict"] == "yellow"  # searched, found nothing
+
+
+FOOTPRINT_ROWS = [
+    {"page_url": "https://brightowls.com/", "title": "Bright Owls | Handmade Lamps", "description": "Lamps."},
+    {"page_url": "https://www.instagram.com/brightowls/", "title": "BRIGHT OWLS (@brightowls)",
+     "description": "351K followers, 17 following, 15 posts - BRIGHT OWLS (@brightowls) on Instagram"},
+    {"page_url": "https://www.instagram.com/reel/DeEaSPrt3AB/", "title": "Bright Owls reel", "description": "9M seguidores"},
+    {"page_url": "https://www.facebook.com/brightowlsco/videos/123/", "title": "Sale | Bright Owls",
+     "description": "Bright Owls. 23,415 followers \u00b7 3,637 talking about this."},
+    {"page_url": "https://www.facebook.com/OwlLovers/posts/1", "title": "Bright owls at night", "description": "12,000 followers"},
+    {"page_url": "https://www.trustpilot.com/review/brightowls.com", "title": "Bright Owls Reviews",
+     "description": "Considering 1,184 reviews, reviewers overwhelmingly had a great experience."},
+    {"page_url": "https://www.reddit.com/r/Lamps/comments/1/bright_owls_a_good_buy/", "title": "[Bright Owls] A Good Buy?",
+     "description": "130 votes, 304 comments."},
+    {"page_url": "https://www.reddit.com/r/birds/comments/2/owls/", "title": "Two owls in bright light", "description": ""},
+]
+
+
+def test_web_footprint_counts_only_what_is_about_the_store():
+    fp = listing.web_footprint(FOOTPRINT_ROWS, "brightowls.com")
+    assert [(a["platform"], a["handle"], a["followers"]) for a in fp["accounts"]] == [
+        ("Instagram", "brightowls", 351_000), ("Facebook", "brightowlsco", 23_415)]  # not the reel, not OwlLovers
+    assert fp["reviews"] == [{"site": "trustpilot.com", "url": "https://www.trustpilot.com/review/brightowls.com", "count": 1184}]
+    assert [t["title"] for t in fp["threads"]] == ["[Bright Owls] A Good Buy?"]  # not "Two owls in bright light"
+
+
+def test_a_look_alike_does_not_borrow_the_real_stores_footprint():
+    fp = listing.web_footprint(FOOTPRINT_ROWS, "brightowls-sale.com")
+    assert fp["accounts"] == [] and fp["reviews"] == [] and fp["threads"] == []
+
+
+def test_short_store_names_must_stand_as_a_word():
+    rows = [{"page_url": "https://www.reddit.com/r/x/comments/1/a/", "title": "Is Kith legit?"},
+            {"page_url": "https://www.reddit.com/r/x/comments/2/b/", "title": "Kitchen tips"},
+            {"page_url": "https://www.reddit.com/r/x/comments/3/c/", "title": "kithnyc restock"}]
+    assert [t["title"] for t in listing.web_footprint(rows, "kith.com")["threads"]] == ["Is Kith legit?"]
+
+
+def test_follower_counts_are_read_in_any_format():
+    assert listing._number("351", "K") == 351_000 and listing._number("1.2", "M") == 1_200_000
+    assert listing._number("12,123,214", None) == 12_123_214
+
+
+def test_an_unreadable_store_with_no_archive_is_judged_from_its_footprint(monkeypatch):
+    _offline_check(monkeypatch, html=None)
+
+    async def no_age(domain, client=None): return {}
+
+    async def rows(domain):
+        assert domain == "brightowls.com"
+        return FOOTPRINT_ROWS
+    monkeypatch.setattr(rdap, "lookup", no_age)
+    monkeypatch.setattr(listing, "_web_rows", rows)
+    r = asyncio.run(listing.check_url("https://brightowls.com/", log=False))
+    assert r["verdict"] == "green" and r["footprint"]["accounts"][0]["followers"] == 351_000
+    assert {"Following elsewhere", "Review-site page", "Discussed online", "Page not inspectable"} <= set(_labels(r))
+
+    async def nothing(domain): return []
+    monkeypatch.setattr(listing, "_web_rows", nothing)
+    assert asyncio.run(listing.check_url("https://brightowls.com/", log=False))["verdict"] == "yellow"
+
+
+def test_the_footprint_is_not_searched_when_the_page_can_be_read(monkeypatch):
+    _offline_check(monkeypatch)
+
+    async def rows(domain): raise AssertionError("no search needed")
+    monkeypatch.setattr(listing, "_web_rows", rows)
+    assert asyncio.run(listing.check_url("https://shop.example/trail-shoe", log=False))["footprint"] is None

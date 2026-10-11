@@ -1,5 +1,5 @@
 // Brand Guard in iMessage: "is this legit?" Text the agent a link, a screenshot of what you're looking at, or a
-// store's name; it checks the site or account and replies LOOKS LEGIT / NOT SURE / NOT LEGIT with the reasons.
+// store's name; it checks the site or account and replies LEGIT / NOT LEGIT / COULDN'T CHECK with the reasons.
 //
 // Runs on Photon's Spectrum SDK. With SPECTRUM_PROJECT_ID / SPECTRUM_PROJECT_SECRET set it answers real iMessages;
 // without them (or with AGENT_TERMINAL=1) it opens Spectrum's terminal chat, where you drag a screenshot in to test.

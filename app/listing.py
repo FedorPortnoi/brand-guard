@@ -201,12 +201,97 @@ def _signal(label: str, detail: str, tone: str, impact: int = 0) -> dict:
     return {"label": label, "detail": detail, "tone": tone, "impact": impact}
 
 
+NOT_LEGIT = 35  # the one cut-off: a score this high is Not legit, lower is Legit (owner, 10.10; tune from real results)
+REVIEW_SITES = ("trustpilot.com", "sitejabber.com", "bbb.org", "reviews.io", "resellerratings.com")
+DISCUSSION_SITES = ("reddit.com", "quora.com")
+BIG_FOLLOWING = 10_000
+_FOLLOWERS = re.compile(r"(\d[\d.,]*)\s*([kmb])?\s+(?:followers|follower|seguidores|abonnés|abonnenten|подписчик\w*)", re.I)
+_REVIEW_COUNT = re.compile(r"(\d[\d,]*)\s+reviews?\b", re.I)
+_NOT_AN_ACCOUNT = {"reel", "reels", "p", "tv", "watch", "videos", "video", "posts", "groups", "pages", "hashtag", "explore",
+                   "shorts", "status", "search", "share", "stories", "events", "marketplace", "pin", "results"}
+
+
+def _number(digits: str, suffix: str | None) -> int:
+    """351K -> 351000, 1.2M -> 1200000, 12,123,214 -> 12123214."""
+    if suffix:
+        return int(float(digits.replace(",", ".")) * {"k": 1e3, "m": 1e6, "b": 1e9}[suffix.lower()])
+    return int(re.sub(r"[.,]", "", digits))
+
+
+def _squash(text: str) -> str:
+    return re.sub(r"[^a-z0-9]", "", text.lower())
+
+
+def web_footprint(rows: list[dict], domain: str) -> dict:
+    """What the rest of the web shows about a store whose own page can't be read, from a search for its domain:
+    its own social accounts and their followers, review-site pages about it, discussion threads naming it.
+    A row counts only when it is about this store: an account named after it, a review page or thread naming it."""
+    name = _squash(domain.split(".")[0])
+    out = {"accounts": [], "reviews": [], "threads": []}
+    if len(name) < 3:
+        return out
+
+    def names_it(text: str) -> bool:  # short names must stand as a word ("kith", not "kitchen")
+        return name in _squash(text) if len(name) >= 6 else bool(re.search(rf"(?<![a-z0-9]){name}(?![a-z0-9])", text.lower()))
+
+    for row in rows:
+        url = row.get("page_url") or ""
+        host = risk.host_of(url)
+        path = [p for p in urlparse(url).path.split("/") if p]
+        text = f"{row.get('title') or ''} {row.get('description') or ''}"
+        if any(risk.host_matches(host, s) for s in REVIEW_SITES):
+            if domain in url.lower() or names_it(" ".join(path).replace("-", " ")):
+                count = _REVIEW_COUNT.search(text)
+                out["reviews"].append({"site": registrable_domain(host), "url": url,
+                                       "count": _number(count.group(1), None) if count else None})
+        elif any(risk.host_matches(host, s) for s in DISCUSSION_SITES):
+            if names_it(row.get("title") or ""):
+                out["threads"].append({"site": registrable_domain(host), "url": url, "title": row.get("title") or ""})
+        elif any(risk.host_matches(host, s) for s in risk.SOCIAL) and path:
+            handle = path[0].lstrip("@")
+            if handle.lower() in _NOT_AN_ACCOUNT or name not in _squash(handle):
+                continue
+            m = _FOLLOWERS.search(text)
+            followers = _number(m.group(1), m.group(2)) if m else None
+            platform = _platform(host)[1]
+            same = next((a for a in out["accounts"] if a["platform"] == platform and a["handle"].lower() == handle.lower()), None)
+            if same:
+                same["followers"] = max(same["followers"] or 0, followers or 0) or None
+            else:
+                out["accounts"].append({"platform": platform, "handle": handle, "url": url, "followers": followers})
+    out["accounts"].sort(key=lambda a: -(a["followers"] or 0))
+    return out
+
+
+def _footprint_signals(fp: dict) -> tuple[list[dict], int]:
+    signals, score = [], 0
+    known = [a for a in fp.get("accounts") or [] if a["followers"]]
+    if known:
+        top = known[0]
+        big = top["followers"] >= BIG_FOLLOWING
+        detail = ", ".join(f"@{a['handle']} on {a['platform']} has {a['followers']:,} followers" for a in known[:2]) + "."
+        signals.append(_signal("Following elsewhere", "Its own accounts: " + detail, "good" if big else "neutral", -6 if big else 0))
+        score -= 6 if big else 0
+    elif fp.get("accounts"):
+        a = fp["accounts"][0]
+        signals.append(_signal("Accounts elsewhere", f"It has its own account on {a['platform']} (@{a['handle']}).", "neutral"))
+    for r in (fp.get("reviews") or [])[:1]:
+        signals.append(_signal("Review-site page", f"{r['site']} has a page about it" + (f" with {r['count']:,} reviews." if r["count"] else "."), "neutral"))
+    if fp.get("threads"):
+        t = fp["threads"]
+        signals.append(_signal("Discussed online", f"{len(t)} discussion thread(s) about it, e.g. \"{t[0]['title'][:80]}\" on {t[0]['site']}.", "neutral"))
+    return signals, score
+
+
 def assess(url: str, html: bytes | None, domain: dict, threats: list[str], history: list[dict], *,
            server: dict | None = None, social: dict | None = None, brand: str = "", official: list[str] = (),
-           resellers: list[str] = (), claimed_brand: str | None = None, seen_text: str = "", archived: str = "") -> dict:
+           resellers: list[str] = (), claimed_brand: str | None = None, seen_text: str = "", archived: str = "",
+           footprint: dict | None = None) -> dict:
     """The verdict from everything gathered. brand / official / resellers are the user's optional brand settings;
     claimed_brand is the brand the page itself names; seen_text is what the shopper saw (text read from their
-    screenshot), checked for the same wording as a caption. Pure, so every rule is testable."""
+    screenshot), checked for the same wording as a caption; footprint is web_footprint() for a store whose page
+    can't be read. Three verdicts: green = Legit, red = Not legit (score >= NOT_LEGIT), yellow = Couldn't check
+    (no page, live or archived, and no evidence from anywhere else). Pure, so every rule is testable."""
     host = risk.host_of(url)
     kind, platform = _platform(host)
     server = server or {}
@@ -326,6 +411,12 @@ def assess(url: str, html: bytes | None, domain: dict, threats: list[str], histo
     else:
         score += 12
         signals.append(_signal("Page not inspectable", "The site didn't answer or blocked reading, and there is no archived copy to read instead.", "warn", 12))
+    seen_elsewhere = False
+    if footprint:
+        found, change = _footprint_signals(footprint)
+        signals += found
+        score += change
+        seen_elsewhere = bool(found)
 
     linked = sorted({x["host"] for x in history if x.get("same_ips") and not x.get("same_site") and not x.get("same_url")
                      and (x.get("score") or 0) >= 40})
@@ -334,7 +425,7 @@ def assess(url: str, html: bytes | None, domain: dict, threats: list[str], histo
         signals.append(_signal("Shares a server with flagged sites", "Same IP address as " + ", ".join(linked[:3]) + ", flagged in earlier BrandGuard investigations.", "bad", 20))
     history = [x for x in history if x.get("same_site", True) or x.get("same_url")]  # the site itself, not its neighbours
     # being looked at before is not a warning: an earlier link check only counts if it came out red
-    history = [x for x in history if x.get("verification") != "link-check" or (x.get("score") or 0) >= 55]
+    history = [x for x in history if x.get("verification") != "link-check" or (x.get("score") or 0) >= NOT_LEGIT]
     previous_high = [x for x in history if (x.get("score") or 0) >= 65 and x.get("verification") != "unverified"]
     if previous_high:
         score += 24
@@ -344,15 +435,19 @@ def assess(url: str, html: bytes | None, domain: dict, threats: list[str], histo
         signals.append(_signal("Seen before", "This site or listing appeared in an earlier BrandGuard investigation.", "warn", 6))
 
     score = max(0, min(100, score))
-    insufficient = (not html and not social) or (age is None and not kind)
-    if vouched and score < 55:
+    # Couldn't check: nothing to judge by. No page (live or archived), no screenshot text, no domain age,
+    # no threat report, nothing about the store elsewhere.
+    insufficient = not html and not social and not seen_text and age is None and not threats and not seen_elsewhere
+    if vouched and score < 55:  # the brand's own site (settings, or long-held brand-protection signs): only strong risk overrides
         verdict = "green"
+    elif insufficient:
+        verdict = "yellow"
     else:
-        verdict = "red" if score >= 55 else "yellow" if score >= 18 or insufficient or kind else "green"
+        verdict = "red" if score >= NOT_LEGIT else "green"
     labels = {
-        "green": ("No major warnings found", "The checks completed without a strong risk signal. This is not a guarantee."),
-        "yellow": ("Review before you buy", "Some checks are uncertain or need human verification."),
-        "red": ("Strong risk signals", "Do not pay or share personal details until the listing is independently verified."),
+        "green": ("Legit", "Nothing we checked points to a scam. That is not a guarantee."),
+        "yellow": ("Couldn't check", "We couldn't read the site and found nothing about it elsewhere, so there is no verdict."),
+        "red": ("Not legit", "Do not pay or share personal details until the seller is independently verified."),
     }
     return {"verdict": verdict, "headline": labels[verdict][0], "summary": labels[verdict][1],
             "score": score, "signals": sorted(signals, key=lambda x: -abs(x["impact"]))[:10], "platform": platform, "host": host,
@@ -376,11 +471,15 @@ async def check_url(value: str, brand: str = "", official: list[str] = (), resel
         social_job = asyncio.to_thread(social_info, url) if kind == "social" else asyncio.sleep(0, None)
         html, domain, threats, social, server = await asyncio.gather(html_job, age_job, safe_job, social_job,
                                                                      infra.describe(host, client))
-        archived = ""
-        if html is None and kind != "social":  # unreachable from here (blocked network, bot wall): read the archived copy
-            copy = await archive.archived_page(client, url, net.MAX_HTML)
+        archived, footprint = "", None
+        if html is None and kind != "social":  # unreachable from here (blocked network, bot wall): read the archived copy,
+            # and, for a store's own site, look for it elsewhere on the web in case there is no copy either
+            copy, rows = await asyncio.gather(archive.archived_page(client, url, net.MAX_HTML),
+                                              _web_rows(registrable_domain(host)) if not kind else asyncio.sleep(0, None))
             if copy:
                 html, archived = copy[0], copy[1] or "an earlier date"
+            elif rows is not None:
+                footprint = web_footprint(rows, registrable_domain(host))
     check_id = "link-" + uuid.uuid4().hex[:10]
     history = await asyncio.to_thread(_safe, investigations.earlier, check_id, host, url, server["ips"], server["platform"]) or []
     facts = page_facts(html, url)
@@ -389,9 +488,10 @@ async def check_url(value: str, brand: str = "", official: list[str] = (), resel
         facts.update({"account": social.get("account"), "account_url": social.get("account_url"),
                       "followers": social.get("followers"), "posted": social.get("posted")})
     result = assess(url, html, domain or {}, threats, history, server=server, social=social, brand=brand,
-                    official=list(official), resellers=list(resellers), claimed_brand=facts.get("brand"), seen_text=seen_text, archived=archived)
+                    official=list(official), resellers=list(resellers), claimed_brand=facts.get("brand"), seen_text=seen_text, archived=archived,
+                    footprint=footprint)
     image = facts.get("image") if (facts.get("image") or "").startswith("http") else None
-    result.update({"id": check_id, "url": url, "archived": archived, "domain": registrable_domain(host), "facts": facts, "errors": errors,
+    result.update({"id": check_id, "url": url, "archived": archived, "footprint": footprint, "domain": registrable_domain(host), "facts": facts, "errors": errors,
                    "image_url": image, "lens_url": lens_url(image), "brand_settings": bool(brand or official or resellers),
                    "server": {"ips": server["ips"][:4], "network": server.get("network"), "org": server.get("org"),
                               "shared": server.get("shared"), "platform": server.get("platform")}})
@@ -419,6 +519,13 @@ def _log(result: dict, brand: str, official: list[str], resellers: list[str]) ->
                "risk": {"host": result["host"], "score": result["score"], "category": category}}
     _safe(investigations.add_listing, result["id"], listing, result["server"])
     _safe(investigations.finish, result["id"], 1)
+
+
+async def _web_rows(domain: str) -> list[dict] | None:
+    """One web search for a store's domain, for web_footprint(). BG_FOOTPRINT=0 turns it off (tests do)."""
+    if os.getenv("BG_FOOTPRINT", "1") == "0":
+        return None
+    return await web_search(domain, [], 20)
 
 
 def _search_rows(query: str, errors: list[str]) -> list[dict]:

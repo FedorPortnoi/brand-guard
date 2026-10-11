@@ -4,6 +4,7 @@ export type Signal = { label: string; detail: string; tone: "good" | "bad" | "wa
 
 /** The link check's answer (POST /api/listing/ask), plus how the address was found. */
 export type Check = {
+  /** green = Legit, red = Not legit, yellow = Couldn't check (nothing to judge by). */
   verdict: "green" | "yellow" | "red";
   score: number;
   signals: Signal[];
@@ -12,7 +13,7 @@ export type Check = {
   found: { how: "link" | "screenshot" | "account" | "name"; what: string; read?: string[] };
   /** The brand the page claims to sell and its own site; this_site: the checked site is that brand's own. */
   real_brand?: { name: string; url: string; this_site: boolean } | null;
-  /** Other places to buy the same item, trusted first (never ones rated red). */
+  /** Other places to buy the same item, trusted first (only ones rated Legit). */
   alternatives?: Alternative[];
   /** Why there are no alternatives, when there are none. */
   alternatives_note?: string;
@@ -44,16 +45,16 @@ export class BrandGuard {
   }
 }
 
-const HEADLINE = { red: "NOT LEGIT ❌", yellow: "NOT SURE ⚠️", green: "LOOKS LEGIT ✅" };
+const HEADLINE = { red: "NOT LEGIT ❌", yellow: "COULDN'T CHECK ⚠️", green: "LEGIT ✅" };
 const ADVICE = {
   red: "Don't pay or share your details.",
-  yellow: "I couldn't confirm it's safe. Only pay with buyer protection (a card or PayPal Goods & Services).",
-  green: "No warning signs found. Not a guarantee.",
+  yellow: "I couldn't read the site or find anything about it elsewhere. If you buy, pay only with buyer protection (a card or PayPal Goods & Services).",
+  green: "Nothing points to a scam. Not a guarantee.",
 };
 
 const firstSentence = (s: string) => (s.match(/^.*?[.!?](?=\s|$)/)?.[0] ?? s).trim();
 
-/** The reasons worth texting: warnings for a red or yellow verdict, good signs for a green one. */
+/** The reasons worth texting: warnings for Not legit or Couldn't check, good signs for Legit. */
 export function reasons(c: Check, top = 3): string[] {
   const wanted = c.verdict === "green" ? ["good"] : ["bad", "warn"];
   return c.signals.filter(s => wanted.includes(s.tone)).slice(0, top).map(s => firstSentence(s.detail));

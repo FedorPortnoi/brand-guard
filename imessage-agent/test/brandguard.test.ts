@@ -22,14 +22,15 @@ test("a red verdict says NOT LEGIT with the warnings, first sentence only, and w
   ].join("\n"));
 });
 
-test("a green verdict gives the good signs; a screenshot and a name say what was checked", () => {
+test("three verdicts: Legit gives the good signs, Couldn't check says why; a screenshot and a name say what was checked", () => {
   const green = check("green", [sig("warn", "Shared hosting."), sig("good", "The domain has existed for about 3 years.", -4)],
                       { how: "name", what: "Lucky Fours: luckyfours.com" });
   assert.deepEqual(reasons(green), ["The domain has existed for about 3 years."]);
-  assert.match(verdictText(green), /^LOOKS LEGIT ✅ {2}Lucky Fours: luckyfours\.com\n/);
+  assert.match(verdictText(green), /^LEGIT ✅ {2}Lucky Fours: luckyfours\.com\n/);
   assert.match(verdictText(green), /Not a guarantee\.$/);
   const shot = check("yellow", [], { how: "screenshot" });
-  assert.match(verdictText(shot), /^NOT SURE ⚠️ {2}luxe-kicks\.store \(from your screenshot\)/);
+  assert.match(verdictText(shot), /^COULDN'T CHECK ⚠️ {2}luxe-kicks\.store \(from your screenshot\)/);
+  assert.match(verdictText(shot), /couldn't read the site or find anything about it elsewhere/);
   assert.match(verdictText(shot), /buyer protection/);
 });
 
@@ -79,8 +80,8 @@ test("one reply answers every thing the message named, and says why one couldn't
   };
   const parts = replyText(c).split("\n\n———\n\n");
   assert.equal(parts.length, 3);
-  assert.match(parts[0], /^LOOKS LEGIT ✅ {2}Lucky Fours: luckyfours\.com/);
-  assert.match(parts[1], /^LOOKS LEGIT ✅ {2}kith\.com/);
+  assert.match(parts[0], /^LEGIT ✅ {2}Lucky Fours: luckyfours\.com/);
+  assert.match(parts[1], /^LEGIT ✅ {2}kith\.com/);
   assert.equal(parts[2], "Zzqxv: I couldn't find a website for \"Zzqxv\". Send me the link instead.");
   assert.equal(replyText(check("red", [])), verdictText(check("red", [])));
 });
