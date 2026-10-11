@@ -124,3 +124,12 @@ test("the crowd line shows once someone else has checked the site this week", ()
   const text = verdictText({ ...red, crowd: { checked: 5, flagged: 3, days: 7 } });
   assert.ok(text.includes("- The domain was registered 4 days ago.\n👥 Checked 5 times this week; 3 came out Not legit.\n\nDon't pay"));
 });
+
+test("a post the platform hid asks for a screenshot instead of the usual advice, and nothing else", () => {
+  const hidden = { ...check("yellow", [sig("warn", "Instagram didn't show us this post without a login.", 12)]),
+                   platform: "Instagram", send_screenshot: true, alternatives_note: "Send me the product page." };
+  const text = verdictText(hidden);
+  assert.ok(text.includes("Instagram didn't let me see this post. Send me a screenshot of it, with the account name and caption showing, and I'll check that."));
+  assert.ok(!text.includes("buyer protection") && !text.includes("Send me the product page."));
+  assert.ok(verdictText({ ...hidden, send_screenshot: false }).includes("buyer protection"));
+});
