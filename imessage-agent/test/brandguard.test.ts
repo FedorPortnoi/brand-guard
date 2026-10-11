@@ -137,3 +137,7 @@ test("a post the platform hid asks for a screenshot instead of the usual advice,
 test("an answer found in a video says so", () => {
   assert.match(verdictText(check("red", [], { how: "video", what: "luxe-kicks.store" })), /^NOT LEGIT ❌ {2}luxe-kicks\.store \(from your video\)/);
 });
+
+test("an answer found in a PDF says so", () => {
+  assert.match(verdictText(check("red", [], { how: "pdf", what: "mega-sneaker-drop.shop" })), /^NOT LEGIT ❌ {2}mega-sneaker-drop\.shop \(from your PDF\)/);
+});
