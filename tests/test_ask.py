@@ -140,7 +140,11 @@ def test_the_maker_stands_in_when_the_page_names_no_brand(monkeypatch):
 def test_no_product_no_alternatives_and_the_answer_says_why(monkeypatch):
     async def deep(*a, **k):
         raise AssertionError("nothing to search for")
+
+    async def search(query, errors, count=10):
+        return [{"page_url": "https://luckyfours.com/", "title": "Lucky Fours"}]  # names the store, not what it sells
     monkeypatch.setattr(listing, "deep_research", deep)
+    monkeypatch.setattr(listing, "web_search", search)
     out = asyncio.run(ask.extras({"verdict": "yellow", "url": "https://luckyfours.com/", "domain": "luckyfours.com", "facts": {}}))
     assert out["alternatives"] == [] and out["real_brand"] is None and out["alternatives_note"] == ask.NO_PRODUCT
 
@@ -190,3 +194,36 @@ def test_a_blocked_product_page_still_gets_alternatives(monkeypatch):
                                   "domain": "adidas.com", "facts": {}}))
     assert seen == {"product": "samba og shoes", "site_name": "adidas"}
     assert [a["host"] for a in out["alternatives"]] == ["footlocker.com"]
+
+
+def test_what_a_store_sells_is_read_from_its_search_title():
+    assert ask.store_category("Lucky Fours® | #1 Rated Affordable Luxury Watches", "luckyfours") == "Affordable Luxury Watches"
+    assert ask.store_category("Men's Watches – Lucky Fours", "luckyfours") == "Men's Watches"
+    assert ask.store_category("Valeen - Official Site | Women's Dresses & Tops", "valeen") == "Women's Dresses & Tops"
+    assert ask.store_category("Lucky Fours", "luckyfours") == ""
+
+
+def test_a_store_known_only_by_name_gets_stores_selling_the_same_kind_of_thing(monkeypatch):
+    seen = {}
+
+    async def search(query, errors, count=10):
+        seen["query"] = query
+        return [{"page_url": "https://www.reddit.com/r/Watches/x", "title": "[Lucky Fours] A Good Buy?"},
+                {"page_url": "https://luckyfours.com/products/santos", "title": "Lucky Fours® Santos"},
+                {"page_url": "https://luckyfours.com/", "title": "Lucky Fours® | #1 Rated Affordable Luxury Watches"}]
+
+    async def deep(value, source=None):
+        seen["product"] = source["facts"]["product"]
+        return {"alternatives": [{"host": "watchwarehouse.com", "verdict": "green"}], "manufacturer": None}
+    monkeypatch.setattr(listing, "web_search", search)
+    monkeypatch.setattr(listing, "deep_research", deep)
+    out = asyncio.run(ask.extras({"verdict": "yellow", "url": "https://luckyfours.com/", "domain": "luckyfours.com", "facts": {}}))
+    assert seen == {"query": "luckyfours.com", "product": "Affordable Luxury Watches"}  # the home page's title, not a product's
+    assert out["alternatives_for"] == {"what": "Affordable Luxury Watches", "kind": "category"}
+    assert [a["host"] for a in out["alternatives"]] == ["watchwarehouse.com"]
+
+
+def test_blog_posts_and_guides_are_not_places_to_buy():
+    assert listing.ARTICLE_PATH.search("/post/cheapest-luxury-watches")
+    assert listing.ARTICLE_PATH.search("/blogs/news/best-sneakers-2026")
+    assert not listing.ARTICLE_PATH.search("/products/samba-og")

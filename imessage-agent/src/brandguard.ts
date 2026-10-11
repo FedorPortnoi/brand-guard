@@ -16,6 +16,8 @@ export type Check = {
   alternatives?: Alternative[];
   /** Why there are no alternatives, when there are none. */
   alternatives_note?: string;
+  /** What the alternatives are for: the same product, or (when only the store is known) what the store sells. */
+  alternatives_for?: { what: string; kind: "product" | "category" } | Record<string, never>;
 };
 
 export type Alternative = { url: string; host: string; title: string; price: number | null; currency: string | null; verdict: Check["verdict"] };
@@ -63,7 +65,9 @@ export function extrasText(c: Check): string[] {
   const lines: string[] = [];
   if (c.real_brand && !c.real_brand.this_site) lines.push(`The real ${c.real_brand.name}: ${c.real_brand.url}`);
   const alts = (c.alternatives ?? []).slice(0, 3);
-  if (alts.length) lines.push("Other places to buy it:", ...alts.map(a => `- ${a.host}${price(a)}: ${a.url}`));
+  const forWhat = c.alternatives_for && "kind" in c.alternatives_for && c.alternatives_for.kind === "category"
+    ? `Trusted stores for ${c.alternatives_for.what.toLowerCase()}:` : "Other places to buy it:";
+  if (alts.length) lines.push(forWhat, ...alts.map(a => `- ${a.host}${price(a)}: ${a.url}`));
   else if (c.alternatives_note) lines.push(c.alternatives_note);
   return lines;
 }

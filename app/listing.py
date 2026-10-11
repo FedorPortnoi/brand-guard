@@ -39,6 +39,7 @@ PLATFORM_NAMES = {
 }
 
 
+ARTICLE_PATH = re.compile(r"/(blogs?|posts?|news|articles?|guides?|reviews?|magazine|journal|stories)/", re.I)
 PRODUCT_PATH = re.compile(r"/(dp|gp/product|itm|p|product|products|item|items|listing|listings)/", re.I)
 
 
@@ -484,6 +485,8 @@ async def deep_research(value: str, source: dict | None = None) -> dict:
             commerce_words = ("buy", "shop", "sale", "price", "deal", "order", "store")
             # big retailers block page reads, so a known marketplace or a product-page address also counts as a listing
             product_page = _platform(host)[0] == "marketplace" or bool(PRODUCT_PATH.search(urlparse(row["url"]).path))
+            if ARTICLE_PATH.search(urlparse(row["url"]).path):  # a blog post or guide about the item, not a place to buy it
+                return None
             if not (item_facts.get("product") or item_facts.get("price") is not None or item_facts.get("seller") or
                     ((product_page or any(word in low_title for word in commerce_words))
                      and not any(word in low_title for word in article_words))):

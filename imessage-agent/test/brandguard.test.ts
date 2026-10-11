@@ -59,3 +59,12 @@ test("every answer ends with the real brand and other places to buy; the brand's
   const unknown = { ...check("yellow", []), alternatives: [], alternatives_note: "I couldn't tell which product this is." };
   assert.deepEqual(extrasText(unknown), ["I couldn't tell which product this is."]);
 });
+
+test("a store known only by name gets trusted stores for what it sells", () => {
+  const c = {
+    ...check("yellow", []),
+    alternatives: [{ url: "https://watchwarehouse.com/men/", host: "watchwarehouse.com", title: "Watches", price: null, currency: null, verdict: "green" as const }],
+    alternatives_for: { what: "Affordable Luxury Watches", kind: "category" as const },
+  };
+  assert.deepEqual(extrasText(c), ["Trusted stores for affordable luxury watches:", "- watchwarehouse.com: https://watchwarehouse.com/men/"]);
+});

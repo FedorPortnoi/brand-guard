@@ -144,30 +144,63 @@ def product_from_url(url: str) -> str:
     return re.sub(r"[-_+]+", " ", best).strip() if re.search(r"[-_+]", best) else ""
 
 
-async def alternatives(result: dict) -> tuple[dict, list[dict]]:
-    """Trusted places to buy the same item, whatever the verdict (none rated red), and the maker deep research named."""
+_TITLE_PARTS = re.compile(r"\s+[|–—:]\s+|\s+-\s+")
+_TITLE_FLUFF = re.compile(r"#\s*1\b|\b(?:no\.?\s*1|top[- ]rated|best[- ]selling|rated|official(?: site| store)?|online|"
+                          r"shop|store|home(?:page)?|welcome(?: to)?)\b|[®™©]", re.I)
+
+
+def store_category(title: str, store: str) -> str:
+    """What a store sells, from its search title: "Lucky Fours® | #1 Rated Affordable Luxury Watches" ->
+    "Affordable Luxury Watches". Empty when the title only names the store."""
+    token = _token(store)
+    parts = [p for p in _TITLE_PARTS.split(title or "") if p.strip() and not (token and token in _token(p))]
+    best = max((re.sub(r"\s+", " ", _TITLE_FLUFF.sub(" ", p)).strip(" -,.") for p in parts), key=len, default="")
+    return best if len(re.findall(r"[a-z]{3,}", best, re.I)) >= 1 else ""
+
+
+async def describe_store(result: dict, errors: list[str]) -> str:
+    """What the checked store sells, from how a web search describes its own site (for sites that block reading)."""
+    domain = result.get("domain") or ""
+    if not domain:
+        return ""
+    rows = [r for r in await listing.web_search(domain, errors, 10)
+            if registrable_domain(risk.host_of(r.get("page_url") or "")) == domain]
+    rows.sort(key=lambda r: len(listing.normalize_url(r["page_url"]).split("://", 1)[-1].rstrip("/")))  # home page first
+    return next((c for r in rows if (c := store_category(r.get("title") or "", domain.split(".")[0]))), "")
+
+
+async def alternatives(result: dict) -> tuple[dict, list[dict], dict]:
+    """Trusted places to buy the same item (or, when only the store is known, trusted stores selling what it sells),
+    whatever the verdict (none rated red); the maker deep research named; and what the alternatives are for."""
     facts = result.get("facts") or {}
-    if not (facts.get("product") or facts.get("title") or facts.get("brand")):
+    known = facts.get("product") or facts.get("title") or facts.get("brand")
+    wanted = {"what": known or "", "kind": "product"}
+    if not known:
         slug = product_from_url(result.get("url") or "")
-        if not slug:
-            return {}, []
-        # the page could not be read: search by the address's product words and the site's name
-        result = {**result, "facts": {**facts, "product": slug, "site_name": (result.get("domain") or "").split(".")[0]}}
+        if slug:  # the page could not be read: search by the address's product words and the site's name
+            wanted = {"what": slug, "kind": "product"}
+            result = {**result, "facts": {**facts, "product": slug, "site_name": (result.get("domain") or "").split(".")[0]}}
+        else:  # only the store is known: stores selling the same kind of thing
+            category = await describe_store(result, [])
+            if not category:
+                return {}, [], {}
+            wanted = {"what": category, "kind": "category"}
+            result = {**result, "facts": {**facts, "product": category}}
     try:
         deep = await listing.deep_research(result["url"], source=result)
     except (ListingError, KeyError):
-        return {}, []
-    return deep, [a for a in deep.get("alternatives", []) if a.get("verdict") != "red"]
+        return {}, [], {}
+    return deep, [a for a in deep.get("alternatives", []) if a.get("verdict") != "red"], wanted
 
 
 async def extras(result: dict) -> dict:
     """What every answer adds to the verdict: the real brand and other places to buy (run side by side)."""
     errors: list[str] = []
-    brand, (deep, alts) = await asyncio.gather(real_brand(result, errors), alternatives(result))
+    brand, (deep, alts, wanted) = await asyncio.gather(real_brand(result, errors), alternatives(result))
     maker = deep.get("manufacturer") or {}
     if not brand and maker.get("url") and registrable_domain(risk.host_of(maker["url"])) != result.get("domain"):
         brand = {"name": maker["name"], "url": maker["url"], "this_site": False}
-    return {"real_brand": brand, "alternatives": alts[:3],
+    return {"real_brand": brand, "alternatives": alts[:3], "alternatives_for": wanted if alts else {},
             "alternatives_note": "" if alts else NO_PRODUCT if not deep else "I didn't find other trusted places selling it.",
             "same_photo": deep.get("same_photo", [])[:3]}
 
