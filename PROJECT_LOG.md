@@ -2,14 +2,14 @@
 
 Brand authenticity guard for a hackathon. Drop in a brand image, find likely copies on the web, check which are altered or fake, group them by seller, draft takedown notices, and keep watching for new copies. Everything runs free, with no paid keys required.
 
-Last updated: 2026-10-10. Day-by-day story (tests, incidents, decisions): `session-logs/`.
+Last updated: 2026-10-11 ~01:40 ET. Day-by-day story (tests, incidents, decisions): `session-logs/` (latest: `session-logs/2026-10-11.md`).
 
 ## How to run
 
 ```
 cd D:\brand-guard
 .venv\Scripts\python -m uvicorn app.main:app --port 8000
-.venv\Scripts\python -m pytest tests -q      # 269 tests, offline, about 70 s (tests/conftest.py turns every network source off)
+.venv\Scripts\python -m pytest tests -q      # 319 tests, offline, about 55 s (tests/conftest.py turns every network source off)
 ```
 Open http://localhost:8000.
 
@@ -31,6 +31,29 @@ Optional install for "same product, different photo" (about 1 GB): see `requirem
 **On Replit:** import the repo; the Run button runs `bash start.sh` (installs `requirements.txt` on first run, serves on port 8000, uses the Repl's public address as `PUBLIC_BASE_URL`). Put API keys in Replit Secrets. Publish as a **Reserved VM**: monitoring and the iMessage agent must keep running. Leave out the optional CLIP install there.
 
 **iMessage agent** (`imessage-agent/`, Photon Spectrum): `cd imessage-agent && npm install && npm start` next to a running Brand Guard. Without `SPECTRUM_PROJECT_ID` / `SPECTRUM_PROJECT_SECRET` it opens Spectrum's terminal chat for testing; with them it answers real iMessages. `start.sh` starts it automatically when both are set. See `imessage-agent/README.md`.
+
+## Current state (2026-10-11)
+
+**The product is now the "is it legit?" shopper agent in iMessage.** `main` = `b00973d`, CI green, 319 Python + 21
+agent tests. Built tonight as steps 2–11 (PRs #3–#12); full story in `session-logs/2026-10-11.md`.
+
+| Input the shopper texts | What happens |
+|---|---|
+| a link (shop, product, post, account) | checked: verdict + reasons with proof |
+| a store's name ("is Lucky Fours legit?") | its own site found by search, then checked |
+| a screenshot (HEIC fine) | text read; the address or @account found and checked; its words count ("Zelle only") |
+| a video (screen recording, saved reel) | up to 8 distinct frames read like screenshots |
+| a PDF (receipt, invoice, order confirmation) | text + link targets read (scans OCR'd); the seller (site named most, not PayPal/Shopify…) checked |
+| a product photo with a price but no seller | Couldn't check (no seller) + trusted stores + "price far below trusted stores" warning |
+| Facebook / TikTok / Instagram / X / YouTube / Pinterest / Threads links | read (oEmbed, profile followers from search) or Couldn't check + screenshot request |
+
+Every answer: **LEGIT / NOT LEGIT / COULDN'T CHECK** (score ≥ 35 = Not legit; a domain under 30 days = Not legit on its
+own) · up to 3 reasons, each with proof (registry date, Safe Browsing, server owner, quotes, Wayback, profiles) ·
+"👥 Checked N times this week; M came out Not legit" · on Not legit, "Already paid?" steps by payment method + where to
+report · the real brand and trusted places to buy · "Double checking…" if it takes over 15 s.
+
+Open: Replit not redeployed since step 1; deadline time (CDT vs ET) to confirm on Devpost; demo video + Devpost;
+phone test on real iMessage last. Sections below this one describe the earlier brand-scanner state.
 
 ## Current state (2026-10-09)
 
