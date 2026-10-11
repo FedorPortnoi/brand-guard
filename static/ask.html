@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#151411">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23151411'/%3E%3Cpath d='M16 4l9 4v7c0 6-4 10-9 13-5-3-9-7-9-13V8z' fill='none' stroke='%23c92622' stroke-width='2'/%3E%3Cpath d='M12 16l3 3 6-7' fill='none' stroke='%23c92622' stroke-width='2'/%3E%3C/svg%3E">
+<title>Brand Guard: is it legit?</title>
+<meta name="description" content="Before you pay, ask. Paste a link, a store's name, or drop a screenshot, and Brand Guard tells you Legit, Not legit or Couldn't check, with the proof. Or text it on iMessage.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;800;900&family=JetBrains+Mono:wght@500;700&family=Fraunces:opsz,wght@9..144,600;9..144,800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#151411;--ink-2:#1e1c18;--ink-3:#2a2722;--ivory:#f0e8d8;--paper:#fbf6ec;--line:#d8cfbe;--mute:#6f695f;--soft:#a8a091;
+  --red:#c92622;--red-2:#e8453f;--green:#2f7a55;--green-bg:#e5f1e9;--amber:#b5660f;--amber-bg:#f8ecd9;--redbg:#f8e3e1;
+  --blue:#0a84ff;--grey-bubble:#e9e9eb;
+  --sans:"Inter Tight","Segoe UI",system-ui,sans-serif;--mono:"JetBrains Mono",Consolas,monospace;--serif:Fraunces,Georgia,serif}
+*{box-sizing:border-box}
+html{background:var(--ink);scroll-behavior:smooth}
+body{margin:0;background:var(--ivory);color:var(--ink);font:16px/1.5 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit}
+button,input{font:inherit}
+:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* header */
+.top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:20px;padding:14px clamp(16px,4vw,48px);background:rgba(21,20,17,.92);backdrop-filter:blur(10px);color:var(--ivory);border-bottom:3px solid var(--red)}
+.lockup{display:flex;align-items:center;gap:10px;text-decoration:none}
+.lockup svg{width:30px;height:30px}
+.lockup b{font:800 20px/1 var(--serif);letter-spacing:-.02em;white-space:nowrap}
+.top nav{margin-left:auto;display:flex;gap:6px;align-items:center}
+.top nav a{padding:8px 12px;text-decoration:none;font:700 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#cfc6b4;border:1px solid transparent}
+.top nav a:hover{color:var(--ivory);border-color:#4a463e}
+.top nav a.cta{color:#fff;background:var(--blue);border-radius:999px;padding:9px 14px;letter-spacing:.04em}
+.top nav a.cta:hover{background:#3a9bff;border-color:transparent}
+
+/* hero */
+.hero{position:relative;background:var(--ink);color:var(--ivory);padding:clamp(48px,8vw,104px) clamp(16px,4vw,48px) clamp(64px,9vw,120px);overflow:hidden;isolation:isolate}
+.hero::before{content:"";position:absolute;inset:0;z-index:-1;background:
+  radial-gradient(60% 70% at 85% 10%,rgba(201,38,34,.28),transparent 60%),
+  radial-gradient(50% 60% at 0% 100%,rgba(10,132,255,.16),transparent 60%),
+  linear-gradient(rgba(240,232,216,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(240,232,216,.04) 1px,transparent 1px);
+  background-size:auto,auto,32px 32px,32px 32px}
+.hero-in{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:clamp(32px,5vw,72px);align-items:center}
+.kicker{display:inline-flex;align-items:center;gap:10px;font:700 12px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--red-2)}
+.kicker::before{content:"";width:28px;height:2px;background:currentColor}
+h1{margin:18px 0 22px;font:900 clamp(52px,8.4vw,112px)/.92 var(--sans);letter-spacing:-.04em;word-spacing:.04em}
+h1 em{font-style:normal;color:var(--red-2);position:relative;white-space:nowrap}
+h1 em::after{content:"";position:absolute;left:0;right:0;bottom:-.1em;height:.08em;background:var(--red);transform-origin:left;animation:swipe .9s .3s cubic-bezier(.2,.8,.2,1) both}
+@keyframes swipe{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.lede{max-width:560px;margin:0 0 30px;color:#cfc6b4;font-size:clamp(17px,1.6vw,20px)}
+
+/* composer: the web's message bar */
+.composer{position:relative;max-width:640px;background:var(--paper);border-radius:22px;padding:8px;box-shadow:0 30px 80px -20px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.06);transition:box-shadow .2s,transform .2s}
+.composer.drag{box-shadow:0 0 0 3px var(--blue),0 30px 80px -20px rgba(0,0,0,.6);transform:scale(1.01)}
+.composer form{display:flex;align-items:center;gap:6px}
+.attach{flex:none;width:46px;height:46px;border-radius:50%;border:0;background:#ece4d4;color:var(--ink);cursor:pointer;display:grid;place-items:center;transition:background .15s}
+.attach:hover{background:#e2d7c3}
+.attach svg{width:22px;height:22px}
+#q{flex:1;min-width:0;height:50px;border:0;background:transparent;padding:0 8px;font-size:17px;color:var(--ink)}
+#q::placeholder{color:#8f887b}
+#q:focus{outline:none}
+.send{flex:none;height:46px;padding:0 22px;border:0;border-radius:999px;background:var(--red);color:#fff;font-weight:800;letter-spacing:.01em;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .15s,transform .08s}
+.send:hover{background:#a91e1b}.send:active{transform:translateY(1px)}
+.send:disabled{opacity:.5;cursor:wait}
+.send svg{width:18px;height:18px}
+.chip-file{display:none;align-items:center;gap:10px;margin:4px 6px 8px;padding:8px 10px;border-radius:14px;background:#ece4d4;font-size:14px}
+.chip-file.on{display:flex}
+.chip-file img{width:40px;height:40px;object-fit:cover;border-radius:8px;background:#d9cfbd}
+.chip-file .fi{width:40px;height:40px;border-radius:8px;background:var(--ink);color:var(--ivory);display:grid;place-items:center;font:700 10px var(--mono)}
+.chip-file span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip-file button{border:0;background:none;cursor:pointer;font-size:20px;line-height:1;color:var(--mute)}
+.tries{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;align-items:center}
+.tries small{font:700 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--soft);margin-right:4px}
+.tries button{border:1px solid #4a463e;background:rgba(255,255,255,.03);color:#e6ddcb;border-radius:999px;padding:7px 13px;font-size:14px;cursor:pointer;transition:border-color .15s,background .15s}
+.tries button:hover{border-color:var(--ivory);background:rgba(255,255,255,.08)}
+.accepts{display:flex;flex-wrap:wrap;gap:18px;margin-top:26px;color:#a8a091;font-size:14px}
+.accepts span{display:flex;align-items:center;gap:7px}
+.accepts span::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--red-2)}
+
+/* phone */
+.phone{justify-self:center;width:min(330px,100%);aspect-ratio:9/18.6;border-radius:48px;padding:12px;background:linear-gradient(145deg,#3a3731,#0d0c0a);box-shadow:0 50px 100px -30px rgba(0,0,0,.8),inset 0 0 0 1px rgba(255,255,255,.08);transform:rotate(3deg);transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.phone:hover{transform:rotate(0) translateY(-6px)}
+.screen{height:100%;border-radius:38px;background:#fff;overflow:hidden;display:flex;flex-direction:column;color:#000;font:14px/1.32 -apple-system,"SF Pro Text","Segoe UI",sans-serif}
+.p-top{padding:14px 16px 10px;text-align:center;border-bottom:1px solid #eee;background:#f7f7f7}
+.p-top .island{width:96px;height:26px;border-radius:20px;background:#000;margin:0 auto 10px}
+.p-top .av{width:40px;height:40px;border-radius:50%;margin:0 auto 4px;background:linear-gradient(#8e9bb0,#6d7a90);display:grid;place-items:center;color:#fff;font-weight:700}
+.p-top b{font-size:12px;font-weight:600}
+.thread{flex:1;padding:12px 10px;display:flex;flex-direction:column;gap:6px;overflow:hidden;justify-content:flex-end}
+.b{max-width:82%;padding:8px 12px;border-radius:18px;white-space:pre-line;opacity:0;transform:translateY(8px) scale(.98);animation:pop .45s cubic-bezier(.2,.8,.2,1) forwards;font-size:12.5px}
+.b.me{align-self:flex-end;background:var(--blue);color:#fff;border-bottom-right-radius:5px}
+.b.it{align-self:flex-start;background:var(--grey-bubble);border-bottom-left-radius:5px}
+.b.shot{padding:4px;background:var(--blue)}
+.b.shot div{width:150px;height:96px;border-radius:14px;background:linear-gradient(160deg,#fff 0 58%,#f1efe9 58%);display:flex;flex-direction:column;justify-content:flex-end;padding:8px;color:#222;font:600 9px/1.25 -apple-system,sans-serif}
+.b.shot i{font-style:normal;color:#c92622}
+.typing{align-self:flex-start;background:var(--grey-bubble);border-radius:18px;padding:10px 12px;display:flex;gap:4px;opacity:0;animation:pop .3s forwards}
+.typing span{width:7px;height:7px;border-radius:50%;background:#999;animation:blink 1.2s infinite}
+.typing span:nth-child(2){animation-delay:.15s}.typing span:nth-child(3){animation-delay:.3s}
+@keyframes blink{0%,60%,100%{opacity:.3}30%{opacity:1}}
+@keyframes pop{to{opacity:1;transform:none}}
+.p-bar{margin:8px 10px 14px;border:1px solid #ddd;border-radius:20px;padding:7px 12px;color:#aaa;font-size:12px}
+
+/* result */
+.stage{max-width:1180px;margin:0 auto;padding:0 clamp(16px,4vw,48px)}
+#result{scroll-margin-top:90px;margin-top:-56px;position:relative;z-index:2}
+#result:empty{display:none}
+.card{background:var(--paper);border-radius:28px;box-shadow:0 30px 70px -30px rgba(21,20,17,.45),0 0 0 1px var(--line);overflow:hidden;animation:rise .55s cubic-bezier(.2,.8,.2,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.card+.card{margin-top:22px}
+.v-head{display:grid;grid-template-columns:auto 1fr;gap:clamp(18px,3vw,36px);align-items:center;padding:clamp(22px,3.4vw,40px)}
+.stamp{width:clamp(120px,15vw,170px);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;text-align:center;border:5px solid currentColor;font:900 clamp(17px,2vw,22px)/1 var(--sans);letter-spacing:-.01em;text-transform:uppercase;transform:rotate(-8deg);position:relative;animation:stamp .5s .1s cubic-bezier(.3,1.6,.5,1) both}
+.stamp::before{content:"";position:absolute;inset:7px;border-radius:50%;border:2px dashed currentColor;opacity:.55}
+.stamp span{display:block;font-size:2.3em;line-height:.9;margin-bottom:4px}
+@keyframes stamp{from{opacity:0;transform:rotate(-8deg) scale(1.8)}to{opacity:1;transform:rotate(-8deg) scale(1)}}
+.v-green .stamp{color:var(--green);background:var(--green-bg)}.v-red .stamp{color:var(--red);background:var(--redbg)}.v-yellow .stamp{color:var(--amber);background:var(--amber-bg)}
+.v-head h2{margin:0;font:900 clamp(38px,5.6vw,72px)/.95 var(--sans);letter-spacing:-.035em}
+.v-green h2{color:var(--green)}.v-red h2{color:var(--red)}.v-yellow h2{color:var(--amber)}
+.what{margin-top:12px;display:inline-flex;flex-wrap:wrap;gap:8px;align-items:center;font:700 14px/1.3 var(--mono);color:var(--ink)}
+.what .tag{padding:4px 9px;border-radius:999px;background:#ece4d4;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.advice{margin:14px 0 0;font-size:18px;color:#3d3a34;max-width:640px}
+.v-body{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);border-top:1px solid var(--line)}
+.v-body>div{padding:clamp(20px,3vw,34px);min-width:0}
+.paid a,.proof,.what{overflow-wrap:anywhere}
+.v-body>div+div{border-left:1px solid var(--line);background:#f6efe1}
+h3{margin:0 0 14px;font:700 12px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.reasons{list-style:none;margin:0;padding:0;display:grid;gap:14px}
+.reasons li{display:grid;grid-template-columns:28px 1fr;gap:12px;align-items:start;opacity:0;animation:rise .45s cubic-bezier(.2,.8,.2,1) forwards}
+.reasons .ic{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:14px;color:#fff}
+.t-good .ic{background:var(--green)}.t-bad .ic{background:var(--red)}.t-warn .ic{background:var(--amber)}
+.reasons p{margin:2px 0 0;font-size:16.5px;font-weight:500}
+.proof{display:inline-flex;align-items:center;gap:6px;margin-top:6px;padding:5px 10px;border-radius:10px;background:#efe7d7;font:500 13px/1.35 var(--mono);color:#4d483f;text-decoration:none;max-width:100%;word-break:break-word}
+a.proof:hover{background:#e5dbc8;color:var(--ink)}
+.proof::before{content:"↳";color:var(--red);font-weight:700}
+.crowd{margin-top:20px;padding:12px 14px;border-radius:14px;background:var(--ink);color:var(--ivory);font-weight:600;display:flex;gap:10px;align-items:center}
+.paid{margin-top:20px;padding:16px 18px;border-radius:16px;background:var(--redbg);border:1px solid #efc3bf}
+.paid h4{margin:0 0 8px;color:var(--red);font:900 18px var(--sans);letter-spacing:-.02em}
+.paid ul,.alts{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.paid li{padding-left:16px;position:relative;font-size:15px}.paid li::before{content:"";position:absolute;left:0;top:.6em;width:6px;height:6px;border-radius:50%;background:var(--red)}
+.brand-real{display:flex;align-items:center;gap:12px;padding:14px;border-radius:16px;background:var(--paper);border:1px solid var(--line);text-decoration:none;margin-bottom:18px;transition:border-color .15s,transform .15s}
+.brand-real:hover{border-color:var(--ink);transform:translateY(-1px)}
+.brand-real .mk{width:40px;height:40px;border-radius:12px;background:var(--green);color:#fff;display:grid;place-items:center;font-weight:900}
+.brand-real small{display:block;color:var(--mute);font-size:12px}
+.alts a{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;background:var(--paper);border:1px solid var(--line);text-decoration:none;transition:border-color .15s,transform .15s}
+.alts a:hover{border-color:var(--ink);transform:translateX(3px)}
+.alts .dot{width:10px;height:10px;border-radius:50%;background:var(--green);flex:none;box-shadow:0 0 0 4px var(--green-bg)}
+.alts b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.alts .pr{font:700 14px var(--mono)}
+.note{color:var(--mute);font-size:15px}
+details.read{margin-top:18px;font-size:14px;color:var(--mute)}
+details.read summary{cursor:pointer;font:700 12px var(--mono);letter-spacing:.1em;text-transform:uppercase}
+details.read ol{margin:10px 0 0;padding-left:20px;font:13px/1.6 var(--mono)}
+.again{display:flex;gap:10px;justify-content:center;margin:26px 0 0}
+.again button{border:1px solid var(--ink);background:transparent;padding:11px 18px;border-radius:999px;font-weight:700;cursor:pointer}
+.again button:hover{background:var(--ink);color:var(--ivory)}
+.msg{display:flex;gap:14px;align-items:flex-start;padding:clamp(22px,3vw,34px)}
+.msg .bubble{background:var(--grey-bubble);border-radius:22px;border-bottom-left-radius:6px;padding:14px 18px;font-size:17px;max-width:640px}
+.msg .av{flex:none;width:44px;height:44px;border-radius:50%;background:var(--ink);display:grid;place-items:center}
+.msg .av svg{width:24px;height:24px}
+
+/* checking */
+.checking{padding:clamp(28px,4vw,48px);display:grid;grid-template-columns:auto 1fr;gap:26px;align-items:center}
+.radar{width:96px;height:96px;border-radius:50%;position:relative;background:radial-gradient(circle,var(--paper) 0 30%,transparent 31%),conic-gradient(from 0deg,transparent 0 70%,rgba(201,38,34,.55) 100%);border:2px solid var(--ink);animation:spin 1.3s linear infinite}
+.radar::after{content:"";position:absolute;inset:38%;border-radius:50%;background:var(--red)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.checking h2{margin:0 0 6px;font:900 clamp(30px,4vw,46px)/1 var(--sans);letter-spacing:-.03em}
+#step{font:600 15px var(--mono);color:var(--mute);min-height:1.4em}
+.bar{height:4px;border-radius:4px;background:#e6dccb;overflow:hidden;margin-top:14px}
+.bar i{display:block;height:100%;width:40%;background:var(--red);border-radius:4px;animation:slide 1.4s ease-in-out infinite}
+@keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(260%)}}
+
+/* sections */
+section.band{padding:clamp(64px,9vw,120px) 0}
+.sec-head{max-width:760px;margin:0 0 40px}
+.sec-head h2{margin:12px 0 12px;font:900 clamp(36px,5vw,64px)/1 var(--sans);letter-spacing:-.035em;word-spacing:.03em}
+.sec-head p{margin:0;color:var(--mute);font-size:18px}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.vcard{border-radius:24px;padding:26px;background:var(--paper);box-shadow:0 0 0 1px var(--line);transition:transform .25s,box-shadow .25s}
+.vcard:hover{transform:translateY(-4px);box-shadow:0 0 0 1px var(--ink),0 20px 40px -25px rgba(21,20,17,.5)}
+.vcard .pill{display:inline-block;padding:7px 12px;border-radius:999px;font:900 14px var(--sans);text-transform:uppercase;letter-spacing:.02em}
+.vcard h3{margin:18px 0 8px;font:800 22px/1.15 var(--sans);letter-spacing:-.02em;text-transform:none;color:var(--ink)}
+.vcard p{margin:0;color:var(--mute)}
+.p-green{background:var(--green-bg);color:var(--green)}.p-red{background:var(--redbg);color:var(--red)}.p-yellow{background:var(--amber-bg);color:var(--amber)}
+.ways{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border-radius:24px;overflow:hidden;box-shadow:0 0 0 1px var(--line)}
+.ways div{background:var(--paper);padding:24px}
+.ways b{display:block;font:900 40px/1 var(--sans);letter-spacing:-.04em;color:var(--red);margin-bottom:12px}
+.ways strong{display:block;font-size:18px;margin-bottom:4px}
+.ways span{color:var(--mute);font-size:15px}
+.imsg{background:var(--ink);color:var(--ivory);position:relative;overflow:hidden;isolation:isolate}
+.imsg::before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(50% 80% at 100% 50%,rgba(10,132,255,.25),transparent 60%)}
+.imsg-in{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:clamp(32px,6vw,80px);align-items:center}
+.imsg .sec-head p{color:#cfc6b4}
+.num{display:inline-flex;align-items:center;gap:12px;margin-top:8px;padding:16px 24px;border-radius:999px;background:var(--blue);color:#fff;text-decoration:none;font:800 clamp(18px,2.2vw,24px)/1 var(--sans);letter-spacing:-.01em;box-shadow:0 20px 40px -15px rgba(10,132,255,.7);transition:transform .15s,background .15s}
+.num:hover{background:#3a9bff;transform:translateY(-2px)}
+.num svg{width:26px;height:26px}
+.qr{background:var(--paper);padding:18px;border-radius:24px;width:220px;text-align:center;color:var(--ink);transform:rotate(-2deg)}
+.qr img{width:100%;display:block}
+.qr small{display:block;margin-top:10px;font:700 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.imsg ul{margin:22px 0 0;padding:0;list-style:none;display:grid;gap:10px;color:#cfc6b4}
+.imsg li::before{content:"→ ";color:var(--blue);font-weight:800}
+footer{background:var(--ink);color:#8f887b;padding:28px clamp(16px,4vw,48px);border-top:1px solid #2a2722;font-size:14px;display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer a{color:#cfc6b4}
+
+@media (max-width:960px){
+  .hero-in,.imsg-in{grid-template-columns:1fr}
+  .phone{display:none}
+  .v-body{grid-template-columns:1fr}.v-body>div+div{border-left:0;border-top:1px solid var(--line)}
+  .three{grid-template-columns:1fr}.ways{grid-template-columns:1fr 1fr}
+  .qr{justify-self:start}
+}
+@media (max-width:560px){
+  .top nav a:not(.cta){display:none}.top .long{display:none}
+  .v-head{grid-template-columns:1fr;justify-items:start}
+  .stamp{width:110px}
+  .send b{display:none}.send{padding:0 16px}
+  .ways{grid-template-columns:1fr}
+  .checking{grid-template-columns:1fr}
+  #q{font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="lockup" href="/" aria-label="Brand Guard home">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3l10 4.5V15c0 6.6-4.4 11-10 14-5.6-3-10-7.4-10-14V7.5z" fill="none" stroke="#e8453f" stroke-width="2.2"/><path d="M11.5 16l3.2 3.2 6-7" fill="none" stroke="#e8453f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <b>Brand Guard</b>
+  </a>
+  <nav>
+    <a href="#how">How it works</a>
+    <a href="/lab">Evidence Lab</a>
+    <a class="cta" href="#imessage"><span class="long">Text it on </span>iMessage</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="hero-in">
+    <div>
+      <span class="kicker">Check before you pay</span>
+      <h1>Is it <em>legit?</em></h1>
+      <p class="lede">Paste a link, type the store's name, or drop a screenshot. You get a straight answer, the proof behind it, and safer places to buy.</p>
+      <div class="composer" id="composer">
+        <div class="chip-file" id="chip"><span class="fi" id="chip-icon"></span><span id="chip-name"></span><button type="button" id="chip-x" aria-label="Remove file">×</button></div>
+        <form id="ask">
+          <button type="button" class="attach" id="attach" aria-label="Attach a screenshot, video or PDF">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.5l-8.6 8.6a5.5 5.5 0 01-7.8-7.8l9.2-9.2a3.7 3.7 0 015.2 5.2l-9.2 9.2a1.8 1.8 0 01-2.6-2.6l8.5-8.5"/></svg>
+          </button>
+          <label class="sr" for="q">A link, a store's name, or a question</label>
+          <input id="q" autocomplete="off" placeholder="Paste a link or type a store's name">
+          <input type="file" id="file" accept="image/*,video/*,application/pdf,.heic,.heif" hidden>
+          <button class="send" id="send" type="submit"><b>Check</b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        </form>
+      </div>
+      <div class="tries"><small>Try</small>
+        <button type="button" data-try="is Lucky Fours legit?">is Lucky Fours legit?</button>
+        <button type="button" data-try="https://testsafebrowsing.appspot.com/s/phishing.html">a known phishing page</button>
+        <button type="button" data-try="kith.com">kith.com</button>
+      </div>
+      <div class="accepts"><span>Shop links</span><span>Instagram, TikTok, Facebook &amp; more</span><span>Screenshots &amp; screen recordings</span><span>Receipts (PDF)</span></div>
+    </div>
+    <div class="phone" aria-hidden="true">
+      <div class="screen">
+        <div class="p-top"><div class="island"></div><div class="av">BG</div><b>Brand Guard</b></div>
+        <div class="thread" id="demo-thread"></div>
+        <div class="p-bar">iMessage</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="stage"><div id="result" aria-live="polite"></div></div>
+
+<section class="band" id="how">
+  <div class="stage">
+    <div class="sec-head"><span class="kicker">Three answers, never a guess</span><h2>A straight answer, with receipts.</h2><p>Every answer comes with up to three reasons, and every reason with something you can open and check yourself.</p></div>
+    <div class="three">
+      <div class="vcard"><span class="pill p-green">Legit ✅</span><h3>Nothing points to a scam</h3><p>An established domain, a real store behind it, no threat reports. Plus other trusted places that sell it.</p></div>
+      <div class="vcard"><span class="pill p-red">Not legit ❌</span><h3>Don't pay</h3><p>A brand-new domain, a Google Safe Browsing warning, "Zelle only". With what to do if you already paid, by payment method.</p></div>
+      <div class="vcard"><span class="pill p-yellow">Couldn't check ⚠️</span><h3>Only when there's nothing to judge</h3><p>No page, no archive, no domain age, nothing on the web. Then it says so, and tells you what to send instead.</p></div>
+    </div>
+    <div style="height:28px"></div>
+    <div class="ways">
+      <div><b>01</b><strong>A link</strong><span>A shop, a product, a post or an account.</span></div>
+      <div><b>02</b><strong>A store's name</strong><span>"is Lucky Fours legit?" finds the store's own site.</span></div>
+      <div><b>03</b><strong>A screenshot or video</strong><span>Reads the address, the @account, the price, and words like "DM to order".</span></div>
+      <div><b>04</b><strong>A receipt</strong><span>Finds the seller in an order confirmation PDF.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="band imsg" id="imessage">
+  <div class="stage imsg-in">
+    <div>
+      <div class="sec-head" style="margin-bottom:24px"><span class="kicker" style="color:#6fb6ff">Or just text it</span><h2>Same answers. In iMessage.</h2><p>Shopping on your phone? Send the link, the screenshot, or the store's name to Brand Guard like you'd ask a friend.</p></div>
+      <a class="num" href="sms:+16465792852&body=is%20Lucky%20Fours%20legit%3F">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C6.5 3 2 6.8 2 11.5c0 2.6 1.4 5 3.7 6.5-.2 1.3-.9 2.6-2 3.5 2 0 3.9-.7 5.2-1.8 1 .2 2 .3 3.1.3 5.5 0 10-3.8 10-8.5S17.5 3 12 3z"/></svg>
+        +1 (646) 579-2852
+      </a>
+      <ul><li>Screenshots straight from Instagram or TikTok</li><li>Screen recordings of a shop</li><li>"Double checking…" when it takes a moment</li></ul>
+    </div>
+    <div class="qr"><img src="/static/imessage-qr.svg" alt="QR code: text Brand Guard on iMessage"><small>Scan to text it</small></div>
+  </div>
+</section>
+
+<footer>
+  <span>Brand Guard reports observable signals, not a guarantee or a legal finding. Pay with buyer protection when unsure.</span>
+  <span><a href="/lab">Evidence Lab</a> · Hacklanta '26</span>
+</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const safeHref = u => /^https?:\/\//i.test(u || "") ? esc(u) : "#";
+// links in plain text (the "Already paid?" steps name report pages)
+const linkify = s => esc(s).replace(/https?:\/\/[^\s<]+[^\s<.,;:)]/g, u => `<a href="${u}" target="_blank" rel="noopener noreferrer">${u}</a>`);
+const firstSentence = s => ((s || "").match(/^.*?[.!?](?=\s|$)/)?.[0] ?? s ?? "").trim();
+const host = u => { try { return new URL(u).host.replace(/^www\./, ""); } catch { return u; } };
+
+// the same words the iMessage agent sends (imessage-agent/src/brandguard.ts)
+const VERDICT = {green: ["Legit", "✓"], red: ["Not legit", "✕"], yellow: ["Couldn't check", "?"]};
+const ADVICE = {
+  red: "Don't pay or share your details.",
+  yellow: "I couldn't read the site or find anything about it elsewhere. If you buy, pay only with buyer protection (a card or PayPal Goods & Services).",
+  green: "Nothing points to a scam. Not a guarantee.",
+};
+const screenshotAsk = p => `${p || "The site"} didn't let me see this post. Send me a screenshot of it, with the account name and caption showing, and I'll check that.`;
+const FROM = {screenshot: "screenshot", video: "video", pdf: "PDF"};
+
+function picked(c) {
+  const want = c.verdict === "green" ? ["good"] : ["bad", "warn"];
+  return (c.signals || []).filter(s => want.includes(s.tone)).slice(0, 3);
+}
+function crowdText(c) {
+  const cr = c.crowd;
+  if (!cr || !cr.checked || cr.checked < 2) return "";
+  return `Checked ${cr.checked} times ${cr.days === 7 ? "this week" : `in the last ${cr.days} days`}; ` +
+    (cr.flagged ? `${cr.flagged} came out Not legit.` : "never flagged.");
+}
+const money = a => a.price == null ? "" : (!a.currency || a.currency === "USD") ? `$${a.price.toFixed(2)}` : `${a.price.toFixed(2)} ${a.currency}`;
+
+function card(c) {
+  const [word, mark] = VERDICT[c.verdict] || VERDICT.yellow;
+  const f = c.found || {};
+  const what = f.what || c.domain || host(c.url);
+  const from = FROM[f.how];
+  const advice = c.ask_for || (c.send_screenshot ? screenshotAsk(c.platform) : ADVICE[c.verdict]);
+  const reasons = picked(c).map((s, i) => `<li class="t-${esc(s.tone)}" style="animation-delay:${.25 + i * .12}s">
+      <span class="ic">${s.tone === "good" ? "✓" : "!"}</span>
+      <div><p>${esc(firstSentence(s.detail))}</p>${s.proof ? (s.proof.url
+        ? `<a class="proof" href="${safeHref(s.proof.url)}" target="_blank" rel="noopener noreferrer">${esc(s.proof.text)}</a>`
+        : `<span class="proof">${esc(s.proof.text)}</span>`) : ""}</div></li>`).join("");
+  const crowd = crowdText(c);
+  const ap = c.already_paid || {};
+  const paid = c.verdict === "red" && ap.steps && ap.steps.length
+    ? `<div class="paid"><h4>Already paid?</h4><ul>${[...ap.steps, ...(ap.report || [])].map(s => `<li>${linkify(s)}</li>`).join("")}</ul></div>` : "";
+  const rb = c.real_brand && !c.real_brand.this_site
+    ? `<a class="brand-real" href="${safeHref(c.real_brand.url)}" target="_blank" rel="noopener noreferrer"><span class="mk">${esc((c.real_brand.name || "?")[0])}</span><span><small>The real brand</small><b>${esc(c.real_brand.name)}</b> · ${esc(host(c.real_brand.url))}</span></a>` : "";
+  const alts = (c.alternatives || []).slice(0, 3);
+  const forWhat = c.alternatives_for && c.alternatives_for.kind === "category" ? `Trusted stores for ${esc(c.alternatives_for.what.toLowerCase())}` : "Other places to buy it";
+  const altsHtml = alts.length
+    ? `<h3>${forWhat}</h3><ul class="alts">${alts.map(a => `<li><a href="${safeHref(a.url)}" target="_blank" rel="noopener noreferrer"><span class="dot"></span><b>${esc(a.host)}</b><span class="pr">${esc(money(a))}</span></a></li>`).join("")}</ul>`
+    : "";
+  const altNote = !alts.length && c.alternatives_note && !c.send_screenshot ? `<p class="note" style="margin-top:18px">${esc(c.alternatives_note)}</p>` : "";
+  const photos = c.verdict === "green" ? [] : (c.same_photo || []).slice(0, 2);
+  const photosHtml = photos.length ? `<h3 style="margin-top:20px">Same photo also on</h3><ul class="alts">${photos.map(p => `<li><a href="${safeHref(p.url)}" target="_blank" rel="noopener noreferrer"><span class="dot" style="background:var(--amber);box-shadow:0 0 0 4px var(--amber-bg)"></span><b>${esc(p.host)}</b></a></li>`).join("")}</ul>` : "";
+  const read = (f.read || []).length && from ? `<details class="read"><summary>What I read in your ${from}</summary><ol>${f.read.slice(0, 20).map(l => `<li>${esc(l)}</li>`).join("")}</ol></details>` : "";
+  const side = rb + altsHtml + photosHtml;
+  return `<article class="card v-${esc(c.verdict)}">
+    <div class="v-head">
+      <div class="stamp"><div><span>${mark}</span>${esc(word)}</div></div>
+      <div><h2>${esc(word)}</h2>
+        <div class="what">${esc(what)}${from ? `<span class="tag">from your ${from}</span>` : ""}</div>
+        <p class="advice">${esc(advice)}</p></div>
+    </div>
+    <div class="v-body" ${side ? "" : 'style="grid-template-columns:minmax(0,1fr)"'}>
+      <div><h3>Why</h3>${reasons ? `<ul class="reasons">${reasons}</ul>` : `<p class="note">No single signal stood out.</p>`}
+        ${crowd ? `<div class="crowd"><span aria-hidden="true">👥</span>${esc(crowd)}</div>` : ""}${paid}${altNote}${read}</div>
+      ${side ? `<div>${side}</div>` : ""}
+    </div></article>`;
+}
+
+const agentSays = text => `<article class="card"><div class="msg"><span class="av"><svg viewBox="0 0 32 32"><path d="M16 3l10 4.5V15c0 6.6-4.4 11-10 14-5.6-3-10-7.4-10-14V7.5z" fill="none" stroke="#e8453f" stroke-width="2.2"/></svg></span><div class="bubble">${esc(text)}</div></div></article>`;
+const againHtml = `<div class="again"><button type="button" id="again">Check something else</button></div>`;
+
+function render(r) {
+  const others = (r.others || []).map(o => o.error ? agentSays(`${o.found?.what || "That"}: ${o.error}`) : card(o)).join("");
+  $("result").innerHTML = card(r) + others + againHtml;
+  wireAgain();
+}
+function wireAgain() {
+  $("again").onclick = () => { $("result").innerHTML = ""; clearFile(); $("q").value = ""; window.scrollTo({top: 0, behavior: "smooth"}); $("q").focus(); };
+}
+
+// the checking state: what Brand Guard is doing while it works, and "Double checking…" after 15 s, as on iMessage
+const STEPS_LINK = ["Looking up who registered the domain", "Asking Google Safe Browsing", "Reading the page", "Checking the archive", "Searching the web for the store"];
+const STEPS_FILE = ["Reading the text in your file", "Finding the address or @account", "Looking up who registered the domain", "Asking Google Safe Browsing", "Searching for trusted stores"];
+let ticker;
+function checking(withFile) {
+  const steps = withFile ? STEPS_FILE : STEPS_LINK;
+  $("result").innerHTML = `<article class="card"><div class="checking"><div class="radar" aria-hidden="true"></div>
+    <div><h2 id="chk-h">Checking…</h2><div id="step">${steps[0]}</div><div class="bar"><i></i></div></div></div></article>`;
+  let i = 0; const t0 = Date.now();
+  clearInterval(ticker);
+  ticker = setInterval(() => {
+    i = Math.min(i + 1, steps.length - 1); if ($("step")) $("step").textContent = steps[i];
+    if (Date.now() - t0 > 15000 && $("chk-h")) $("chk-h").textContent = "Double checking…";
+  }, 2200);
+  $("result").scrollIntoView({behavior: "smooth", block: "start"});
+}
+
+let file = null;
+const KIND = f => f.type === "application/pdf" ? "PDF" : f.type.startsWith("video/") ? "VIDEO" : "IMG";
+function setFile(f) {
+  if (!f) return;
+  file = f;
+  const icon = $("chip-icon");
+  if (f.type.startsWith("image/") && !/hei[cf]/i.test(f.type + f.name)) {
+    const img = document.createElement("img"); img.src = URL.createObjectURL(f); img.alt = ""; icon.replaceWith(img); img.id = "chip-icon";
+  } else { const s = document.createElement("span"); s.className = "fi"; s.id = "chip-icon"; s.textContent = KIND(f); icon.replaceWith(s); }
+  $("chip-name").textContent = f.name;
+  $("chip").classList.add("on");
+  $("q").placeholder = "Add a note (optional)";
+}
+function clearFile() { file = null; $("file").value = ""; $("chip").classList.remove("on"); $("q").placeholder = "Paste a link or type a store's name"; }
+
+$("attach").onclick = () => $("file").click();
+$("file").onchange = e => setFile(e.target.files[0]);
+$("chip-x").onclick = clearFile;
+const comp = $("composer");
+["dragenter", "dragover"].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); comp.classList.add("drag"); }));
+["dragleave", "drop"].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); if (ev === "drop" || !e.relatedTarget) comp.classList.remove("drag"); }));
+document.addEventListener("drop", e => { const f = e.dataTransfer?.files?.[0]; if (f) { setFile(f); $("q").focus(); } });
+document.addEventListener("paste", e => { const f = [...(e.clipboardData?.files || [])][0]; if (f) { e.preventDefault(); setFile(f); } });
+document.querySelectorAll("[data-try]").forEach(b => b.onclick = () => { clearFile(); $("q").value = b.dataset.try; $("ask").requestSubmit(); });
+
+$("ask").onsubmit = async e => {
+  e.preventDefault();
+  const text = $("q").value.trim();
+  if (!text && !file) { $("q").focus(); return; }
+  const fd = new FormData();
+  fd.append("text", text);
+  if (file) fd.append("image", file, file.name);
+  $("send").disabled = true;
+  checking(!!file);
+  try {
+    const res = await fetch("/api/listing/ask", {method: "POST", body: fd});
+    const body = await res.json().catch(() => ({}));
+    if (res.status === 422) { $("result").innerHTML = agentSays(body.detail || "I couldn't check that.") + againHtml; wireAgain(); }
+    else if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    else render(body);
+  } catch (err) {
+    $("result").innerHTML = agentSays(`Brand Guard is not reachable right now (${err.message}). Try again in a minute.`) + againHtml; wireAgain();
+  } finally {
+    clearInterval(ticker); $("send").disabled = false;
+  }
+};
+
+// the phone in the hero plays a real conversation (the answer the agent gives for this screenshot)
+const DEMO = [
+  {me: true, shot: true},
+  {me: true, t: "is this legit?"},
+  {typing: 1100},
+  {t: "NOT LEGIT ❌  luxe-kicks.store (from your screenshot)\n\n- The domain was registered 4 days ago.\n- Asks buyers to pay by Zelle. That removes buyer protection.\n👥 Checked 5 times this week; 3 came out Not legit.\n\nDon't pay or share your details."},
+];
+function playDemo() {
+  const th = $("demo-thread"); if (!th || getComputedStyle(th.closest(".phone")).display === "none") return;
+  th.innerHTML = ""; let delay = 500;
+  DEMO.forEach(m => {
+    setTimeout(() => {
+      th.querySelector(".typing")?.remove();
+      const el = document.createElement("div");
+      if (m.typing) { el.className = "typing"; el.innerHTML = "<span></span><span></span><span></span>"; }
+      else if (m.shot) { el.className = "b me shot"; el.innerHTML = "<div>luxe-kicks.store<br>Samba OG <i>$49</i><br>DM to order, Zelle only</div>"; }
+      else { el.className = `b ${m.me ? "me" : "it"}`; el.textContent = m.t; }
+      th.appendChild(el);
+    }, delay);
+    delay += m.typing || 900;
+  });
+  setTimeout(playDemo, delay + 7000);
+}
+playDemo();
+</script>
+</body>
+</html>

@@ -396,3 +396,13 @@ def test_at_most_three_things_are_checked_and_filler_is_not_a_store(monkeypatch)
     r = asyncio.run(ask.ask("check a.shop b.shop c.shop d.shop for me"))
     assert checked == ["a.shop", "b.shop", "c.shop"] and len(r["others"]) == 2
     assert ask.store_name("check  for me") == ""
+
+
+def test_the_home_page_asks_like_the_imessage_agent_and_the_lab_moved():
+    client = TestClient(app)
+    home = client.get("/")
+    assert home.status_code == 200
+    assert "/api/listing/ask" in home.text and "sms:+16465792852" in home.text and "/static/imessage-qr.svg" in home.text
+    lab = client.get("/lab")
+    assert lab.status_code == 200 and "/api/listing/check" in lab.text
+    assert client.get("/static/imessage-qr.svg").headers["content-type"].startswith("image/svg")
