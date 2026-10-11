@@ -35,8 +35,12 @@ PLATFORM_NAMES = {
     "amazon": "Amazon", "ebay": "eBay", "etsy": "Etsy", "aliexpress": "AliExpress",
     "alibaba": "Alibaba", "temu": "Temu", "wish.com": "Wish", "shein": "SHEIN",
     "facebook": "Facebook", "instagram": "Instagram", "tiktok": "TikTok", "youtube": "YouTube",
-    "reddit": "Reddit", "x.com": "X",
+    "reddit": "Reddit", "x.com": "X", "twitter": "X", "pinterest": "Pinterest", "threads": "Threads",
+    "snapchat": "Snapchat", "linkedin": "LinkedIn", "tumblr": "Tumblr", "twitch": "Twitch",
 }
+# public oEmbed endpoints (no key): who posted and the caption, when the page itself needs a login or blocks reading
+OEMBED = {"tiktok": "https://www.tiktok.com/oembed?url=", "x.com": "https://publish.twitter.com/oembed?url=",
+          "twitter": "https://publish.twitter.com/oembed?url="}
 
 
 ARTICLE_PATH = re.compile(r"/(blogs?|posts?|news|articles?|guides?|reviews?|magazine|journal|stories)/", re.I)
@@ -196,15 +200,70 @@ def social_info(url: str) -> dict | None:
                                "noplaylist": True, "extract_flat": "in_playlist"}) as ydl:
             i = ydl.extract_info(url, download=False) or {}
     except Exception:
-        return None
+        return oembed_info(url)
     ts = i.get("timestamp")
     account = i.get("uploader") or i.get("channel") or i.get("uploader_id")
     if not (account or i.get("title")):
-        return None
+        return oembed_info(url)
     return {"account": account, "account_url": i.get("uploader_url") or i.get("channel_url"),
             "followers": i.get("channel_follower_count"), "verified": i.get("channel_is_verified"),
             "title": i.get("title"), "caption": (i.get("description") or "")[:2000], "image": i.get("thumbnail"),
             "posted": datetime.fromtimestamp(ts, timezone.utc).date().isoformat() if ts else None}
+
+
+def oembed_info(url: str) -> dict | None:
+    """Who posted and the caption, from the platform's public oEmbed endpoint (TikTok, X). None when it has none."""
+    host = risk.host_of(url)
+    api = next((v for k, v in OEMBED.items() if risk.host_matches(host, k)), None)
+    if not api:
+        return None
+    try:
+        r = httpx.get(api + quote(url, safe=""), timeout=12, headers=UA, follow_redirects=True)
+        j = r.json() if r.status_code == 200 else {}
+    except Exception:
+        return None
+    caption = j.get("title") or ""
+    if not caption and j.get("html"):  # X puts the post's text in its embed HTML
+        p = BeautifulSoup(j["html"], "lxml").find("p")
+        caption = p.get_text(" ", strip=True) if p else ""
+    if not (j.get("author_name") or caption):
+        return None
+    return {"account": j.get("author_name"), "account_url": j.get("author_url"), "followers": None, "verified": None,
+            "title": caption[:200] or None, "caption": caption[:2000], "image": j.get("thumbnail_url"), "posted": None}
+
+
+def profile_handle(url: str) -> str:
+    """The account a social profile link names (instagram.com/kith, tiktok.com/@temu, facebook.com/shoptemu);
+    empty for a post, a video or a platform page."""
+    path = [p for p in urlparse(url).path.split("/") if p]
+    if len(path) != 1:
+        return ""
+    handle = path[0].lstrip("@")
+    return "" if handle.lower() in _NOT_AN_ACCOUNT or "." in handle and handle.endswith((".php", ".html")) else handle
+
+
+async def profile_from_search(url: str, platform: str | None) -> dict | None:
+    """A login-walled profile's name and followers, from how a web search shows that profile page
+    ("Temu. 12,123,214 followers"). BG_FOOTPRINT=0 turns it off (tests do)."""
+    handle = profile_handle(url)
+    if not handle or len(_squash(handle)) < 3:
+        return None
+    rows = await _web_rows(f"{platform or ''} {handle}".strip())
+    if not rows:
+        return None
+    host = risk.host_of(url)
+    mine = [r for r in rows if registrable_domain(risk.host_of(r.get("page_url") or "")) == registrable_domain(host)]
+    found = web_footprint(mine, handle, name=handle)["accounts"]
+    same = next((a for a in found if a["handle"].lower() == handle.lower()), None)
+    if not same:
+        return None
+    row = next((r for r in mine if profile_handle(r.get("page_url") or "").lower() == handle.lower()), None) or {}
+    return {"account": f"@{handle}", "account_url": same["url"], "followers": same["followers"], "verified": None,
+            "title": (row.get("title") or "")[:200] or None, "caption": (row.get("description") or "")[:2000],
+            "image": None, "posted": None}
+
+
+LOGIN_PATH = re.compile(r"/(?:accounts/)?(?:log-?in|sign-?in|signup|checkpoint|auth)(?:/|\.php|$)", re.I)
 
 
 async def final_url(client: httpx.AsyncClient, url: str) -> str:
@@ -218,8 +277,8 @@ async def final_url(client: httpx.AsyncClient, url: str) -> str:
         if r.status_code not in (301, 302, 303, 307, 308) or not loc:
             return url
         nxt = str(httpx.URL(url).join(loc))
-        if not await net.safe_url_async(nxt):
-            return url
+        if LOGIN_PATH.search(urlparse(nxt).path) or not await net.safe_url_async(nxt):
+            return url  # a login wall is not where the link goes: keep the link the shopper sent
         url = nxt
     return url
 
@@ -285,7 +344,7 @@ def _proofs(url: str, host: str, domain: dict, threats: list[str], server: dict,
         out["Read an archived copy"] = {"text": f"Wayback Machine copy from {archived[:10]}" if stamp else "Wayback Machine copy",
                                         "url": f"https://web.archive.org/web/{stamp or '*'}/{url}"}
     if social and social.get("account_url"):
-        out["Posted by"] = {"text": social.get("account") or "The account", "url": social["account_url"]}
+        out["Posted by"] = out["The account"] = {"text": social.get("account") or "The account", "url": social["account_url"]}
     if footprint:
         accounts = footprint.get("accounts") or []
         known = [a for a in accounts if a.get("followers")]
@@ -311,7 +370,7 @@ VERY_NEW_DOMAIN = 50  # registered under 30 days ago (owner, 10.10)
 REVIEW_SITES = ("trustpilot.com", "sitejabber.com", "bbb.org", "reviews.io", "resellerratings.com")
 DISCUSSION_SITES = ("reddit.com", "quora.com")
 BIG_FOLLOWING = 10_000
-_FOLLOWERS = re.compile(r"(\d[\d.,]*)\s*([kmb])?\s+(?:followers|follower|seguidores|abonnés|abonnenten|подписчик\w*)", re.I)
+_FOLLOWERS = re.compile(r"(\d[\d.,]*)\s*([kmb])?\s*(?:followers|follower|seguidores|abonnés|abonnenten|подписчик\w*)", re.I)  # "4.2MFollowers" too
 _REVIEW_COUNT = re.compile(r"(\d[\d,]*)\s+reviews?\b", re.I)
 _NOT_AN_ACCOUNT = {"reel", "reels", "p", "tv", "watch", "videos", "video", "posts", "groups", "pages", "hashtag", "explore",
                    "shorts", "status", "search", "share", "stories", "events", "marketplace", "pin", "results"}
@@ -328,11 +387,11 @@ def _squash(text: str) -> str:
     return re.sub(r"[^a-z0-9]", "", text.lower())
 
 
-def web_footprint(rows: list[dict], domain: str) -> dict:
+def web_footprint(rows: list[dict], domain: str, name: str = "") -> dict:
     """What the rest of the web shows about a store whose own page can't be read, from a search for its domain:
     its own social accounts and their followers, review-site pages about it, discussion threads naming it.
     A row counts only when it is about this store: an account named after it, a review page or thread naming it."""
-    name = _squash(domain.split(".")[0])
+    name = _squash(name or domain.split(".")[0])
     out = {"accounts": [], "reviews": [], "threads": []}
     if len(name) < 3:
         return out
@@ -500,9 +559,10 @@ def assess(url: str, html: bytes | None, domain: dict, threats: list[str], histo
             fol = social.get("followers")
             detail = f"{social['account']}" + (f", {fol:,} followers" if isinstance(fol, int) else "") + (
                 ", verified account" if social.get("verified") else "") + (f", posted {social['posted']}" if social.get("posted") else "")
-            signals.append(_signal("Posted by", detail + ".", "good" if social.get("verified") else "neutral",
-                                   -10 if social.get("verified") else 0))
-            score -= 10 if social.get("verified") else 0
+            sway = -10 if social.get("verified") else -6 if isinstance(fol, int) and fol >= BIG_FOLLOWING else 0
+            signals.append(_signal("Posted by" if not profile_handle(url) else "The account", detail + ".",
+                                   "good" if sway else "neutral", sway))
+            score += sway
     off: list[str] = []
     if kind == "social" or seen_text:
         off = _hits(OFF_PLATFORM, text)
@@ -515,7 +575,8 @@ def assess(url: str, html: bytes | None, domain: dict, threats: list[str], histo
             signals.append(_signal("Read an archived copy", "The live site didn't answer us, so BrandGuard read the Wayback Machine's copy"
                                    + (f" from {archived[:10]}." if archived else "."), "neutral"))
         else:
-            signals.append(_signal("Page reached", "BrandGuard could inspect the live page." if html else "BrandGuard read the post's details.", "good", -2))
+            signals.append(_signal("Page reached", "BrandGuard could inspect the live page." if html else
+                                   "BrandGuard read the account's details." if profile_handle(url) else "BrandGuard read the post's details.", "good", -2))
     else:
         score += 12
         signals.append(_signal("Page not inspectable", f"{platform} didn't show us this post without a login." if kind == "social" else
@@ -590,8 +651,12 @@ async def check_url(value: str, brand: str = "", official: list[str] = (), resel
         html, domain, threats, social, server = await asyncio.gather(html_job, age_job, safe_job, social_job,
                                                                      infra.describe(host, client))
         archived, footprint = "", None
-        if kind == "social" and not social and not shows_post(html):
-            html = None  # a login wall or app shell: it says nothing about this post
+        if kind == "social" and not shows_post(html):
+            html = None  # a login wall or app shell ("TikTok - Make Your Day"): it says nothing about this post
+        profile = url if profile_handle(url) else (social or {}).get("account_url") or ""
+        if kind == "social" and profile_handle(profile) and not (social or {}).get("followers"):
+            found = await profile_from_search(profile, _platform(host)[1])  # the account's followers, from search
+            social = {**found, **{k: v for k, v in (social or {}).items() if v}} if found else social
         if html is None and kind != "social":  # unreachable from here (blocked network, bot wall): read the archived copy,
             # and, for a store's own site, look for it elsewhere on the web in case there is no copy either
             copy, rows = await asyncio.gather(archive.archived_page(client, url, net.MAX_HTML),

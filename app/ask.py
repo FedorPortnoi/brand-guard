@@ -138,6 +138,7 @@ async def real_brand(result: dict, errors: list[str]) -> dict | None:
 
 NO_PRODUCT = "I couldn't tell which product this is, so I can't suggest other places to buy it. Send me the product page."
 NOT_A_STORE = "That page doesn't sell anything, so there's nothing to compare it with."
+AN_ACCOUNT = "That's an account, not a product. Send me the post or product link and I'll find other places to buy it."
 
 
 _SLUG_JUNK = re.compile(r"^(?:[a-z]{0,3}\d[\w-]*|p|dp|products?|items?|itm|shop|us|en|en-us|collections?|[a-z]{2}(?:-[a-z]{2})?)$", re.I)
@@ -235,13 +236,18 @@ async def extras(result: dict) -> dict:
     if not brand and maker.get("url") and registrable_domain(risk.host_of(maker["url"])) != result.get("domain"):
         brand = {"name": maker["name"], "url": maker["url"], "this_site": False}
     return {"real_brand": brand, "alternatives": alts[:3], "alternatives_for": wanted if alts else {},
-            "alternatives_note": "" if alts else NOT_A_STORE if result.get("sells") is False else NO_PRODUCT if not deep
+            "alternatives_note": "" if alts else NOT_A_STORE if result.get("sells") is False
+            else AN_ACCOUNT if listing.profile_handle(result.get("url") or "") and _social_site(result.get("url") or "")
+            else NO_PRODUCT if not deep
             else "I didn't find other trusted places selling it.",
             "same_photo": deep.get("same_photo", [])[:3]}
 
 
 async def _check(target: str, how: str, what: str, seen: str, lines: list[str], name: str = "") -> dict:
     result = await listing.check_url(target, brand=name, seen_text=seen)
+    facts = result.get("facts") or {}
+    if how == "link" and facts.get("account") and _social_site(result.get("url") or ""):  # "@shoptemu on Facebook", not "facebook.com"
+        what = f"{facts['account']} on {result.get('platform')}"
     result["found"] = {"how": how, "what": what if how != "name" else f"{what}: {result['domain']}", "read": lines[:40]}
     result.update(await extras(result))
     return result
