@@ -49,8 +49,9 @@ class VideoError(ValueError):
     pass
 
 
-def _sample(data: bytes, fps: float) -> tuple[list[tuple[float, Image.Image]], float, bool]:
-    """Decode and sample frames at about `fps`. Returns ([(t, RGB image)], duration seconds, truncated)."""
+def _sample(data: bytes, fps: float, size: int = 640) -> tuple[list[tuple[float, Image.Image]], float, bool]:
+    """Decode and sample frames at about `fps`, at most `size` pixels on the long side.
+    Returns ([(t, RGB image)], duration seconds, truncated)."""
     if len(data) > MAX_BYTES:
         raise VideoError(f"Video is larger than {MAX_BYTES // 1_000_000} MB")
     fd, path = tempfile.mkstemp(suffix=".video")
@@ -75,7 +76,7 @@ def _sample(data: bytes, fps: float) -> tuple[list[tuple[float, Image.Image]], f
                 ok, frame = cap.retrieve()
                 if ok and frame is not None:
                     h, w = frame.shape[:2]
-                    s = 640 / max(h, w)
+                    s = size / max(h, w)
                     if s < 1:
                         frame = cv2.resize(frame, (int(w * s), int(h * s)), interpolation=cv2.INTER_AREA)
                     out.append((i / src_fps, Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))))

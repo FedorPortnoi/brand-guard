@@ -1,5 +1,7 @@
 // The conversation logic, independent of the messaging platform: agent.ts wires it to Spectrum, and tests drive it
 // with stand-in spaces and messages.
+import { readFile, stat } from "node:fs/promises";
+import { basename, extname } from "node:path";
 import type { Message, Space } from "spectrum-ts";
 import { AskError, BrandGuard, replyText } from "./brandguard.js";
 
@@ -9,7 +11,29 @@ export type BotOptions = {
   bg: BrandGuard;
   allowedSenders?: string[];  // phone numbers or emails that may use the agent; empty or missing: anyone
   slowAfterMs?: number;  // an answer not ready by then gets a DOUBLE_CHECKING note first (owner, 10.10: 15 s)
+  /** Terminal testing only: a message that is the path of a file on this computer is sent as that file
+   *  (dragging files into the terminal chat doesn't work everywhere). Never on iMessage. */
+  localFiles?: boolean;
 };
+
+const MIME: Record<string, string> = {
+  ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".heic": "image/heic", ".heif": "image/heif",
+  ".webp": "image/webp", ".gif": "image/gif", ".mp4": "video/mp4", ".mov": "video/quicktime", ".m4v": "video/mp4",
+  ".webm": "video/webm", ".pdf": "application/pdf",
+};
+
+/** The file a pasted path points to ("D:\shots\post.png", with or without quotes), if it exists and is a kind we read. */
+export async function localFile(text: string): Promise<{ data: Buffer; filename: string; mimeType: string } | null> {
+  const path = text.trim().replace(/^["']|["']$/g, "");
+  const mimeType = MIME[extname(path).toLowerCase()];
+  if (!mimeType || !/^([a-zA-Z]:[\\/]|\/|~\/|\\\\)/.test(path)) return null;
+  try {
+    if (!(await stat(path)).isFile()) return null;
+    return { data: await readFile(path), filename: basename(path), mimeType };
+  } catch {
+    return null;
+  }
+}
 
 /** Sent once when an answer takes longer than slowAfterMs, so a long check doesn't look like a frozen chat. */
 export const DOUBLE_CHECKING = "Double checking…";
@@ -19,7 +43,7 @@ export const PRIVATE = "This Brand Guard agent is private. Ask its owner to add 
 /** "+1 (555) 010-2345" and "+15550102345" are the same sender; so are emails in any case. */
 export const senderKey = (id: string) => id.toLowerCase().replace(/[\s\-().]/g, "");
 
-export function createBot({ bg, allowedSenders = [], slowAfterMs = 15_000 }: BotOptions) {
+export function createBot({ bg, allowedSenders = [], slowAfterMs = 15_000, localFiles = false }: BotOptions) {
   const allowed = new Set(allowedSenders.map(senderKey).filter(Boolean));
   const refused = new Set<string>();  // told once that the agent is private; later messages are ignored
 
@@ -52,14 +76,11 @@ export function createBot({ bg, allowedSenders = [], slowAfterMs = 15_000 }: Bot
       }
       return;
     }
-    const media = await mediaOf(message);
-    const text = textOf(message);
+    let media = await mediaOf(message);
+    let text = textOf(message);
+    if (!media && localFiles && (media = await localFile(text))) text = "";
     const lower = text.toLowerCase();
 
-    if (media?.mimeType.startsWith("video/")) {
-      await space.send("I can't read videos. Send a screenshot or the link instead.");
-      return;
-    }
     if (!media) {
       if (!text) return;
       if (/^(\/?help|hi|hello|hey|start|\?)$/.test(lower)) {
