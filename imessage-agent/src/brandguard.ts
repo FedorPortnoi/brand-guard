@@ -33,6 +33,8 @@ export type Check = {
   platform?: string | null;
   /** A post the platform wouldn't show us (login wall): ask the shopper for a screenshot of it. */
   send_screenshot?: boolean;
+  /** What to send instead (a photo with no seller in it): replaces the usual advice. */
+  ask_for?: string;
 };
 
 /** What to say instead of the usual advice when a post couldn't be seen. */
@@ -129,6 +131,6 @@ export function verdictText(c: Check): string {
   const paid = c.verdict === "red" && ap && "steps" in ap && ap.steps.length
     ? ["", "Already paid?", ...ap.steps.map(s => `- ${s}`), ...ap.report.map(r => `- ${r}`)] : [];
   const crowd = crowdText(c);
-  return [`${HEADLINE[c.verdict]}  ${what}`, "", ...reasonLines(c), ...(crowd ? [crowd] : []), "", c.send_screenshot ? screenshotAsk(c.platform) : ADVICE[c.verdict], ...paid,
+  return [`${HEADLINE[c.verdict]}  ${what}`, "", ...reasonLines(c), ...(crowd ? [crowd] : []), "", c.ask_for || (c.send_screenshot ? screenshotAsk(c.platform) : ADVICE[c.verdict]), ...paid,
     ...(extras.length ? ["", ...extras] : [])].join("\n");
 }
