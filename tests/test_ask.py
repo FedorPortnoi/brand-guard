@@ -107,7 +107,7 @@ def test_the_brands_own_site_is_not_looked_up_again(monkeypatch):
     assert asyncio.run(ask.real_brand(own, [])) == {"name": "adidas", "url": "https://adidas.com", "this_site": True}
 
 
-def test_every_verdict_gets_alternatives_but_never_red_ones(monkeypatch):
+def test_every_verdict_gets_alternatives_but_only_legit_ones(monkeypatch):
     calls = {}
 
     async def deep(value, source=None):
@@ -122,7 +122,8 @@ def test_every_verdict_gets_alternatives_but_never_red_ones(monkeypatch):
     monkeypatch.setattr(ask, "real_brand", brand)
     for verdict in ("green", "yellow", "red"):
         out = asyncio.run(ask.extras({**_fake_shop(), "verdict": verdict}))
-        assert [a["host"] for a in out["alternatives"]] == ["www.footlocker.com", "www.zappos.com"]
+        # zappos was rated Couldn't check (yellow): a store we couldn't check is not a trusted place to buy
+        assert [a["host"] for a in out["alternatives"]] == ["www.footlocker.com"]
         assert out["real_brand"]["url"] == "https://www.adidas.com/us" and out["alternatives_note"] == ""
     assert calls["source"]["domain"] == "adidas-outlet.shop"  # the check already done is reused, not repeated
 

@@ -15,6 +15,7 @@ def offline_sources(monkeypatch):
     monkeypatch.setenv("BG_ALIEXPRESS", "0")
     monkeypatch.setenv("BG_PHISHSTATS", "0")
     monkeypatch.setenv("BG_WAYBACK_READ", "0")  # no archived copies of unreadable pages
+    monkeypatch.setenv("BG_FOOTPRINT", "0")  # no web search for an unreadable store's footprint
     monkeypatch.setenv("BG_IP_LOOKUP", "0")  # no DNS or RDAP lookups for listing servers
 
 
