@@ -133,3 +133,7 @@ test("a post the platform hid asks for a screenshot instead of the usual advice,
   assert.ok(!text.includes("buyer protection") && !text.includes("Send me the product page."));
   assert.ok(verdictText({ ...hidden, send_screenshot: false }).includes("buyer protection"));
 });
+
+test("an answer found in a video says so", () => {
+  assert.match(verdictText(check("red", [], { how: "video", what: "luxe-kicks.store" })), /^NOT LEGIT ❌ {2}luxe-kicks\.store \(from your video\)/);
+});

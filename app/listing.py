@@ -331,7 +331,7 @@ def _proofs(url: str, host: str, domain: dict, threats: list[str], server: dict,
     for label, words in hits.items():
         for w in words:
             if q := _quote(seen_text, w):
-                out[label] = {"text": f"\"{q}\" (from your screenshot)", "url": None}
+                out[label] = {"text": f"\"{q}\" (from what you sent)", "url": None}
             elif q := _quote(page_text, w):
                 out[label] = {"text": f"\"{q}\"", "url": url}
             elif w.lower() in url.lower():

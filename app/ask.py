@@ -12,7 +12,7 @@ import numpy as np
 from PIL import Image
 
 from . import forensics  # noqa: F401  registers the HEIC opener: iPhone screenshots sent by iMessage
-from . import listing, risk
+from . import listing, risk, video
 from .listing import ListingError
 from .sellers import registrable_domain
 
@@ -32,6 +32,8 @@ _FILLER = re.compile(r"\b(is|are|this|that|the|site|store|shop|website|legit|leg
                      r"for|me|my|it|its|one|these|those|them|of|on|to|from|with|about|should i|buy|buying|here|too)\b"
                      r"|[?!.,:;\"']", re.I)
 MAX_ITEMS = 3  # things checked from one message ("is Lucky Fours legit? and kith.com")
+VIDEO_FRAMES = 8  # distinct frames read from a video (a screen recording, a saved reel)
+VIDEO_SIZE = 1600  # long side of a frame read for text: phone screen text is small
 
 _ocr = None
 
@@ -50,6 +52,42 @@ def read_text(image: bytes) -> list[str]:
         img = Image.open(io.BytesIO(image)).convert("RGB")
     except Exception as exc:
         raise ListingError("Could not open that image.") from exc
+    return _read(img)
+
+
+def video_frames(data: bytes, limit: int = VIDEO_FRAMES) -> list[Image.Image]:
+    """The distinct, non-blank frames of a video, about one a second, evenly spread when there are more than limit:
+    a screen recording scrolls through a shop, a reel shows its caption and handle."""
+    try:
+        frames, _, _ = video._sample(data, 1.0, VIDEO_SIZE)
+    except video.VideoError as exc:
+        raise ListingError(f"{exc}. Send a screenshot or the link instead.") from exc
+    picked, seen = [], []
+    for _, img in frames:
+        if not video._informative(img):
+            continue
+        small = np.asarray(img.convert("L").resize((240, round(240 * img.height / img.width))), dtype=np.int16)
+        if any(x.shape == small.shape and _same_screen(x, small) for x in seen):  # the same screen held still
+            continue
+        seen.append(small)
+        picked.append(img)
+    if len(picked) > limit:
+        picked = [picked[round(i * (len(picked) - 1) / (limit - 1))] for i in range(limit)]
+    return picked
+
+
+def _same_screen(a: np.ndarray, b: np.ndarray) -> bool:
+    """Two frames show the same screen when almost no pixel clearly changed. Compression noise stays under the
+    threshold; one new line of text (an address, a handle) does not, unlike a perceptual hash."""
+    return float((np.abs(a - b) > 48).mean()) < 0.0005
+
+
+def video_text(data: bytes) -> list[str]:
+    """The lines of text across a video's frames, in order, each once."""
+    return list(dict.fromkeys(line for img in video_frames(data) for line in _read(img)))
+
+
+def _read(img: Image.Image) -> list[str]:
     if max(img.size) > 2600:
         img.thumbnail((2600, 2600))
     result, _ = _reader()(np.asarray(img)[:, :, ::-1])  # RapidOCR expects BGR, as OpenCV loads it
@@ -281,8 +319,10 @@ async def ask(text: str = "", image: bytes | None = None) -> dict:
     once the links are taken out, are checked side by side, in the order written, up to MAX_ITEMS. The first that
     could be checked is the result; the rest are in `others` (each a result, or {"error", "found"})."""
     text = (text or "").strip()
-    lines = await asyncio.to_thread(read_text, image) if image else []
+    is_video = bool(image) and video.is_video(image)
+    lines = await asyncio.to_thread(video_text if is_video else read_text, image) if image else []
     seen = " ".join(lines)
+    shot = "video" if is_video else "screenshot"
 
     links = [v for v in addresses(text) if pick_address([v])]
     rest = text
@@ -296,11 +336,11 @@ async def ask(text: str = "", image: bytes | None = None) -> dict:
             items.append((_position(text, name), lambda: _answer(_check_name(name, seen, lines), "name", name)))
         jobs = [start() for _, start in sorted(items, key=lambda x: x[0])[:MAX_ITEMS]]
     elif lines and (value := pick_address(addresses(seen))):
-        jobs = [_check(value, "screenshot", risk.host_of(listing.normalize_url(value)), seen, lines)]
+        jobs = [_check(value, shot, risk.host_of(listing.normalize_url(value)), seen, lines)]
     elif lines and (acct := account_url(lines)):
         jobs = [_check(acct[0], "account", acct[1], seen, lines)]
     else:
-        raise ListingError("I couldn't find a web address or an @account in that screenshot. "
+        raise ListingError(f"I couldn't find a web address or an @account in that {shot}. "
                            "Send me the link, or the store's name.")
 
     results = await asyncio.gather(*jobs)

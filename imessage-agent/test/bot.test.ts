@@ -52,16 +52,22 @@ test("a link, a screenshot (with or without a caption) and a name are each check
   assert.ok(sent.every(s => s.startsWith("NOT LEGIT ❌")));
 });
 
-test("help, thanks and videos never cost a check", async () => {
+test("help and thanks never cost a check", async () => {
   const { bg, calls } = stubBg();
   const { space, sent } = fakeSpace();
   const bot = createBot({ bg });
   await bot.handle(space, text("hi"));
   await bot.handle(space, text("Thanks!"));
-  await bot.handle(space, media("", "video/quicktime"));
   assert.deepEqual(calls, []);
-  assert.deepEqual(sent, [HELP, "Anytime. Send another link or screenshot whenever.",
-                          "I can't read videos. Send a screenshot or the link instead."]);
+  assert.deepEqual(sent, [HELP, "Anytime. Send another link or screenshot whenever."]);
+});
+
+test("a video (a screen recording, a saved reel) is checked like a screenshot", async () => {
+  const { bg, calls } = stubBg();
+  const { space, sent } = fakeSpace();
+  await createBot({ bg }).handle(space, media("is this legit?", "video/quicktime"));
+  assert.deepEqual(calls, ['ask "is this legit?" video/quicktime']);
+  assert.equal(sent.length, 1);
 });
 
 test("the server's own explanation is passed on; an outage says so", async () => {

@@ -56,10 +56,6 @@ export function createBot({ bg, allowedSenders = [], slowAfterMs = 15_000 }: Bot
     const text = textOf(message);
     const lower = text.toLowerCase();
 
-    if (media?.mimeType.startsWith("video/")) {
-      await space.send("I can't read videos. Send a screenshot or the link instead.");
-      return;
-    }
     if (!media) {
       if (!text) return;
       if (/^(\/?help|hi|hello|hey|start|\?)$/.test(lower)) {
