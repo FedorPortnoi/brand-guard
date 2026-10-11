@@ -148,3 +148,16 @@ test("a PDF (a receipt, an order confirmation) is sent to be checked", async () 
   await createBot({ bg }).handle(fakeSpace().space, { platform: "terminal", direction: "inbound", content: att } as unknown as Message);
   assert.deepEqual(calls, ['ask "" application/pdf']);
 });
+
+test("a link and its caption sent as two messages are one question; a second file is a second question", async () => {
+  const { bg, calls } = stubBg();
+  const { space, sent } = fakeSpace();
+  const bot = createBot({ bg, settleMs: 30 });
+  await Promise.all([bot.handle(space, text("how about this?")), bot.handle(space, text("https://www.instagram.com/p/Abc123/"))]);
+  assert.deepEqual(calls, ['ask "how about this? https://www.instagram.com/p/Abc123/"']);
+  assert.equal(sent.length, 1);
+  await Promise.all([bot.handle(space, media()), bot.handle(space, text("is this real?")), bot.handle(space, media("", "application/pdf"))]);
+  assert.deepEqual(calls.slice(1), ['ask "is this real?" image/heic', 'ask "" application/pdf']);
+  await Promise.all([bot.handle(space, text("hi")), bot.handle(space, text("kith.com"))]);  // a greeting before a link doesn't swallow it
+  assert.deepEqual(calls.slice(3), ['ask "hi kith.com"']);
+});

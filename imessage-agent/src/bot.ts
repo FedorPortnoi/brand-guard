@@ -14,7 +14,13 @@ export type BotOptions = {
   /** Terminal testing only: a message that is the path of a file on this computer is sent as that file
    *  (dragging files into the terminal chat doesn't work everywhere). Never on iMessage. */
   localFiles?: boolean;
+  /** Messages from one chat arriving within this many ms of each other are one question: iMessage sends a link
+   *  and its caption ("how about this?") as two messages. 0: every message on its own. */
+  settleMs?: number;
 };
+
+/** The wait for the rest of a question on iMessage (a link and its caption arrive well under a second apart). */
+export const SETTLE_MS = 2_000;
 
 const MIME: Record<string, string> = {
   ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".heic": "image/heic", ".heif": "image/heif",
@@ -43,12 +49,17 @@ export const PRIVATE = "This Brand Guard agent is private. Ask its owner to add 
 /** "+1 (555) 010-2345" and "+15550102345" are the same sender; so are emails in any case. */
 export const senderKey = (id: string) => id.toLowerCase().replace(/[\s\-().]/g, "");
 
-export function createBot({ bg, allowedSenders = [], slowAfterMs = 15_000, localFiles = false }: BotOptions) {
+type Media = { data: Buffer; filename: string; mimeType: string };
+
+export function createBot({ bg, allowedSenders = [], slowAfterMs = 15_000, localFiles = false, settleMs = 0 }: BotOptions) {
   const allowed = new Set(allowedSenders.map(senderKey).filter(Boolean));
   const refused = new Set<string>();  // told once that the agent is private; later messages are ignored
+  // a chat's question still arriving: its words and file so far, and the handle() calls waiting for its answer
+  const pending = new Map<string, { texts: string[]; media: Media | null; timer?: ReturnType<typeof setTimeout>;
+    waiting: { resolve: () => void; reject: (e: unknown) => void }[] }>();
 
   /** The image, video or PDF in a message, if any (an iMessage photo with a caption can arrive as a group). */
-  async function mediaOf(message: Message): Promise<{ data: Buffer; filename: string; mimeType: string } | null> {
+  async function mediaOf(message: Message): Promise<Media | null> {
     const items = message.content.type === "group" ? message.content.items.map(m => m.content) : [message.content];
     for (const c of items) {
       if (c.type === "attachment" && (/^(image|video)\//.test(c.mimeType) || c.mimeType === "application/pdf")) {
@@ -79,6 +90,34 @@ export function createBot({ bg, allowedSenders = [], slowAfterMs = 15_000, local
     let media = await mediaOf(message);
     let text = textOf(message);
     if (!media && localFiles && (media = await localFile(text))) text = "";
+    if (!settleMs) return answer(space, text, media);
+
+    let q = pending.get(space.id);
+    if (q && q.media && media) {  // a second file is a second question: answer the first now
+      clearTimeout(q.timer);
+      flush(space);
+      q = undefined;
+    }
+    if (!q) pending.set(space.id, q = { texts: [], media: null, waiting: [] });
+    const question = q;
+    if (text) question.texts.push(text);
+    question.media ??= media;
+    clearTimeout(question.timer);
+    question.timer = setTimeout(() => flush(space), settleMs);
+    return new Promise<void>((resolve, reject) => question.waiting.push({ resolve, reject }));
+  }
+
+  /** Answer a chat's question as gathered so far; every handle() call that fed it resolves with the answer. */
+  function flush(space: Space) {
+    const q = pending.get(space.id);
+    if (!q) return;
+    pending.delete(space.id);
+    answer(space, q.texts.join(" "), q.media).then(
+      () => q.waiting.forEach(w => w.resolve()),
+      e => q.waiting.forEach((w, i) => (i ? w.resolve() : w.reject(e))));  // one failure, reported once
+  }
+
+  async function answer(space: Space, text: string, media: Media | null) {
     const lower = text.toLowerCase();
 
     if (!media) {
