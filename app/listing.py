@@ -202,6 +202,7 @@ def _signal(label: str, detail: str, tone: str, impact: int = 0) -> dict:
 
 
 NOT_LEGIT = 35  # the one cut-off: a score this high is Not legit, lower is Legit (owner, 10.10; tune from real results)
+VERY_NEW_DOMAIN = 50  # registered under 30 days ago (owner, 10.10)
 REVIEW_SITES = ("trustpilot.com", "sitejabber.com", "bbb.org", "reviews.io", "resellerratings.com")
 DISCUSSION_SITES = ("reddit.com", "quora.com")
 BIG_FOLLOWING = 10_000
@@ -334,9 +335,9 @@ def assess(url: str, html: bytes | None, domain: dict, threats: list[str], histo
     age = domain.get("age_days") if not kind else None  # a marketplace's or social site's age says nothing about the seller
     if kind:
         pass
-    elif age is not None and age < 30:
-        score += 34
-        signals.append(_signal("Very new domain", f"The domain was registered {age} days ago.", "bad", 34))
+    elif age is not None and age < 30:  # on its own enough for Not legit: too new to tell a company from a scam (owner, 10.10)
+        score += VERY_NEW_DOMAIN
+        signals.append(_signal("Very new domain", f"The domain was registered {age} days ago.", "bad", VERY_NEW_DOMAIN))
     elif age is not None and age < 180:
         score += 22
         signals.append(_signal("New domain", f"The domain is about {max(1, age // 30)} months old.", "warn", 22))

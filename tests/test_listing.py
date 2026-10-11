@@ -283,6 +283,18 @@ def test_the_owners_cut_off_is_35():
     assert listing.NOT_LEGIT == 35
 
 
+def test_a_domain_under_30_days_old_is_not_legit_on_its_own():
+    """Owner, 10.10: too new to tell a real company from a scam, even with a clean page and good signs."""
+    clean = b"<title>Shoes</title>"
+    for age in (0, 4, 29):
+        r = listing.assess("https://freshshoes.example/p", clean, {"age_days": age}, [], [])
+        assert r["verdict"] == "red" and r["headline"] == "Not legit" and "Very new domain" in _labels(r)
+    following = {"accounts": [{"platform": "Instagram", "handle": "freshshoes", "url": "https://www.instagram.com/freshshoes/",
+                               "followers": 90_000}], "reviews": [], "threads": []}
+    assert listing.assess("https://freshshoes.example/p", None, {"age_days": 10}, [], [], footprint=following)["verdict"] == "red"
+    assert listing.assess("https://freshshoes.example/p", clean, {"age_days": 30}, [], [])["verdict"] == "green"
+
+
 def test_social_posts_are_not_forced_to_not_sure():
     post = listing.assess("https://www.instagram.com/p/abc/", None, {}, [], [],
                           social={"account": "@shop", "followers": 900, "title": "New drop", "caption": "Link in bio"})
