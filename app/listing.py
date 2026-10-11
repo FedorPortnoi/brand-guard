@@ -15,7 +15,7 @@ from urllib.parse import quote, urlparse
 import httpx
 from bs4 import BeautifulSoup
 
-from . import infra, investigations, net, rdap, reputation, risk, search
+from . import archive, infra, investigations, net, rdap, reputation, risk, search
 from .sellers import registrable_domain
 from .store import UA
 
@@ -39,6 +39,7 @@ PLATFORM_NAMES = {
 }
 
 
+ARTICLE_PATH = re.compile(r"/(blogs?|posts?|news|articles?|guides?|reviews?|magazine|journal|stories)/", re.I)
 PRODUCT_PATH = re.compile(r"/(dp|gp/product|itm|p|product|products|item|items|listing|listings)/", re.I)
 
 
@@ -202,7 +203,7 @@ def _signal(label: str, detail: str, tone: str, impact: int = 0) -> dict:
 
 def assess(url: str, html: bytes | None, domain: dict, threats: list[str], history: list[dict], *,
            server: dict | None = None, social: dict | None = None, brand: str = "", official: list[str] = (),
-           resellers: list[str] = (), claimed_brand: str | None = None, seen_text: str = "") -> dict:
+           resellers: list[str] = (), claimed_brand: str | None = None, seen_text: str = "", archived: str = "") -> dict:
     """The verdict from everything gathered. brand / official / resellers are the user's optional brand settings;
     claimed_brand is the brand the page itself names; seen_text is what the shopper saw (text read from their
     screenshot), checked for the same wording as a caption. Pure, so every rule is testable."""
@@ -317,10 +318,14 @@ def assess(url: str, html: bytes | None, domain: dict, threats: list[str], histo
             signals.append(_signal("Payment off the platform", "Asks buyers to pay or talk elsewhere: " + ", ".join(off[:3]) + ". That removes buyer protection.", "bad", 20))
 
     if html or social:
-        signals.append(_signal("Page reached", "BrandGuard could inspect the live page." if html else "BrandGuard read the post's details.", "good", -2))
+        if html and archived:
+            signals.append(_signal("Read an archived copy", "The live site didn't answer us, so BrandGuard read the Wayback Machine's copy"
+                                   + (f" from {archived[:10]}." if archived else "."), "neutral"))
+        else:
+            signals.append(_signal("Page reached", "BrandGuard could inspect the live page." if html else "BrandGuard read the post's details.", "good", -2))
     else:
         score += 12
-        signals.append(_signal("Page not inspectable", "The site blocked or did not return a public product page.", "warn", 12))
+        signals.append(_signal("Page not inspectable", "The site didn't answer or blocked reading, and there is no archived copy to read instead.", "warn", 12))
 
     linked = sorted({x["host"] for x in history if x.get("same_ips") and not x.get("same_site") and not x.get("same_url")
                      and (x.get("score") or 0) >= 40})
@@ -371,6 +376,11 @@ async def check_url(value: str, brand: str = "", official: list[str] = (), resel
         social_job = asyncio.to_thread(social_info, url) if kind == "social" else asyncio.sleep(0, None)
         html, domain, threats, social, server = await asyncio.gather(html_job, age_job, safe_job, social_job,
                                                                      infra.describe(host, client))
+        archived = ""
+        if html is None and kind != "social":  # unreachable from here (blocked network, bot wall): read the archived copy
+            copy = await archive.archived_page(client, url, net.MAX_HTML)
+            if copy:
+                html, archived = copy[0], copy[1] or "an earlier date"
     check_id = "link-" + uuid.uuid4().hex[:10]
     history = await asyncio.to_thread(_safe, investigations.earlier, check_id, host, url, server["ips"], server["platform"]) or []
     facts = page_facts(html, url)
@@ -379,9 +389,9 @@ async def check_url(value: str, brand: str = "", official: list[str] = (), resel
         facts.update({"account": social.get("account"), "account_url": social.get("account_url"),
                       "followers": social.get("followers"), "posted": social.get("posted")})
     result = assess(url, html, domain or {}, threats, history, server=server, social=social, brand=brand,
-                    official=list(official), resellers=list(resellers), claimed_brand=facts.get("brand"), seen_text=seen_text)
+                    official=list(official), resellers=list(resellers), claimed_brand=facts.get("brand"), seen_text=seen_text, archived=archived)
     image = facts.get("image") if (facts.get("image") or "").startswith("http") else None
-    result.update({"id": check_id, "url": url, "domain": registrable_domain(host), "facts": facts, "errors": errors,
+    result.update({"id": check_id, "url": url, "archived": archived, "domain": registrable_domain(host), "facts": facts, "errors": errors,
                    "image_url": image, "lens_url": lens_url(image), "brand_settings": bool(brand or official or resellers),
                    "server": {"ips": server["ips"][:4], "network": server.get("network"), "org": server.get("org"),
                               "shared": server.get("shared"), "platform": server.get("platform")}})
@@ -435,8 +445,9 @@ def rank_alternatives(items: list[dict]) -> list[dict]:
                                         x.get("price") if x.get("price") is not None else float("inf")))
 
 
-async def deep_research(value: str) -> dict:
-    source = await check_url(value, log=False)
+async def deep_research(value: str, source: dict | None = None) -> dict:
+    """Trusted places to buy the same item. source: a link check already done for value (saves checking it twice)."""
+    source = source or await check_url(value, log=False)
     facts = source["facts"]
     product = _query_name(source)
     maker = facts.get("manufacturer") or facts.get("brand")
@@ -461,7 +472,7 @@ async def deep_research(value: str) -> dict:
             continue
         host = risk.host_of(url)
         key = registrable_domain(host)
-        if not key or key in seen or url == source["url"]:
+        if not key or key in seen or url == source["url"] or key == source.get("domain"):  # not the shop itself
             continue
         seen.add(key)
         unique.append({"url": url, "search_title": row.get("title") or ""})
@@ -476,13 +487,16 @@ async def deep_research(value: str) -> dict:
             html, domain = await asyncio.gather(net.fetch_html(client, row["url"]),
                                                 rdap.lookup(registrable_domain(host), client))
             item_facts = page_facts(html, row["url"])
-            snapshot = assess(row["url"], html, domain, [], [])
+            # judged against the brand being bought, so a look-alike shop (kiths.us.com for Kith) is caught
+            snapshot = assess(row["url"], html, domain, [], [], claimed_brand=maker)
             title = item_facts.get("product") or row["search_title"] or host
             low_title = title.lower()
             article_words = ("countries", "guide", "review", "how to", "news", "wiki", "forum")
             commerce_words = ("buy", "shop", "sale", "price", "deal", "order", "store")
             # big retailers block page reads, so a known marketplace or a product-page address also counts as a listing
             product_page = _platform(host)[0] == "marketplace" or bool(PRODUCT_PATH.search(urlparse(row["url"]).path))
+            if ARTICLE_PATH.search(urlparse(row["url"]).path) or _platform(host)[0] == "social":
+                return None  # a blog post, guide or social thread about the item, not a place to buy it
             if not (item_facts.get("product") or item_facts.get("price") is not None or item_facts.get("seller") or
                     ((product_page or any(word in low_title for word in commerce_words))
                      and not any(word in low_title for word in article_words))):

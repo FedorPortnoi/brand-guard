@@ -13,6 +13,7 @@ c2pa-python
 beautifulsoup4
 lxml
 python-dotenv
+tldextract
 yt-dlp
 PyMuPDF
 # screenshot text (RapidOCR); rapidocr_onnxruntime itself is installed with --no-deps, see start.sh
