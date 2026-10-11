@@ -11,7 +11,7 @@ thin TypeScript service; all scanning happens in the Brand Guard API (`../app`).
 
 | You send | The agent |
 |---|---|
-| a photo (with the brand as caption, or answer "What's the brand name?") | scans (about 2-3 minutes, typing indicator on, one "Halfway" update), replies with counts and the top 3 matches |
+| a photo (with the brand as caption, or answer "What's the brand name?") | scans (about a minute, typing indicator on, one "Halfway" update), replies with counts and the top 3 matches |
 | `brand Acme` | sets the brand; rescans the last photo if there is one |
 | `domains acme.com, shop.acme.com` | your own sites, never flagged |
 | `report` | the PDF evidence report for the top match |

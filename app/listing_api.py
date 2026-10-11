@@ -1,8 +1,8 @@
 """API routes for the URL-first listing flow."""
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel
 
-from . import listing, risk
+from . import ask, listing, risk
 
 router = APIRouter()
 
@@ -41,5 +41,14 @@ async def find_suppliers(req: SupplierRequest):
 async def deep(req: ListingRequest):
     try:
         return await listing.deep_research(req.url)
+    except listing.ListingError as exc:
+        raise HTTPException(422, str(exc)) from exc
+
+
+@router.post("/api/listing/ask")
+async def ask_legit(text: str = Form(""), image: UploadFile | None = File(None)):
+    """Is this legit? From a link, a screenshot or a store's name (the iMessage agent's question)."""
+    try:
+        return await ask.ask(text, await image.read() if image else None)
     except listing.ListingError as exc:
         raise HTTPException(422, str(exc)) from exc

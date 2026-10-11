@@ -15,3 +15,10 @@ lxml
 python-dotenv
 yt-dlp
 PyMuPDF
+# screenshot text (RapidOCR); rapidocr_onnxruntime itself is installed with --no-deps, see start.sh
+onnxruntime
+pyclipper
+Shapely
+PyYAML
+six
+tqdm

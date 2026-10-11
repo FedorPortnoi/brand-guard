@@ -1,0 +1,50 @@
+# Every push and pull request runs the offline test suites. A pull request merges into main only when both jobs pass.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    name: API tests (Python)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - name: Install
+        run: |
+          pip install -r requirements.txt pytest
+          # its declared opencv-python would sit next to opencv-python-headless and break cv2 (same as start.sh)
+          pip install --no-deps rapidocr_onnxruntime
+      - name: Test (offline; tests/conftest.py turns every network source off)
+        run: python -m pytest tests -q
+
+  agent:
+    name: iMessage agent (Node)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: imessage-agent
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: imessage-agent/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm test

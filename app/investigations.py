@@ -87,7 +87,7 @@ def earlier(inv_id: str, host: str, page_url: str, ips: list[str], platform: boo
             where ((l.domain = ? and ? != '') or l.page_url = ?
                    or l.id in (select listing_id from listing_ips where ip in ({marks})))
               and not (l.investigation_id = ? and (l.domain = ? and ? != '' or l.page_url = ?))
-            order by l.found_at desc limit 50""",
+            order by l.found_at desc, l.id desc limit 50""",
             (*ips, domain, domain, page_url or "", *ips, inv_id, domain, domain, page_url or "")).fetchall()
     return [{"investigation_id": r["investigation_id"], "brand": r["brand"], "started_at": r["started_at"],
              "found_at": r["found_at"], "page_url": r["page_url"], "host": r["host"], "score": r["score"],
@@ -153,7 +153,7 @@ def history(limit: int = 100) -> list[dict]:
                     or (coalesce(l.shared, '') = '' and o.id in (
                         select a.listing_id from listing_ips a join listing_ips b on a.ip = b.ip
                         where b.listing_id = l.id))))) as linked
-            from investigations i order by i.started_at desc limit ?""", (limit,)).fetchall()
+            from investigations i order by i.started_at desc, i.rowid desc limit ?""", (limit,)).fetchall()
     return [{"id": r["id"], "started_at": r["started_at"], "finished_at": r["finished_at"], "brand": r["brand"],
              "origin": r["origin"], "keywords": json.loads(r["keywords"] or "[]"), "scanned": r["scanned"],
              "listings": r["listings"], "high": r["high"], "linked": r["linked"], "status": _status(r)} for r in rows]

@@ -2,12 +2,12 @@
 
 Brand authenticity guard for a hackathon. Drop in a brand image, find likely copies on the web, check which are altered or fake, group them by seller, draft takedown notices, and keep watching for new copies. Everything runs free, with no paid keys required.
 
-Last updated: 2026-10-10
+Last updated: 2026-10-10. Day-by-day story (tests, incidents, decisions): `session-logs/`.
 
 ## How to run
 
 ```
-cd C:\Users\fedor\projects\brand-guard
+cd D:\brand-guard
 .venv\Scripts\python -m uvicorn app.main:app --port 8000
 .venv\Scripts\python -m pytest tests -q      # 193 tests, offline, about 40 s (tests/conftest.py turns every network source off)
 ```
