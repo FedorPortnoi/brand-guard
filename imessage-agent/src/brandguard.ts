@@ -16,6 +16,8 @@ export type Check = {
   alternatives?: Alternative[];
   /** Why there are no alternatives, when there are none. */
   alternatives_note?: string;
+  /** The other things named in the same message ("is Lucky Fours legit? and kith.com"), each checked or why not. */
+  others?: (Check | { error: string; found: Check["found"] })[];
   /** What the alternatives are for: the same product, or (when only the store is known) what the store sells. */
   alternatives_for?: { what: string; kind: "product" | "category" } | Record<string, never>;
 };
@@ -70,6 +72,12 @@ export function extrasText(c: Check): string[] {
   if (alts.length) lines.push(forWhat, ...alts.map(a => `- ${a.host}${price(a)}: ${a.url}`));
   else if (c.alternatives_note) lines.push(c.alternatives_note);
   return lines;
+}
+
+/** The whole reply: one answer per thing the message named, separated by a line. */
+export function replyText(c: Check): string {
+  const others = (c.others ?? []).map(o => "error" in o ? `${o.found.what}: ${o.error}` : verdictText(o));
+  return [verdictText(c), ...others].join("\n\n———\n\n");
 }
 
 /** The reply: verdict, what was checked, why, what to do, then the real brand and other places to buy. */

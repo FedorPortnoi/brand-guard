@@ -28,7 +28,10 @@ _NOT_THE_STORE = ("trustpilot", "sitejabber", "scamadviser", "scam-detector", "b
                   "glassdoor", "indeed", "linkedin", "yelp", "medium.com", "bloomberg", "crunchbase")
 # words around a name in "is Lucky Fours legit?"
 _FILLER = re.compile(r"\b(is|are|this|that|the|site|store|shop|website|legit|legitimate|real|fake|scam|safe|"
-                     r"trustworthy|a|an|or|not|check|please|can you|tell me|if)\b|[?!.,:;\"']", re.I)
+                     r"trustworthy|a|an|or|not|check|please|can you|tell me|if|and|also|what about|how about|"
+                     r"for|me|my|it|its|one|these|those|them|of|on|to|from|with|about|should i|buy|buying|here|too)\b"
+                     r"|[?!.,:;\"']", re.I)
+MAX_ITEMS = 3  # things checked from one message ("is Lucky Fours legit? and kith.com")
 
 _ocr = None
 
@@ -224,33 +227,67 @@ async def extras(result: dict) -> dict:
             "same_photo": deep.get("same_photo", [])[:3]}
 
 
-async def ask(text: str = "", image: bytes | None = None) -> dict:
-    """Check whatever the shopper sent. The result is listing.check_url's, plus `found`: how the address was
-    found ("link", "screenshot", "account" or "name") and what was checked, in words."""
-    text = (text or "").strip()
-    lines = await asyncio.to_thread(read_text, image) if image else []
-    seen = " ".join(lines)
-    target, how, what, name = None, "", "", ""
-
-    if value := pick_address(addresses(text)):
-        target, how, what = value, "link", risk.host_of(listing.normalize_url(value))
-    elif lines and (value := pick_address(addresses(seen))):
-        target, how, what = value, "screenshot", risk.host_of(listing.normalize_url(value))
-    elif lines and (acct := account_url(lines)):
-        (target, what), how = acct, "account"
-    else:
-        name = store_name(text)
-        if name:
-            errors: list[str] = []
-            target = await find_store(name, errors)
-            how, what = "name", name
-            if not target:
-                raise ListingError(f"I couldn't find a website for \"{name}\". Send me the link instead.")
-    if not target:
-        raise ListingError("I couldn't find a web address or an @account in that screenshot. "
-                           "Send me the link, or the store's name.")
-
+async def _check(target: str, how: str, what: str, seen: str, lines: list[str], name: str = "") -> dict:
     result = await listing.check_url(target, brand=name, seen_text=seen)
     result["found"] = {"how": how, "what": what if how != "name" else f"{what}: {result['domain']}", "read": lines[:40]}
     result.update(await extras(result))
+    return result
+
+
+async def _check_name(name: str, seen: str, lines: list[str]) -> dict:
+    target = await find_store(name, [])
+    if not target:
+        raise ListingError(f"I couldn't find a website for \"{name}\". Send me the link instead.")
+    return await _check(target, "name", name, seen, lines, name=name)
+
+
+async def _answer(job, how: str, what: str) -> dict:
+    """One item's answer; a failure becomes that item's message, so the others in the message still get checked."""
+    try:
+        return await job
+    except ListingError as exc:
+        return {"error": str(exc), "found": {"how": how, "what": what}}
+
+
+def _position(text: str, words: str) -> int:
+    i = text.lower().find(words.split()[0].lower())
+    return i if i >= 0 else len(text)
+
+
+async def ask(text: str = "", image: bytes | None = None) -> dict:
+    """Check whatever the shopper sent. The result is listing.check_url's, plus `found`: how the address was
+    found ("link", "screenshot", "account" or "name") and what was checked, in words.
+
+    A message can name several things ("is Lucky Fours legit? and kith.com"): every link, and the store name left
+    once the links are taken out, are checked side by side, in the order written, up to MAX_ITEMS. The first that
+    could be checked is the result; the rest are in `others` (each a result, or {"error", "found"})."""
+    text = (text or "").strip()
+    lines = await asyncio.to_thread(read_text, image) if image else []
+    seen = " ".join(lines)
+
+    links = [v for v in addresses(text) if pick_address([v])]
+    rest = text
+    for v in links:
+        rest = rest.replace(v, " ")
+    name = store_name(rest)
+    if links or name:
+        items = [(_position(text, v), lambda v=v: _answer(
+            _check(v, "link", risk.host_of(listing.normalize_url(v)), seen, lines), "link", v)) for v in links]
+        if name:
+            items.append((_position(text, name), lambda: _answer(_check_name(name, seen, lines), "name", name)))
+        jobs = [start() for _, start in sorted(items, key=lambda x: x[0])[:MAX_ITEMS]]
+    elif lines and (value := pick_address(addresses(seen))):
+        jobs = [_check(value, "screenshot", risk.host_of(listing.normalize_url(value)), seen, lines)]
+    elif lines and (acct := account_url(lines)):
+        jobs = [_check(acct[0], "account", acct[1], seen, lines)]
+    else:
+        raise ListingError("I couldn't find a web address or an @account in that screenshot. "
+                           "Send me the link, or the store's name.")
+
+    results = await asyncio.gather(*jobs)
+    answered = [r for r in results if "error" not in r]
+    if not answered:  # nothing could be checked: say why, as a single answer always did
+        raise ListingError(results[0]["error"])
+    result = answered[0]
+    result["others"] = [r for r in results if r is not result]
     return result

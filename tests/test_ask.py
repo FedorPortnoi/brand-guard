@@ -343,3 +343,55 @@ def test_a_store_home_page_gets_stores_for_what_it_sells_not_its_own_title(monke
                                   "facts": {"title": "Lucky Fours® | #1 Rated Affordable Luxury Watches"}}))
     assert seen["product"] == "Affordable Luxury Watches"
     assert out["alternatives_for"] == {"what": "Affordable Luxury Watches", "kind": "category"}
+
+
+# --- one message, several things (owner's re-check: "is Lucky Fours legit? and https://kith.com/." only answered Kith) ---
+
+def _no_extras(monkeypatch):
+    async def none(result):
+        return {}
+    monkeypatch.setattr(ask, "extras", none)
+
+
+def test_a_store_name_and_a_link_in_one_message_are_both_checked_in_order(monkeypatch):
+    _no_extras(monkeypatch)
+
+    async def search(query, errors, count=10):
+        return [{"page_url": "https://luckyfours.com/"}]
+
+    async def check(url, brand="", seen_text="", **kw):
+        return {"verdict": "green", "url": url, "domain": url.split("//")[-1].strip("/").rstrip(".")}
+    monkeypatch.setattr(listing, "web_search", search)
+    monkeypatch.setattr(listing, "check_url", check)
+    r = asyncio.run(ask.ask("is Lucky Fours legit? and https://kith.com/."))
+    assert r["found"]["what"] == "Lucky Fours: luckyfours.com"  # written first, answered first
+    assert [o["found"]["what"] for o in r["others"]] == ["kith.com"]
+
+
+def test_one_item_failing_does_not_lose_the_others(monkeypatch):
+    _no_extras(monkeypatch)
+
+    async def search(query, errors, count=10):
+        return []  # the name finds no website
+
+    async def check(url, brand="", seen_text="", **kw):
+        return {"verdict": "red", "url": url, "domain": "luxe-kicks.store"}
+    monkeypatch.setattr(listing, "web_search", search)
+    monkeypatch.setattr(listing, "check_url", check)
+    r = asyncio.run(ask.ask("is Zzqxv Boutique legit and luxe-kicks.store"))
+    assert r["found"]["how"] == "link"
+    assert r["others"] == [{"error": "I couldn't find a website for \"Zzqxv Boutique\". Send me the link instead.",
+                            "found": {"how": "name", "what": "Zzqxv Boutique"}}]
+
+
+def test_at_most_three_things_are_checked_and_filler_is_not_a_store(monkeypatch):
+    _no_extras(monkeypatch)
+    checked = []
+
+    async def check(url, brand="", seen_text="", **kw):
+        checked.append(url)
+        return {"verdict": "green", "url": url, "domain": url}
+    monkeypatch.setattr(listing, "check_url", check)
+    r = asyncio.run(ask.ask("check a.shop b.shop c.shop d.shop for me"))
+    assert checked == ["a.shop", "b.shop", "c.shop"] and len(r["others"]) == 2
+    assert ask.store_name("check  for me") == ""

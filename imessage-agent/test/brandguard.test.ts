@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { extrasText, reasons, verdictText } from "../src/brandguard.js";
+import { extrasText, reasons, replyText, verdictText } from "../src/brandguard.js";
 import { check, sig } from "./fixtures.js";
 
 test("a red verdict says NOT LEGIT with the warnings, first sentence only, and what to do", () => {
@@ -67,4 +67,20 @@ test("a store known only by name gets trusted stores for what it sells", () => {
     alternatives_for: { what: "Affordable Luxury Watches", kind: "category" as const },
   };
   assert.deepEqual(extrasText(c), ["Trusted stores for affordable luxury watches:", "- watchwarehouse.com: https://watchwarehouse.com/men/"]);
+});
+
+test("one reply answers every thing the message named, and says why one couldn't be checked", () => {
+  const c = {
+    ...check("green", [sig("good", "The domain has existed for about 3 years.", -4)], { how: "name", what: "Lucky Fours: luckyfours.com" }),
+    others: [
+      check("green", [sig("good", "The domain has existed for about 26 years.", -4)], { what: "kith.com" }),
+      { error: "I couldn't find a website for \"Zzqxv\". Send me the link instead.", found: { how: "name" as const, what: "Zzqxv" } },
+    ],
+  };
+  const parts = replyText(c).split("\n\n———\n\n");
+  assert.equal(parts.length, 3);
+  assert.match(parts[0], /^LOOKS LEGIT ✅ {2}Lucky Fours: luckyfours\.com/);
+  assert.match(parts[1], /^LOOKS LEGIT ✅ {2}kith\.com/);
+  assert.equal(parts[2], "Zzqxv: I couldn't find a website for \"Zzqxv\". Send me the link instead.");
+  assert.equal(replyText(check("red", [])), verdictText(check("red", [])));
 });
