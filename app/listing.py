@@ -148,6 +148,40 @@ def _platform(host: str) -> tuple[str | None, str | None]:
     return None, None
 
 
+def shows_post(html: bytes | None) -> bool:
+    """A social site's page says something about the post only when it carries the post's own metadata (og: or
+    twitter: title/description). Without a login, Instagram and others send the same app shell for every post, real
+    or not, titled only with the platform's name."""
+    if not html:
+        return False
+    soup = BeautifulSoup(html, "lxml")
+    return any((m.get("content") or "").strip() for m in soup.select(
+        'meta[property="og:title"], meta[property="og:description"], meta[name="twitter:title"], meta[name="twitter:description"]'))
+
+
+STORE_WORDS = ("add to cart", "add to bag", "add to basket", "buy now", "checkout", "check out", "shopping cart",
+               "shopping bag", "in stock", "out of stock", "sold out", "shop now", "free shipping", "free returns")
+STORE_MARKS = ("/cart", "/checkout", "cdn.shopify.com", "woocommerce", "bigcommerce", "/products/", "/collections/")
+
+
+def sells(html: bytes | None, facts: dict) -> bool | None:
+    """Whether a page sells anything: a product or price, shop words, a cart or checkout, a shop platform's marks,
+    or a payment method. None when there is no page to tell from."""
+    if not html:
+        return None
+    if facts.get("product") or facts.get("price") is not None:
+        return True
+    raw = html.decode("utf-8", "ignore").lower()
+    if any(m in raw for m in STORE_MARKS):
+        return True
+    soup = BeautifulSoup(html, "lxml")
+    for tag in soup(["script", "style", "noscript"]):
+        tag.decompose()
+    if _hits(STORE_WORDS, soup.get_text(" ").lower()):
+        return True
+    return bool(paid.methods(html))
+
+
 def lens_url(image_url: str | None) -> str | None:
     """Google Lens for an image, opened in the user's own browser: free and needs no key."""
     return f"https://lens.google.com/uploadbyurl?url={quote(image_url, safe='')}" if image_url else None
@@ -484,7 +518,8 @@ def assess(url: str, html: bytes | None, domain: dict, threats: list[str], histo
             signals.append(_signal("Page reached", "BrandGuard could inspect the live page." if html else "BrandGuard read the post's details.", "good", -2))
     else:
         score += 12
-        signals.append(_signal("Page not inspectable", "The site didn't answer or blocked reading, and there is no archived copy to read instead.", "warn", 12))
+        signals.append(_signal("Page not inspectable", f"{platform} didn't show us this post without a login." if kind == "social" else
+                               "The site didn't answer or blocked reading, and there is no archived copy to read instead.", "warn", 12))
     seen_elsewhere = False
     if footprint:
         found, change = _footprint_signals(footprint)
@@ -555,6 +590,8 @@ async def check_url(value: str, brand: str = "", official: list[str] = (), resel
         html, domain, threats, social, server = await asyncio.gather(html_job, age_job, safe_job, social_job,
                                                                      infra.describe(host, client))
         archived, footprint = "", None
+        if kind == "social" and not social and not shows_post(html):
+            html = None  # a login wall or app shell: it says nothing about this post
         if html is None and kind != "social":  # unreachable from here (blocked network, bot wall): read the archived copy,
             # and, for a store's own site, look for it elsewhere on the web in case there is no copy either
             copy, rows = await asyncio.gather(archive.archived_page(client, url, net.MAX_HTML),
@@ -581,6 +618,9 @@ async def check_url(value: str, brand: str = "", official: list[str] = (), resel
     red = result["verdict"] == "red"  # "Already paid?" steps by the payment methods the shopper could see
     result["already_paid"] = paid.steps(result["verdict"], paid.methods(html, seen_text, (social or {}).get("caption") or "") if red else [],
                                         result["platform"], kind)
+    result["sells"] = sells(html, facts) if kind != "social" else None  # a post's page is an app shell: can't tell
+    # a post we couldn't see: ask for a screenshot of it (unless the shopper already sent one)
+    result["send_screenshot"] = kind == "social" and result["verdict"] == "yellow" and not seen_text
     result["deep_action"] = "Find safer options" if result["verdict"] == "red" else (
         "Compare trusted options" if result["verdict"] == "yellow" else "Trace maker and prices")
     if log:
