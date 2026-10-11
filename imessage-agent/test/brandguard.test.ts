@@ -141,3 +141,11 @@ test("an answer found in a video says so", () => {
 test("an answer found in a PDF says so", () => {
   assert.match(verdictText(check("red", [], { how: "pdf", what: "mega-sneaker-drop.shop" })), /^NOT LEGIT ❌ {2}mega-sneaker-drop\.shop \(from your PDF\)/);
 });
+
+test("a photo with no seller asks for the link instead of the usual advice", () => {
+  const photo = { ...check("yellow", [sig("bad", "$39.99 here, about $120.00 at trusted stores. Prices this low are a classic fake-shop sign.")]),
+                  ask_for: "I couldn't tell who's selling it from that. Send me the link, or a screenshot that shows the shop's name or address." };
+  const text = verdictText(photo);
+  assert.ok(text.includes("- $39.99 here, about $120.00 at trusted stores."));
+  assert.ok(text.includes("I couldn't tell who's selling it from that.") && !text.includes("buyer protection"));
+});
