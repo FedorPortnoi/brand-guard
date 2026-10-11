@@ -10,7 +10,19 @@ export type Check = {
   url: string;
   domain: string;
   found: { how: "link" | "screenshot" | "account" | "name"; what: string; read?: string[] };
+  /** The brand the page claims to sell and its own site; this_site: the checked site is that brand's own. */
+  real_brand?: { name: string; url: string; this_site: boolean } | null;
+  /** Other places to buy the same item, trusted first (never ones rated red). */
+  alternatives?: Alternative[];
+  /** Why there are no alternatives, when there are none. */
+  alternatives_note?: string;
+  /** The other things named in the same message ("is Lucky Fours legit? and kith.com"), each checked or why not. */
+  others?: (Check | { error: string; found: Check["found"] })[];
+  /** What the alternatives are for: the same product, or (when only the store is known) what the store sells. */
+  alternatives_for?: { what: string; kind: "product" | "category" } | Record<string, never>;
 };
+
+export type Alternative = { url: string; host: string; title: string; price: number | null; currency: string | null; verdict: Check["verdict"] };
 
 export type AskRequest = { text?: string; image?: { data: Buffer; filename: string; mimeType: string } };
 
@@ -47,8 +59,31 @@ export function reasons(c: Check, top = 3): string[] {
   return c.signals.filter(s => wanted.includes(s.tone)).slice(0, top).map(s => firstSentence(s.detail));
 }
 
-/** The reply: verdict, what was checked, why, and what to do. */
+const price = (a: Alternative) =>
+  a.price == null ? "" : !a.currency || a.currency === "USD" ? `, $${a.price.toFixed(2)}` : `, ${a.price.toFixed(2)} ${a.currency}`;
+
+/** The real brand (when this isn't its site) and other places to buy, for every verdict. */
+export function extrasText(c: Check): string[] {
+  const lines: string[] = [];
+  if (c.real_brand && !c.real_brand.this_site) lines.push(`The real ${c.real_brand.name}: ${c.real_brand.url}`);
+  const alts = (c.alternatives ?? []).slice(0, 3);
+  const forWhat = c.alternatives_for && "kind" in c.alternatives_for && c.alternatives_for.kind === "category"
+    ? `Trusted stores for ${c.alternatives_for.what.toLowerCase()}:` : "Other places to buy it:";
+  if (alts.length) lines.push(forWhat, ...alts.map(a => `- ${a.host}${price(a)}: ${a.url}`));
+  else if (c.alternatives_note) lines.push(c.alternatives_note);
+  return lines;
+}
+
+/** The whole reply: one answer per thing the message named, separated by a line. */
+export function replyText(c: Check): string {
+  const others = (c.others ?? []).map(o => "error" in o ? `${o.found.what}: ${o.error}` : verdictText(o));
+  return [verdictText(c), ...others].join("\n\n———\n\n");
+}
+
+/** The reply: verdict, what was checked, why, what to do, then the real brand and other places to buy. */
 export function verdictText(c: Check): string {
   const what = c.found.how === "screenshot" ? `${c.found.what} (from your screenshot)` : c.found.what || c.domain;
-  return [`${HEADLINE[c.verdict]}  ${what}`, "", ...reasons(c).map(r => `- ${r}`), "", ADVICE[c.verdict]].join("\n");
+  const extras = extrasText(c);
+  return [`${HEADLINE[c.verdict]}  ${what}`, "", ...reasons(c).map(r => `- ${r}`), "", ADVICE[c.verdict],
+    ...(extras.length ? ["", ...extras] : [])].join("\n");
 }

@@ -1,7 +1,7 @@
 // The conversation logic, independent of the messaging platform: agent.ts wires it to Spectrum, and tests drive it
 // with stand-in spaces and messages.
 import type { Message, Space } from "spectrum-ts";
-import { AskError, BrandGuard, verdictText } from "./brandguard.js";
+import { AskError, BrandGuard, replyText } from "./brandguard.js";
 
 export const HELP = "Is it legit? Send me a link, a screenshot of what you're looking at, or the store's name.";
 
@@ -69,7 +69,7 @@ export function createBot({ bg, allowedSenders = [] }: BotOptions) {
     }
     try {
       const check = await space.responding(() => bg.ask({ text, image: media ?? undefined }));
-      await space.send(verdictText(check));
+      await space.send(replyText(check));
     } catch (e) {
       if (e instanceof AskError) await space.send(e.message);
       else await space.send(`Brand Guard is not reachable right now (${(e as Error).message}). Try again in a minute.`);

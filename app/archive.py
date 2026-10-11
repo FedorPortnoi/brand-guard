@@ -57,6 +57,27 @@ async def _save_authenticated(c: httpx.AsyncClient, url: str, poll_every: float 
     return _result("failed", error="timed out")
 
 
+def reading_enabled() -> bool:
+    """BG_WAYBACK_READ=0 turns off reading archived copies of pages the live site won't serve (tests do)."""
+    return os.getenv("BG_WAYBACK_READ", "1") != "0"
+
+
+async def archived_page(c: httpx.AsyncClient, url: str, limit: int = 2_000_000) -> tuple[bytes, str] | None:
+    """The newest archived copy of a page we could not read live (the site didn't answer, or blocks our network):
+    its raw HTML (id_ = without the Wayback toolbar) and when it was captured. None when there is no copy."""
+    if not reading_enabled():
+        return None
+    today = datetime.now(timezone.utc).strftime("%Y%m%d")
+    try:
+        r = await c.get(f"{WAYBACK}/web/{today}id_/{url}", follow_redirects=True, timeout=20)
+    except httpx.HTTPError:
+        return None
+    if r.status_code != 200 or "html" not in r.headers.get("content-type", ""):
+        return None
+    m = re.search(r"/web/(\d{14})id_/", str(r.url))
+    return r.content[:limit], _when(m.group(1)) if m else ""  # a heavy page keeps its head, as net.fetch_html does
+
+
 async def latest_snapshot(c: httpx.AsyncClient, url: str) -> dict | None:
     """Newest existing successful snapshot of url, from the CDX index."""
     r = await c.get(f"{WAYBACK}/cdx/search/cdx", timeout=30,

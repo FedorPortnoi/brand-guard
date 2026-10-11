@@ -5,32 +5,28 @@ import re
 from datetime import datetime, timezone
 from urllib.parse import parse_qs, urlparse
 
+import tldextract
+
 from . import net, rdap, risk
 from .store import SESSIONS
 
 
-# Multi-part TLD suffix list (common ones)
-MULTI_TLDS = {
-    "co.uk", "com.au", "com.cn", "co.jp", "com.br", "co.in", "com.mx", "com.nz",
-    "co.za", "co.kr", "com.tw", "co.id", "co.th", "com.sg", "com.hk", "com.my",
-    "co.il", "com.ar", "com.ua", "com.sa", "co.ug", "co.ke",
-    "co.nz", "com.tr", "com.ph", "com.pk", "com.vn", "com.co", "com.pe", "com.eg", "com.ng", "com.bd",
-    "org.uk", "ac.uk", "gov.uk", "net.au", "org.au", "com.ve", "com.ec", "com.uy", "com.do", "com.gt",
-}
+# The Public Suffix List (bundled snapshot, never fetched at runtime), private registries included: names sold under
+# us.com, co.uk, myshopify.com or github.io belong to whoever registered them, not to the suffix's owner.
+_PSL = tldextract.TLDExtract(suffix_list_urls=(), cache_dir=None, include_psl_private_domains=True)
 
 
 def registrable_domain(host: str) -> str:
-    """Extract registrable domain from hostname, e.g. 'shop.example.co.uk' -> 'example.co.uk'."""
+    """The part of a hostname someone registered: 'shop.example.co.uk' -> 'example.co.uk', 'kiths.us.com' -> 'kiths.us.com'.
+    A host with no known suffix (an IP address, a test name) is returned whole."""
     if not host:
         return ""
-    host = host.lower().removeprefix("www.")
-    parts = host.split(".")
-    if len(parts) <= 2:
-        return host
-    # Check if last two parts form a multi-part TLD
-    if len(parts) >= 3 and ".".join(parts[-2:]) in MULTI_TLDS:
-        return ".".join(parts[-3:])
-    return ".".join(parts[-2:])
+    host = host.lower().strip(".").removeprefix("www.")
+    ext = _PSL(host)
+    if not ext.suffix or not ext.domain:
+        parts = host.split(".")
+        return host if len(parts) <= 2 or parts[-1].isdigit() else ".".join(parts[-2:])
+    return f"{ext.domain}.{ext.suffix}"
 
 
 def seller_identity(match: dict) -> dict:
