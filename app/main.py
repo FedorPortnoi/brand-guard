@@ -202,4 +202,11 @@ app.mount("/static", StaticFiles(directory=ROOT / "static"), name="static")
 
 @app.get("/")
 def index():
+    """Is it legit? The same question and answers as the iMessage agent, on the web."""
+    return FileResponse(ROOT / "static" / "ask.html")
+
+
+@app.get("/lab")
+def lab():
+    """The evidence lab: listing check, image and video scans, sellers, alerts."""
     return FileResponse(ROOT / "static" / "index.html")
