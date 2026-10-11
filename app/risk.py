@@ -7,7 +7,8 @@ MARKETPLACES = ("aliexpress", "alibaba", "dhgate", "temu", "wish.com", "shein", 
                 "craigslist", "gumtree", "kijiji", "offerup", "marktplaats", "leboncoin", "kleinanzeigen")
 SUSPICIOUS_WORDS = ("replica", "fake", "1:1", "copy", "knockoff", "clone", "cheap", "outlet", "wholesale",
                     "discount", "% off", "factory", "mirror", "aaa", "super copy", "unbranded")
-SOCIAL = ("pinterest", "facebook", "instagram", "tiktok", "reddit", "twitter", "x.com", "youtube", "tumblr", "vk.com")
+SOCIAL = ("pinterest", "facebook", "instagram", "tiktok", "reddit", "twitter", "x.com", "youtube", "tumblr", "vk.com",
+          "threads", "snapchat", "linkedin", "twitch")
 # Wording typical of impersonation scams (fake jobs, giveaways, investments, rentals). Signals, not proof.
 SCAM_WORDS = ("guaranteed return", "guaranteed income", "guaranteed profit", "risk-free investment", "double your money",
               "investment opportunity", "passive income", "work from home", "no experience needed", "upfront fee",
