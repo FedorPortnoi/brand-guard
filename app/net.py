@@ -72,7 +72,8 @@ async def _get(client: httpx.AsyncClient, url: str, headers: dict, limit: int, w
                 async for chunk in r.aiter_bytes():
                     buf += chunk
                     if len(buf) > limit:
-                        return None, status
+                        # a heavy page keeps its head (title, product data, prices come first); an image must be whole
+                        return (bytes(buf[:limit]), status) if want == "html" else (None, status)
                 return bytes(buf), status
         except Exception:
             return None, status or -2

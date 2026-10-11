@@ -227,3 +227,119 @@ def test_blog_posts_and_guides_are_not_places_to_buy():
     assert listing.ARTICLE_PATH.search("/post/cheapest-luxury-watches")
     assert listing.ARTICLE_PATH.search("/blogs/news/best-sneakers-2026")
     assert not listing.ARTICLE_PATH.search("/products/samba-og")
+
+
+# --- pages we can't read live (owner's re-check of step 1: "Lucky Fours is legit but the agent couldn't find it") ---
+
+def test_an_unreachable_page_is_judged_from_its_archived_copy(monkeypatch):
+    import httpx
+    from app import archive, infra, net, rdap, reputation
+    monkeypatch.setenv("BG_WAYBACK_READ", "1")
+
+    async def unreachable(client, url):
+        return None
+
+    async def describe(host, client):
+        return {"ips": [], "shared": "Shopify", "platform": True}
+
+    async def age(domain, client):
+        return {"age_days": 1100}
+
+    class NoThreats:
+        def __init__(self, *a): pass
+        async def safe_browsing(self, url, client, errors): return []
+
+    def wayback(request):
+        assert request.url.host == "web.archive.org"
+        if "/id_/" in request.url.path or request.url.path.startswith("/web/2"):
+            return httpx.Response(200, headers={"content-type": "text/html"},
+                                  content=b"<html><head><title>Lucky Fours | Affordable Luxury Watches</title></head></html>",
+                                  extensions={})
+        return httpx.Response(404)
+    real_get = httpx.AsyncClient.get
+
+    async def get(self, url, **kw):
+        if "web.archive.org" in str(url):
+            resp = wayback(httpx.Request("GET", str(url)))
+            resp.request = httpx.Request("GET", "https://web.archive.org/web/20260819174851id_/https://luckyfours.com/")
+            return resp
+        return await real_get(self, url, **kw)
+
+    async def final(client, url):
+        return url
+    monkeypatch.setattr(net, "fetch_html", unreachable)
+    monkeypatch.setattr(infra, "describe", describe)
+    monkeypatch.setattr(rdap, "lookup", age)
+    monkeypatch.setattr(reputation, "ScanReputation", NoThreats)
+    monkeypatch.setattr(listing, "final_url", final)
+    monkeypatch.setattr(httpx.AsyncClient, "get", get)
+
+    async def safe(url):
+        return True
+    monkeypatch.setattr(net, "safe_url_async", safe)
+    r = asyncio.run(listing.check_url("https://luckyfours.com/", log=False))
+    labels = {s["label"] for s in r["signals"]}
+    assert r["archived"].startswith("2026-08-19") and "Read an archived copy" in labels
+    assert "Page not inspectable" not in labels and r["verdict"] == "green"
+    assert r["facts"]["title"] == "Lucky Fours | Affordable Luxury Watches"
+
+
+def test_a_heavy_page_keeps_its_head_but_an_oversized_image_is_dropped():
+    import httpx
+    from app import net
+    big = b"<html><head><title>Kith</title></head>" + b"x" * 5000
+
+    def handler(request):
+        kind = "text/html" if request.url.path == "/page" else "image/jpeg"
+        return httpx.Response(200, headers={"content-type": kind}, content=big)
+
+    async def run():
+        async def safe(url):
+            return True
+        net_safe, net.safe_url_async = net.safe_url_async, safe
+        try:
+            async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as c:
+                page, _ = await net._get(c, "https://kith.example/page", {}, 1000, "html")
+                image, _ = await net._get(c, "https://kith.example/img", {}, 1000, "image")
+        finally:
+            net.safe_url_async = net_safe
+        return page, image
+    page, image = asyncio.run(run())
+    assert page is not None and page.startswith(b"<html><head><title>Kith") and len(page) == 1000
+    assert image is None
+
+
+def test_names_sold_under_a_registry_suffix_belong_to_their_owner():
+    from app.sellers import registrable_domain
+    assert registrable_domain("kiths.us.com") == "kiths.us.com"  # us.com resells names, like co.uk
+    assert registrable_domain("shop.example.co.uk") == "example.co.uk"
+    assert registrable_domain("luxe.myshopify.com") == "luxe.myshopify.com"
+    assert registrable_domain("www.adidas.com") == "adidas.com"
+    assert registrable_domain("203.0.113.7") == "203.0.113.7"
+
+
+def test_a_look_alike_of_the_brand_is_never_suggested(monkeypatch):
+    async def deep(value, source=None):
+        return {"alternatives": [
+            {"host": "kiths.us.com", "verdict": "yellow", "signals": [{"label": "Brand name in a longer address", "tone": "bad"}]},
+            {"host": "stockx.com", "verdict": "green", "signals": [{"label": "Established domain", "tone": "good"}]}],
+            "manufacturer": None}
+    monkeypatch.setattr(listing, "deep_research", deep)
+    out = asyncio.run(ask.extras({"verdict": "green", "url": "https://kith.com/products/box-logo-hoodie", "domain": "kith.com",
+                                  "facts": {"product": "Box Logo Hoodie"}}))
+    assert [a["host"] for a in out["alternatives"]] == ["stockx.com"]
+    flagged = listing.assess("https://kiths.us.com/", b"<html><title>Kith</title></html>", {"age_days": 40}, [], [], claimed_brand="Kith")
+    assert "Brand name in a longer address" in {s["label"] for s in flagged["signals"]}
+
+
+def test_a_store_home_page_gets_stores_for_what_it_sells_not_its_own_title(monkeypatch):
+    seen = {}
+
+    async def deep(value, source=None):
+        seen["product"] = source["facts"]["product"]
+        return {"alternatives": [{"host": "watchwarehouse.com", "verdict": "green"}], "manufacturer": None}
+    monkeypatch.setattr(listing, "deep_research", deep)
+    out = asyncio.run(ask.extras({"verdict": "green", "url": "https://luckyfours.com/", "domain": "luckyfours.com",
+                                  "facts": {"title": "Lucky Fours® | #1 Rated Affordable Luxury Watches"}}))
+    assert seen["product"] == "Affordable Luxury Watches"
+    assert out["alternatives_for"] == {"what": "Affordable Luxury Watches", "kind": "category"}

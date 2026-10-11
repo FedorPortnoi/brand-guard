@@ -175,6 +175,14 @@ async def alternatives(result: dict) -> tuple[dict, list[dict], dict]:
     facts = result.get("facts") or {}
     known = facts.get("product") or facts.get("title") or facts.get("brand")
     wanted = {"what": known or "", "kind": "product"}
+    if known and not facts.get("product") and _is_home_page(result.get("url") or ""):
+        # a store's home page names the store, not an item: look for stores selling what it sells
+        category = store_category(facts.get("title") or "", (result.get("domain") or "").split(".")[0])
+        known = ""
+        facts = {k: v for k, v in facts.items() if k not in ("title", "brand")}
+        result = {**result, "facts": facts}
+        if category:
+            return await _search_alternatives(result, {**facts, "product": category}, {"what": category, "kind": "category"})
     if not known:
         slug = product_from_url(result.get("url") or "")
         if slug:  # the page could not be read: search by the address's product words and the site's name
@@ -186,11 +194,22 @@ async def alternatives(result: dict) -> tuple[dict, list[dict], dict]:
                 return {}, [], {}
             wanted = {"what": category, "kind": "category"}
             result = {**result, "facts": {**facts, "product": category}}
+    return await _search_alternatives(result, result.get("facts") or {}, wanted)
+
+
+def _is_home_page(url: str) -> bool:
+    return listing.normalize_url(url).split("://", 1)[-1].split("?")[0].rstrip("/").count("/") == 0
+
+
+async def _search_alternatives(result: dict, facts: dict, wanted: dict) -> tuple[dict, list[dict], dict]:
     try:
-        deep = await listing.deep_research(result["url"], source=result)
+        deep = await listing.deep_research(result["url"], source={**result, "facts": facts})
     except (ListingError, KeyError):
         return {}, [], {}
-    return deep, [a for a in deep.get("alternatives", []) if a.get("verdict") != "red"], wanted
+    # never suggest a shop with a serious warning (rated red, or e.g. the brand's name padded in its address)
+    safe = [a for a in deep.get("alternatives", [])
+            if a.get("verdict") != "red" and not any(s.get("tone") == "bad" for s in a.get("signals") or [])]
+    return deep, safe, wanted
 
 
 async def extras(result: dict) -> dict:
