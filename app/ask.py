@@ -33,6 +33,11 @@ _FILLER = re.compile(r"\b(is|are|this|that|the|site|store|shop|website|legit|leg
                      r"|[?!.,:;\"']", re.I)
 LOCAL_PATH = re.compile(r"""^["']?(?:[a-zA-Z]:[\\/]|\\\\|~/|/(?:Users|home|tmp|var|private)/)""")  # C:\..., \\server, ~/, /Users/...
 MAX_ITEMS = 3  # things checked from one message ("is Lucky Fours legit? and kith.com")
+PDF_PAGES = 5  # pages read from a PDF (a receipt, an invoice, an order confirmation)
+# services a receipt links to that are not the seller: payment, shop platforms, the PDF's own tooling
+NOT_THE_SELLER = ("paypal.com", "stripe.com", "squareup.com", "square.site", "shopify.com", "myshopify.com", "klarna.com",
+                  "afterpay.com", "affirm.com", "zelle.com", "venmo.com", "cash.app", "google.com", "apple.com",
+                  "microsoft.com", "adobe.com", "w3.org", "schema.org", "bit.ly")
 VIDEO_FRAMES = 8  # distinct frames read from a video (a screen recording, a saved reel)
 VIDEO_SIZE = 1600  # long side of a frame read for text: phone screen text is small
 
@@ -75,6 +80,49 @@ def video_frames(data: bytes, limit: int = VIDEO_FRAMES) -> list[Image.Image]:
     if len(picked) > limit:
         picked = [picked[round(i * (len(picked) - 1) / (limit - 1))] for i in range(limit)]
     return picked
+
+
+def is_pdf(data: bytes) -> bool:
+    return data[:5] == b"%PDF-"
+
+
+def pdf_text(data: bytes, pages: int = PDF_PAGES) -> list[str]:
+    """The lines of a PDF's first pages and the addresses its links point to (a receipt's "Track your order" is a
+    link, not text). A page with no text layer (a scan, a photo saved as PDF) is read like a screenshot."""
+    try:
+        import pymupdf
+        doc = pymupdf.open(stream=data, filetype="pdf")
+    except Exception as exc:
+        raise ListingError("Could not read that PDF. Send a screenshot or the link instead.") from exc
+    lines: list[str] = []
+    with doc:
+        if doc.needs_pass:
+            raise ListingError("That PDF is password protected. Send a screenshot of it instead.")
+        for page in list(doc)[:pages]:
+            text = [ln.strip() for ln in page.get_text().splitlines() if ln.strip()]
+            if sum(len(t) for t in text) < 20:  # no text layer: render it and read it
+                pix = page.get_pixmap(matrix=pymupdf.Matrix(2, 2), colorspace=pymupdf.csRGB, alpha=False)
+                text = _read(Image.open(io.BytesIO(pix.tobytes("png"))).convert("RGB"))
+            lines += text
+            lines += [link["uri"] for link in page.get_links() if (link.get("uri") or "").startswith(("http://", "https://"))]
+    return list(dict.fromkeys(lines))
+
+
+def seller_address(lines: list[str]) -> str | None:
+    """The seller's address in a document: the site it names most often (text and links), first-named on a tie,
+    leaving out platforms and the payment and shop-platform services every receipt links to."""
+    counts: dict[str, list] = {}
+    for i, value in enumerate(addresses(" ".join(lines))):
+        if _platform_site(value):
+            continue
+        site = registrable_domain(risk.host_of(listing.normalize_url(value)))
+        if not site or site in NOT_THE_SELLER:
+            continue
+        entry = counts.setdefault(site, [0, i, value])
+        entry[0] += 1
+    if not counts:
+        return None
+    return min(counts.values(), key=lambda e: (-e[0], e[1]))[2]
 
 
 def _same_screen(a: np.ndarray, b: np.ndarray) -> bool:
@@ -322,10 +370,12 @@ async def ask(text: str = "", image: bytes | None = None) -> dict:
     text = (text or "").strip()
     if not image and LOCAL_PATH.match(text):
         raise ListingError("That's the path of a file on your computer, not a link. Send me the file itself.")
-    is_video = bool(image) and video.is_video(image)
-    lines = await asyncio.to_thread(video_text if is_video else read_text, image) if image else []
+    kind = ("pdf" if is_pdf(image) else "video" if video.is_video(image) else "screenshot") if image else ""
+    reader = {"pdf": pdf_text, "video": video_text, "screenshot": read_text}.get(kind)
+    lines = await asyncio.to_thread(reader, image) if image else []
     seen = " ".join(lines)
-    shot = "video" if is_video else "screenshot"
+    shot = kind or "screenshot"
+    shot_name = "PDF" if shot == "pdf" else shot
 
     links = [v for v in addresses(text) if pick_address([v])]
     rest = text
@@ -338,12 +388,12 @@ async def ask(text: str = "", image: bytes | None = None) -> dict:
         if name:
             items.append((_position(text, name), lambda: _answer(_check_name(name, seen, lines), "name", name)))
         jobs = [start() for _, start in sorted(items, key=lambda x: x[0])[:MAX_ITEMS]]
-    elif lines and (value := pick_address(addresses(seen))):
+    elif lines and (value := seller_address(lines) if shot == "pdf" else pick_address(addresses(seen))):
         jobs = [_check(value, shot, risk.host_of(listing.normalize_url(value)), seen, lines)]
     elif lines and (acct := account_url(lines)):
         jobs = [_check(acct[0], "account", acct[1], seen, lines)]
     else:
-        raise ListingError(f"I couldn't find a web address or an @account in that {shot}. "
+        raise ListingError(f"I couldn't find a web address or an @account in that {shot_name}. "
                            "Send me the link, or the store's name.")
 
     results = await asyncio.gather(*jobs)

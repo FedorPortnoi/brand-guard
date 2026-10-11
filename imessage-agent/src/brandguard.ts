@@ -12,7 +12,7 @@ export type Check = {
   signals: Signal[];
   url: string;
   domain: string;
-  found: { how: "link" | "screenshot" | "video" | "account" | "name"; what: string; read?: string[] };
+  found: { how: "link" | "screenshot" | "video" | "pdf" | "account" | "name"; what: string; read?: string[] };
   /** The brand the page claims to sell and its own site; this_site: the checked site is that brand's own. */
   real_brand?: { name: string; url: string; this_site: boolean } | null;
   /** Other places to buy the same item, trusted first (only ones rated Legit). */
@@ -122,7 +122,8 @@ export function replyText(c: Check): string {
 
 /** The reply: verdict, what was checked, why, what to do, then the real brand and other places to buy. */
 export function verdictText(c: Check): string {
-  const what = c.found.how === "screenshot" || c.found.how === "video" ? `${c.found.what} (from your ${c.found.how})` : c.found.what || c.domain;
+  const from = { screenshot: "screenshot", video: "video", pdf: "PDF" }[c.found.how as string];
+  const what = from ? `${c.found.what} (from your ${from})` : c.found.what || c.domain;
   const extras = extrasText(c);
   const ap = c.already_paid;
   const paid = c.verdict === "red" && ap && "steps" in ap && ap.steps.length
