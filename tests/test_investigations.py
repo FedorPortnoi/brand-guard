@@ -162,3 +162,12 @@ def test_a_site_behind_several_ips_is_one_server_row():
                                     "org": "Cloudflare, Inc.", "shared": "Cloudflare"})
     rows = investigations.repeat_servers()
     assert len(rows) == 1 and sorted(rows[0]["ips"]) == ["104.20.46.45", "172.66.146.250"] and rows[0]["listings"] == 2
+
+
+def test_newest_first_holds_when_two_investigations_start_in_the_same_second(monkeypatch):
+    """Times are stored to the second, so a tie must fall back to insertion order (it flipped on a fast CI runner)."""
+    monkeypatch.setattr(investigations, "_now", lambda: "2026-10-10T12:00:00+00:00")
+    for inv_id, brand in (("inv-1", "Acme"), ("inv-2", "Globex"), ("inv-3", "Initech")):
+        investigations.start(inv_id, brand, [], [], [], "")
+        investigations.finish(inv_id, 0)
+    assert [h["brand"] for h in investigations.history()] == ["Initech", "Globex", "Acme"]

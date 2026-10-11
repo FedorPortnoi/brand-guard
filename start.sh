@@ -10,8 +10,10 @@ if [ -z "${PUBLIC_BASE_URL:-}" ] && [ -n "${REPLIT_DOMAINS:-}" ]; then
   export PUBLIC_BASE_URL="https://${REPLIT_DOMAINS%%,*}"
 fi
 
-if ! python -c "import fastapi, cv2, pillow_heif" 2>/dev/null; then
+if ! python -c "import fastapi, cv2, pillow_heif, rapidocr_onnxruntime" 2>/dev/null; then
   pip install -q -r requirements.txt
+  # its declared opencv-python would sit next to opencv-python-headless and break cv2 on a server
+  pip install -q --no-deps rapidocr_onnxruntime
 fi
 
 if [ -n "${SPECTRUM_PROJECT_ID:-}" ] && [ -n "${SPECTRUM_PROJECT_SECRET:-}" ]; then
