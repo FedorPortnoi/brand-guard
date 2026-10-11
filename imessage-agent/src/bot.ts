@@ -47,11 +47,11 @@ export function createBot({ bg, allowedSenders = [], slowAfterMs = 15_000, local
   const allowed = new Set(allowedSenders.map(senderKey).filter(Boolean));
   const refused = new Set<string>();  // told once that the agent is private; later messages are ignored
 
-  /** The image or video in a message, if any (an iMessage photo with a caption can arrive as a group). */
+  /** The image, video or PDF in a message, if any (an iMessage photo with a caption can arrive as a group). */
   async function mediaOf(message: Message): Promise<{ data: Buffer; filename: string; mimeType: string } | null> {
     const items = message.content.type === "group" ? message.content.items.map(m => m.content) : [message.content];
     for (const c of items) {
-      if (c.type === "attachment" && /^(image|video)\//.test(c.mimeType)) {
+      if (c.type === "attachment" && (/^(image|video)\//.test(c.mimeType) || c.mimeType === "application/pdf")) {
         return { data: await c.read(), filename: c.name || "screenshot", mimeType: c.mimeType };
       }
     }

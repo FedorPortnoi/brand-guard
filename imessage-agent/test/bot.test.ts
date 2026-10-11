@@ -141,3 +141,10 @@ test("terminal testing: a pasted file path is sent as that file; on iMessage it 
   await createBot({ bg: missing.bg, localFiles: true }).handle(fakeSpace().space, text(join(dir, "nope.mp4")));
   assert.deepEqual(missing.calls, [`ask "${join(dir, "nope.mp4")}"`]);  // no such file: left to the API to explain
 });
+
+test("a PDF (a receipt, an order confirmation) is sent to be checked", async () => {
+  const { bg, calls } = stubBg();
+  const att = { type: "attachment", id: "a1", name: "receipt.pdf", mimeType: "application/pdf", read: async () => Buffer.from("%PDF-") };
+  await createBot({ bg }).handle(fakeSpace().space, { platform: "terminal", direction: "inbound", content: att } as unknown as Message);
+  assert.deepEqual(calls, ['ask "" application/pdf']);
+});
