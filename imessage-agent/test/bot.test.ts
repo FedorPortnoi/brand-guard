@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { Message, Space } from "spectrum-ts";
 import { AskError, type AskRequest, type BrandGuard } from "../src/brandguard.js";
-import { createBot, HELP, PRIVATE } from "../src/bot.js";
+import { createBot, DOUBLE_CHECKING, HELP, PRIVATE } from "../src/bot.js";
 import { check } from "./fixtures.js";
 
 /** A chat that records what the bot sends. */
@@ -83,4 +83,34 @@ test("with an allow list, other senders are told once that the agent is private 
   assert.deepEqual(calls, []);
   await bot.handle(space, text("hi", "+15550102345"));
   assert.equal(sent.at(-1), HELP);
+});
+
+const wait = (ms: number) => new Promise(r => setTimeout(r, ms));
+
+test("an answer slower than the limit gets one \"Double checking…\" first; a quick one doesn't", async () => {
+  const slow = stubBg(async () => { await wait(80); return check("green", []); });
+  const a = fakeSpace();
+  await createBot({ bg: slow.bg, slowAfterMs: 20 }).handle(a.space, text("is Lucky Fours legit"));
+  assert.equal(a.sent.length, 2);
+  assert.equal(a.sent[0], DOUBLE_CHECKING);
+  assert.match(a.sent[1], /^LEGIT ✅/);
+
+  const quick = stubBg(async () => check("green", []));
+  const b = fakeSpace();
+  await createBot({ bg: quick.bg, slowAfterMs: 20 }).handle(b.space, text("kith.com"));
+  await wait(60);  // the timer was cleared: nothing arrives after the answer
+  assert.equal(b.sent.length, 1);
+  assert.match(b.sent[0], /^LEGIT ✅/);
+
+  const failing = stubBg(async () => { await wait(80); throw new AskError("I couldn't find a website for \"zzz\"."); });
+  const c = fakeSpace();
+  await createBot({ bg: failing.bg, slowAfterMs: 20 }).handle(c.space, text("is zzz legit"));
+  assert.deepEqual(c.sent, [DOUBLE_CHECKING, "I couldn't find a website for \"zzz\"."]);
+});
+
+test("the double-check note waits 15 seconds by default", async () => {
+  const { bg } = stubBg(async () => { await wait(80); return check("green", []); });
+  const { space, sent } = fakeSpace();
+  await createBot({ bg }).handle(space, text("kith.com"));
+  assert.equal(sent.length, 1);
 });
