@@ -585,6 +585,8 @@ async def check_url(value: str, brand: str = "", official: list[str] = (), resel
         "Compare trusted options" if result["verdict"] == "yellow" else "Trace maker and prices")
     if log:
         _log(result, brand, list(official), list(resellers))
+    # the crowd signal: how often shoppers checked this site this week (this check included) and how often it was flagged
+    result["crowd"] = await asyncio.to_thread(_safe, investigations.crowd, host, url, bool(kind)) or {}
     return result
 
 

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { extrasText, reasons, replyText, verdictText } from "../src/brandguard.js";
+import { crowdText, extrasText, reasons, replyText, verdictText } from "../src/brandguard.js";
 import { check, sig } from "./fixtures.js";
 
 test("a red verdict says NOT LEGIT with the warnings, first sentence only, and what to do", () => {
@@ -113,4 +113,14 @@ test("Not legit answers end with what to do if you already paid; other verdicts 
   assert.ok(!verdictText({ ...red, verdict: "green" }).includes("Already paid?"));
   assert.ok(!verdictText({ ...red, verdict: "yellow" }).includes("Already paid?"));
   assert.ok(!verdictText({ ...red, already_paid: {} }).includes("Already paid?"));
+});
+
+test("the crowd line shows once someone else has checked the site this week", () => {
+  const red = check("red", [sig("bad", "The domain was registered 4 days ago.", 50)]);
+  assert.equal(crowdText({ ...red, crowd: { checked: 1, flagged: 1, days: 7 } }), "");  // only this check: nothing to say
+  assert.equal(crowdText({ ...red, crowd: {} }), "");
+  assert.equal(crowdText({ ...red, crowd: { checked: 5, flagged: 3, days: 7 } }), "👥 Checked 5 times this week; 3 came out Not legit.");
+  assert.equal(crowdText({ ...red, crowd: { checked: 2, flagged: 0, days: 7 } }), "👥 Checked 2 times this week; never flagged.");
+  const text = verdictText({ ...red, crowd: { checked: 5, flagged: 3, days: 7 } });
+  assert.ok(text.includes("- The domain was registered 4 days ago.\n👥 Checked 5 times this week; 3 came out Not legit.\n\nDon't pay"));
 });
