@@ -202,9 +202,10 @@ def _signal(label: str, detail: str, tone: str, impact: int = 0) -> dict:
 
 def assess(url: str, html: bytes | None, domain: dict, threats: list[str], history: list[dict], *,
            server: dict | None = None, social: dict | None = None, brand: str = "", official: list[str] = (),
-           resellers: list[str] = (), claimed_brand: str | None = None) -> dict:
+           resellers: list[str] = (), claimed_brand: str | None = None, seen_text: str = "") -> dict:
     """The verdict from everything gathered. brand / official / resellers are the user's optional brand settings;
-    claimed_brand is the brand the page itself names. Pure, so every rule is testable."""
+    claimed_brand is the brand the page itself names; seen_text is what the shopper saw (text read from their
+    screenshot), checked for the same wording as a caption. Pure, so every rule is testable."""
     host = risk.host_of(url)
     kind, platform = _platform(host)
     server = server or {}
@@ -221,7 +222,7 @@ def assess(url: str, html: bytes | None, domain: dict, threats: list[str], histo
     if social:
         visible_title = f"{visible_title} {social.get('title') or ''}"
         visible_desc = f"{visible_desc} {social.get('caption') or ''}"
-    text = f"{url.lower()} {visible_title} {visible_desc}".lower()
+    text = f"{url.lower()} {visible_title} {visible_desc} {seen_text}".lower()
     head = f"{url} {visible_title}".lower()  # weak words ("copy", "cheap", "outlet") only count in a title or address
     signals, score = [], 0
     vouched = False  # strong evidence the site belongs to the brand: settles a verdict the page alone cannot
@@ -309,6 +310,7 @@ def assess(url: str, html: bytes | None, domain: dict, threats: list[str], histo
             signals.append(_signal("Posted by", detail + ".", "good" if social.get("verified") else "neutral",
                                    -10 if social.get("verified") else 0))
             score -= 10 if social.get("verified") else 0
+    if kind == "social" or seen_text:
         off = _hits(OFF_PLATFORM, text)
         if off:
             score += 20
@@ -354,7 +356,7 @@ def assess(url: str, html: bytes | None, domain: dict, threats: list[str], histo
 
 
 async def check_url(value: str, brand: str = "", official: list[str] = (), resellers: list[str] = (),
-                    log: bool = True) -> dict:
+                    log: bool = True, seen_text: str = "") -> dict:
     url = normalize_url(value)
     if not await net.safe_url_async(url):
         raise ListingError("That URL is not a reachable public internet address.")
@@ -377,7 +379,7 @@ async def check_url(value: str, brand: str = "", official: list[str] = (), resel
         facts.update({"account": social.get("account"), "account_url": social.get("account_url"),
                       "followers": social.get("followers"), "posted": social.get("posted")})
     result = assess(url, html, domain or {}, threats, history, server=server, social=social, brand=brand,
-                    official=list(official), resellers=list(resellers), claimed_brand=facts.get("brand"))
+                    official=list(official), resellers=list(resellers), claimed_brand=facts.get("brand"), seen_text=seen_text)
     image = facts.get("image") if (facts.get("image") or "").startswith("http") else None
     result.update({"id": check_id, "url": url, "domain": registrable_domain(host), "facts": facts, "errors": errors,
                    "image_url": image, "lens_url": lens_url(image), "brand_settings": bool(brand or official or resellers),
