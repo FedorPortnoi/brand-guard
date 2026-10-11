@@ -29,7 +29,15 @@ export type Check = {
   already_paid?: { methods: string[]; steps: string[]; report: string[] } | Record<string, never>;
   /** Link checks of this site (or listing) in the last `days` days, this one included, and how many were Not legit. */
   crowd?: { checked: number; flagged: number; days: number } | Record<string, never>;
+  /** The platform's name for a marketplace or social link ("Instagram"). */
+  platform?: string | null;
+  /** A post the platform wouldn't show us (login wall): ask the shopper for a screenshot of it. */
+  send_screenshot?: boolean;
 };
+
+/** What to say instead of the usual advice when a post couldn't be seen. */
+export const screenshotAsk = (platform?: string | null) =>
+  `${platform || "The site"} didn't let me see this post. Send me a screenshot of it, with the account name and caption showing, and I'll check that.`;
 
 /** "Checked 5 times in the last 7 days; 3 came out Not legit." Only once someone else has checked it too. */
 export function crowdText(c: Check): string {
@@ -100,7 +108,7 @@ export function extrasText(c: Check): string[] {
   const forWhat = c.alternatives_for && "kind" in c.alternatives_for && c.alternatives_for.kind === "category"
     ? `Trusted stores for ${c.alternatives_for.what.toLowerCase()}:` : "Other places to buy it:";
   if (alts.length) lines.push(forWhat, ...alts.map(a => `- ${a.host}${price(a)}: ${a.url}`));
-  else if (c.alternatives_note) lines.push(c.alternatives_note);
+  else if (c.alternatives_note && !c.send_screenshot) lines.push(c.alternatives_note);  // one request at a time
   const photos = c.verdict === "green" ? [] : (c.same_photo ?? []).slice(0, 2);
   if (photos.length) lines.push("Same photo also on:", ...photos.map(p => `- ${p.host}: ${p.url}`));
   return lines;
@@ -120,6 +128,6 @@ export function verdictText(c: Check): string {
   const paid = c.verdict === "red" && ap && "steps" in ap && ap.steps.length
     ? ["", "Already paid?", ...ap.steps.map(s => `- ${s}`), ...ap.report.map(r => `- ${r}`)] : [];
   const crowd = crowdText(c);
-  return [`${HEADLINE[c.verdict]}  ${what}`, "", ...reasonLines(c), ...(crowd ? [crowd] : []), "", ADVICE[c.verdict], ...paid,
+  return [`${HEADLINE[c.verdict]}  ${what}`, "", ...reasonLines(c), ...(crowd ? [crowd] : []), "", c.send_screenshot ? screenshotAsk(c.platform) : ADVICE[c.verdict], ...paid,
     ...(extras.length ? ["", ...extras] : [])].join("\n");
 }

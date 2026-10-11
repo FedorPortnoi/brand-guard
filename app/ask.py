@@ -72,6 +72,11 @@ def _platform_site(value: str) -> bool:
     return any(risk.host_matches(host, p) for p in risk.SOCIAL + risk.MARKETPLACES)
 
 
+def _social_site(value: str) -> bool:
+    host = risk.host_of(listing.normalize_url(value))
+    return any(risk.host_matches(host, p) for p in risk.SOCIAL)
+
+
 def pick_address(found: list[str]) -> str | None:
     """A shop's own address beats a bare platform name ("instagram.com" in a footer); a platform link with a path
     (a listing or a post) beats nothing."""
@@ -132,6 +137,7 @@ async def real_brand(result: dict, errors: list[str]) -> dict | None:
 
 
 NO_PRODUCT = "I couldn't tell which product this is, so I can't suggest other places to buy it. Send me the product page."
+NOT_A_STORE = "That page doesn't sell anything, so there's nothing to compare it with."
 
 
 _SLUG_JUNK = re.compile(r"^(?:[a-z]{0,3}\d[\w-]*|p|dp|products?|items?|itm|shop|us|en|en-us|collections?|[a-z]{2}(?:-[a-z]{2})?)$", re.I)
@@ -175,7 +181,11 @@ async def describe_store(result: dict, errors: list[str]) -> str:
 async def alternatives(result: dict) -> tuple[dict, list[dict], dict]:
     """Trusted places to buy the same item (or, when only the store is known, trusted stores selling what it sells),
     whatever the verdict (only ones rated Legit); the maker deep research named; and what the alternatives are for."""
+    if result.get("sells") is False:  # a page with nothing for sale (a phishing page, an article): nothing to compare
+        return {}, [], {}
     facts = result.get("facts") or {}
+    if result.get("url") and _social_site(result["url"]) and not facts.get("product"):
+        return {}, [], {}  # a post's title ("Video by ...") is not a product to compare
     known = facts.get("product") or facts.get("title") or facts.get("brand")
     wanted = {"what": known or "", "kind": "product"}
     if known and not facts.get("product") and _is_home_page(result.get("url") or ""):
@@ -191,6 +201,8 @@ async def alternatives(result: dict) -> tuple[dict, list[dict], dict]:
         if slug:  # the page could not be read: search by the address's product words and the site's name
             wanted = {"what": slug, "kind": "product"}
             result = {**result, "facts": {**facts, "product": slug, "site_name": (result.get("domain") or "").split(".")[0]}}
+        elif result.get("url") and _platform_site(result["url"]):
+            return {}, [], {}  # a marketplace's or social site's own description is not what this seller sells
         else:  # only the store is known: stores selling the same kind of thing
             category = await describe_store(result, [])
             if not category:
@@ -223,7 +235,8 @@ async def extras(result: dict) -> dict:
     if not brand and maker.get("url") and registrable_domain(risk.host_of(maker["url"])) != result.get("domain"):
         brand = {"name": maker["name"], "url": maker["url"], "this_site": False}
     return {"real_brand": brand, "alternatives": alts[:3], "alternatives_for": wanted if alts else {},
-            "alternatives_note": "" if alts else NO_PRODUCT if not deep else "I didn't find other trusted places selling it.",
+            "alternatives_note": "" if alts else NOT_A_STORE if result.get("sells") is False else NO_PRODUCT if not deep
+            else "I didn't find other trusted places selling it.",
             "same_photo": deep.get("same_photo", [])[:3]}
 
 
