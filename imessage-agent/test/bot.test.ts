@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { Message, Space } from "spectrum-ts";
 import { AskError, type AskRequest, type BrandGuard } from "../src/brandguard.js";
-import { createBot, DOUBLE_CHECKING, HELP, PRIVATE } from "../src/bot.js";
+import { capped, createBot, DOUBLE_CHECKING, HELP, HOUR_MS, PRIVATE } from "../src/bot.js";
 import { check } from "./fixtures.js";
 
 /** A chat that records what the bot sends. */
@@ -89,6 +89,27 @@ test("with an allow list, other senders are told once that the agent is private 
   assert.deepEqual(calls, []);
   await bot.handle(space, text("hi", "+15550102345"));
   assert.equal(sent.at(-1), HELP);
+});
+
+test("open to all: anyone gets checked, each stranger up to the hourly cap, the owners never capped", async () => {
+  const { bg, calls } = stubBg();
+  const { space, sent } = fakeSpace();
+  let t = 0;
+  const bot = createBot({ bg, allowedSenders: ["+1 (555) 010-2345"], openToAll: true, checksPerHour: 2, now: () => t });
+  await bot.handle(space, text("a.com", "+15559999999"));
+  await bot.handle(space, text("hi", "+15559999999"));  // help and thanks are free
+  t = 20 * 60_000;
+  await bot.handle(space, text("b.com", "+15559999999"));
+  await bot.handle(space, text("c.com", "+15559999999"));
+  assert.equal(sent.at(-1), capped(40));  // the first check frees up 40 min later
+  assert.equal(calls.length, 2);
+  await bot.handle(space, text("d.com", "+15558888888"));  // another stranger has their own count
+  for (const site of ["e.com", "f.com", "g.com"]) await bot.handle(space, text(site, "+15550102345"));
+  assert.equal(calls.length, 6);
+  t = HOUR_MS;
+  await bot.handle(space, text("c.com", "+15559999999"));  // an hour after the first, one is free again
+  assert.equal(calls.length, 7);
+  assert.ok(!sent.includes(PRIVATE));
 });
 
 const wait = (ms: number) => new Promise(r => setTimeout(r, ms));

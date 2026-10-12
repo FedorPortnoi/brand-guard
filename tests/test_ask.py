@@ -1,4 +1,5 @@
 import asyncio
+import re
 
 from fastapi.testclient import TestClient
 
@@ -406,3 +407,50 @@ def test_the_home_page_asks_like_the_imessage_agent_and_the_lab_moved():
     lab = client.get("/lab")
     assert lab.status_code == 200 and "/api/listing/check" in lab.text
     assert client.get("/static/imessage-qr.svg").headers["content-type"].startswith("image/svg")
+
+
+def test_the_home_page_is_three_standalone_sections():
+    from app import main
+    page = TestClient(app).get("/").text
+    assert "<!-- section:" not in page  # every section was put in its place
+    for name, cls in (("hero", "s-hero"), ("how", "s-how"), ("imessage", "s-imsg")):
+        part = (main.HOME / f"{name}.html").read_text(encoding="utf-8")
+        assert f'class="{cls}"' in part and part.count("<style>") == 1
+        # its styles only reach its own section, so restyling one never changes another
+        css = part.split("<style>")[1].split("</style>")[0]
+        css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+        heads = [h.strip() for h in re.findall(r"([^{}]+)\{", css) if not h.strip().startswith("@")]
+        selectors = [s.strip() for h in heads for s in h.split(",") if s.strip() not in ("from", "to") and not s.strip()[0].isdigit()]
+        assert all(s.startswith("." + cls) for s in selectors), [s for s in selectors if not s.startswith("." + cls)][:3]
+
+
+def test_public_site_has_real_policy_controls_and_upload_permission():
+    client = TestClient(app)
+    home = client.get("/")
+    assert home.status_code == 200
+    for anchor in ("privacy", "terms", "cookies", "security", "accessibility"):
+        assert f'/legal#{anchor}' in home.text
+    assert "bg_privacy_choice_v1" in home.text
+    assert "navigator.globalPrivacyControl" in home.text
+    assert "I have permission" in home.text
+    assert "No ad tracking" in home.text
+
+    legal = client.get("/legal")
+    assert legal.status_code == 200
+    assert "does not currently claim SOC 2" in legal.text
+    assert "WCAG 2.2 Level AA" in legal.text
+    assert "Effective October 11, 2026" in legal.text
+
+
+def test_security_headers_are_applied_without_hsts_on_local_http():
+    response = TestClient(app).get("/")
+    assert response.headers["x-content-type-options"] == "nosniff"
+    assert response.headers["x-frame-options"] == "DENY"
+    assert response.headers["referrer-policy"] == "strict-origin-when-cross-origin"
+    assert "camera=()" in response.headers["permissions-policy"]
+    assert "frame-ancestors 'none'" in response.headers["content-security-policy"]
+    assert "strict-transport-security" not in response.headers
+
+    api = TestClient(app).get("/api/recordings")
+    assert api.headers["cache-control"] == "no-store"
+    assert api.headers["x-robots-tag"] == "noindex"

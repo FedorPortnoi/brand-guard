@@ -1,0 +1,114 @@
+<!-- HOW IT WORKS: an investigative desk composed from the supplied transparent evidence assets.
+     Desktop uses the same 1672 px reference canvas as the hero. Mobile collapses to a readable single-column flow.
+     Design dials: variance 7, motion 3, density 6. -->
+<style>
+.s-how{position:relative;overflow:hidden;isolation:isolate;background:#eee4d6;color:var(--ink)}
+.s-how .canvas{position:relative;background:#eee4d6 url("/static/home/investigation/vintage-map-workspace.webp") center/100% 100% no-repeat}
+.s-how .head{position:absolute;left:176px;top:88px;width:760px}
+.s-how .eyebrow{display:flex;align-items:center;gap:18px;font:600 13px/1 var(--sans);letter-spacing:.24em;text-transform:uppercase;color:#9a3f20}
+.s-how .eyebrow::before{content:"";width:36px;height:2px;background:#ad4726}
+.s-how h2{margin:20px 0 17px;font:600 86px/.94 var(--serif);letter-spacing:-.045em;color:#111515}
+.s-how h2 em{font-style:normal;color:#93411f}
+.s-how .head p{max-width:760px;margin:0;color:#494842;font-size:21px;line-height:1.48;letter-spacing:-.015em}
+.s-how .answers{position:absolute;left:126px;top:394px;width:1420px;height:254px;display:grid;grid-template-columns:1.08fr .97fr 1.08fr;gap:13px}
+.s-how .answer{position:relative;min-width:0;overflow:hidden;border:1px solid rgba(164,126,91,.42);border-radius:16px;background:rgba(255,252,246,.78);box-shadow:0 14px 38px -28px rgba(69,42,24,.5),inset 0 1px rgba(255,255,255,.75)}
+.s-how .answer-copy{position:relative;z-index:2;width:57%;padding:17px 0 18px 23px}
+.s-how .status-pill{display:inline-flex;align-items:center;gap:8px;min-height:39px;padding:0 20px;border-radius:999px;font:700 16px/1 var(--sans);text-transform:uppercase;white-space:nowrap}
+.s-how .status-pill b{font-size:21px;line-height:1}
+.s-how .good-pill{background:#dfe9d4;color:#315f34}
+.s-how .bad-pill{background:#f5d9cd;color:#9f321f}
+.s-how .unknown-pill{background:#f4e2bf;color:#875106}
+.s-how .answer h3{margin:18px 0 10px;font:600 25px/1.06 var(--serif);letter-spacing:-.025em;color:#121716}
+.s-how .answer p{margin:0;color:#5b554e;font-size:16.5px;line-height:1.4}
+.s-how .answer-art{position:absolute;z-index:1;height:auto;object-fit:contain;pointer-events:none}
+.s-how .answer-good .answer-art{width:305px;right:-3px;top:3px}
+.s-how .answer-bad .answer-art{width:285px;right:-15px;top:4px}
+.s-how .answer-unknown .answer-copy{width:59%}
+.s-how .answer-unknown .answer-art{width:305px;right:-21px;top:3px}
+.s-how .ways{position:absolute;left:126px;top:660px;width:1420px;height:208px;display:grid;grid-template-columns:.97fr .97fr .98fr 1.05fr;overflow:hidden;border:1px solid rgba(158,119,84,.38);border-radius:16px;background:rgba(255,252,246,.81);box-shadow:0 14px 38px -28px rgba(69,42,24,.48),inset 0 1px rgba(255,255,255,.78)}
+.s-how .way{position:relative;min-width:0;padding:18px 25px 16px;overflow:hidden}
+.s-how .way+.way{border-left:1px solid rgba(158,119,84,.34)}
+.s-how .way-no{display:block;font:600 58px/.8 var(--serif);letter-spacing:-.045em;color:#aa3d20}
+.s-how .way-copy{position:absolute;z-index:2;left:25px;right:18px;bottom:16px}
+.s-how .way h3{margin:0 0 7px;font:600 25px/1.05 var(--serif);letter-spacing:-.025em;color:#171a18}
+.s-how .way p{margin:0;max-width:265px;color:#59554f;font-size:16px;line-height:1.36}
+.s-how .way-art{position:absolute;z-index:1;height:auto;object-fit:contain;pointer-events:none}
+.s-how .link-art{width:215px;right:14px;top:14px}
+.s-how .store-art{width:214px;right:15px;top:14px}
+.s-how .media-art{width:190px;right:4px;top:2px;transform:rotate(1deg)}
+.s-how .receipt-art{width:238px;right:-5px;top:1px;transform:rotate(1deg)}
+@media (min-width:1100px){
+  .s-how .canvas{width:1672px;height:941px;zoom:var(--how-k,1)}
+}
+@media (max-width:1099px){
+  .s-how{padding:68px 0;background:#eee4d6 url("/static/home/investigation/vintage-map-workspace.webp") center top/auto 620px no-repeat}
+  .s-how .canvas{width:auto;height:auto;padding:0 20px;background:transparent}
+  .s-how .head{position:relative;left:auto;top:auto;width:auto;max-width:760px;margin:0 auto 36px}
+  .s-how h2{font-size:clamp(43px,9vw,70px);line-height:.98}
+  .s-how .head p{font-size:18px}
+  .s-how .answers{position:relative;left:auto;top:auto;width:auto;height:auto;max-width:760px;margin:0 auto;grid-template-columns:1fr;gap:14px}
+  .s-how .answer{min-height:260px}
+  .s-how .answer-copy,.s-how .answer-unknown .answer-copy{width:57%;padding:22px}
+  .s-how .answer-good .answer-art,.s-how .answer-bad .answer-art,.s-how .answer-unknown .answer-art{width:48%;right:-2%;top:5%}
+  .s-how .ways{position:relative;left:auto;top:auto;width:auto;height:auto;max-width:760px;margin:18px auto 0;grid-template-columns:1fr 1fr}
+  .s-how .way{min-height:220px}
+  .s-how .way:nth-child(3){border-left:0;border-top:1px solid rgba(158,119,84,.34)}
+  .s-how .way:nth-child(4){border-top:1px solid rgba(158,119,84,.34)}
+}
+@media (max-width:640px){
+  .s-how{padding:58px 0}
+  .s-how .canvas{padding:0 12px}
+  .s-how .eyebrow{gap:10px;font-size:10px;letter-spacing:.18em}
+  .s-how .eyebrow::before{width:20px}
+  .s-how h2{margin-top:15px;font-size:45px}
+  .s-how .head p{font-size:16px;line-height:1.45}
+  .s-how .answer{min-height:320px}
+  .s-how .answer-copy,.s-how .answer-unknown .answer-copy{width:65%;padding:18px}
+  .s-how .answer h3{font-size:23px}
+  .s-how .answer p{font-size:15px}
+  .s-how .answer-good .answer-art,.s-how .answer-bad .answer-art,.s-how .answer-unknown .answer-art{width:64%;right:-11%;top:24%}
+  .s-how .ways{grid-template-columns:1fr}
+  .s-how .way{min-height:210px}
+  .s-how .way+.way{border-left:0;border-top:1px solid rgba(158,119,84,.34)}
+}
+</style>
+
+<section class="s-how" id="how">
+  <div class="canvas">
+    <div class="head">
+      <span class="eyebrow">Three answers, never a guess</span>
+      <h2>A straight answer,<br>with <em>receipts.</em></h2>
+      <p>Every answer comes with up to three reasons, and every reason with something you can open and check yourself.</p>
+    </div>
+
+    <div class="answers">
+      <article class="answer answer-good">
+        <div class="answer-copy"><span class="status-pill good-pill">Legit <b>✓</b></span><h3>Nothing points to a scam</h3><p>An established domain, a real store behind it, no threat reports. Plus other trusted places that sell it.</p></div>
+        <img class="answer-art" src="/static/home/investigation/verdict-legit.webp" alt="">
+      </article>
+      <article class="answer answer-bad">
+        <div class="answer-copy"><span class="status-pill bad-pill">Not legit <b>✕</b></span><h3>Don't pay</h3><p>A brand-new domain, a Google Safe Browsing warning, "Zelle only". With what to do if you already paid, by payment method.</p></div>
+        <img class="answer-art" src="/static/home/investigation/verdict-not-legit.webp" alt="">
+      </article>
+      <article class="answer answer-unknown">
+        <div class="answer-copy"><span class="status-pill unknown-pill">Couldn't check <b>!</b></span><h3>Only when there's nothing to judge</h3><p>No page, no archive, no domain age, nothing on the web. Then it says so, and tells you what to send instead.</p></div>
+        <img class="answer-art" src="/static/home/investigation/verdict-unknown.webp" alt="">
+      </article>
+    </div>
+
+    <div class="ways">
+      <article class="way"><span class="way-no">01</span><img class="way-art link-art" src="/static/home/investigation/input-link.webp" alt=""><div class="way-copy"><h3>A link</h3><p>A shop, a product, a post or an account.</p></div></article>
+      <article class="way"><span class="way-no">02</span><img class="way-art store-art" src="/static/home/investigation/input-store.webp" alt=""><div class="way-copy"><h3>A store's name</h3><p>"Is Lucky Fours legit?" finds the store's own site.</p></div></article>
+      <article class="way"><span class="way-no">03</span><img class="way-art media-art" src="/static/home/investigation/input-media.webp" alt=""><div class="way-copy"><h3>A screenshot or video</h3><p>Reads the address, the @account, the price, and words like "DM to order".</p></div></article>
+      <article class="way"><span class="way-no">04</span><img class="way-art receipt-art" src="/static/home/investigation/input-receipt.webp" alt=""><div class="way-copy"><h3>A receipt</h3><p>Finds the seller in an order confirmation PDF.</p></div></article>
+    </div>
+  </div>
+</section>
+
+<script>
+(() => {
+  const section = document.querySelector(".s-how");
+  const fit = () => section.style.setProperty("--how-k", Math.max(innerWidth, 1) / 1672);
+  fit(); addEventListener("resize", fit);
+})();
+</script>

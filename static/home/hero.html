@@ -1,0 +1,376 @@
+<!-- HERO: the checker. Standalone: its styles are scoped to .s-hero, its script only touches its own elements.
+     Desktop (1100 px and wider) is laid out on a 1672 x 941 canvas measured from the reference design and scaled to
+     the window width, so it keeps the reference's proportions on any screen. The backdrop is hero-scene-v2.png,
+     with the Brand Guard UI photographed directly into the phone glass. Narrow screens get a simple flow.
+     Design dials: variance 6, motion 3, density 4. -->
+<style>
+.s-hero{position:relative;background:var(--bg) url("/static/home/hero-scene-v2.png") right top/cover no-repeat;overflow:hidden}
+.s-hero .canvas{position:relative}
+.s-hero .eyebrow{display:block;font:600 14.5px/1 var(--sans);letter-spacing:.3em;text-transform:uppercase;color:var(--eyebrow)}
+
+/* header */
+.s-hero .wordmark{display:flex;align-items:center;text-decoration:none;font:650 44px/1 var(--serif);letter-spacing:-.025em;color:var(--ink)}
+.s-hero .nav{display:flex;gap:35px}
+.s-hero .nav a{text-decoration:none;font:400 17.5px/1 var(--sans);color:#2c2b28;transition:color .15s}
+.s-hero .nav a:hover{color:var(--terra)}
+.s-hero .go{display:inline-flex;align-items:center;height:48px;padding:0 24px;border-radius:999px;background:var(--olive);color:#f3efe6;text-decoration:none;font:600 17px/1 var(--sans);box-shadow:0 6px 16px -8px rgba(40,40,25,.55);transition:background .15s}
+.s-hero .go:hover{background:var(--olive-2)}
+
+/* copy */
+.s-hero h1{margin:0;font:650 96px/.875 var(--serif);letter-spacing:-.015em;color:var(--ink)}
+.s-hero h1 em{font-style:normal;color:#93411f}
+.s-hero .lede{margin:0;font:400 25.5px/35px var(--sans);letter-spacing:-.012em;color:var(--ink-2)}
+
+/* message bar */
+.s-hero .composer{background:#fcfcfb;border-radius:35px;box-shadow:0 1px 1px rgba(80,60,40,.05),0 14px 34px -16px rgba(90,65,40,.28);transition:box-shadow .2s}
+.s-hero .composer.drag{box-shadow:0 0 0 3px var(--terra),0 14px 34px -16px rgba(90,65,40,.28)}
+.s-hero .composer form{display:flex;align-items:center;height:69px;padding:0 6px 0 26px;gap:14px}
+.s-hero .attach{flex:none;width:30px;height:30px;padding:0;border:0;background:none;color:#4b4a46;cursor:pointer;display:grid;place-items:center}
+.s-hero .attach:hover{color:var(--terra)}
+.s-hero .attach svg{width:22px;height:22px}
+.s-hero #q{flex:1;min-width:0;height:100%;border:0;background:transparent;font:400 18.5px var(--sans);color:var(--ink)}
+.s-hero #q::placeholder{color:#8a857e}
+.s-hero #q:focus{outline:none}
+.s-hero .send{flex:none;width:185px;height:57px;border:0;border-radius:999px;background:var(--terra);color:#fff;font:600 19px/1 var(--sans);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px;box-shadow:0 8px 18px -10px rgba(110,50,20,.8);transition:background .15s,transform .08s}
+.s-hero .send:hover{background:var(--terra-2)}.s-hero .send:active{transform:translateY(1px)}
+.s-hero .send:disabled{opacity:.65;cursor:wait}
+.s-hero .send svg{width:19px;height:19px}
+.s-hero .chip-file{display:none;align-items:center;gap:12px;padding:8px 10px;border-radius:16px;background:#fcfcfb;box-shadow:var(--shadow);font-size:14.5px}
+.s-hero .chip-file.on{display:flex}
+.s-hero .chip-file img,.s-hero .chip-file .fi{width:40px;height:40px;border-radius:10px;object-fit:cover;flex:none}
+.s-hero .chip-file .fi{display:grid;place-items:center;background:var(--ink);color:#f4efe6;font:700 10px var(--sans);letter-spacing:.05em}
+.s-hero .chip-file span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.s-hero .chip-file button{border:0;background:none;cursor:pointer;font-size:22px;line-height:1;color:var(--mute)}
+.s-hero .upload-consent{width:min(590px,calc(100% - 32px));padding:0;border:1px solid #d8cbbb;border-radius:22px;background:#fbf7f1;color:var(--ink);box-shadow:0 28px 90px rgba(35,26,18,.38)}
+.s-hero .upload-consent::backdrop{background:rgba(25,23,20,.5);backdrop-filter:blur(3px)}
+.s-hero .upload-consent form{padding:28px}
+.s-hero .upload-consent h2{margin:0 0 12px;font:600 36px/1 var(--serif);letter-spacing:-.025em}
+.s-hero .upload-consent p{margin:0;color:var(--mute);font-size:16px;line-height:1.55}
+.s-hero .upload-consent ul{margin:18px 0;padding:17px 17px 17px 38px;border-radius:14px;background:#f1e8dc;color:#4f4a43;font-size:14px;line-height:1.55}
+.s-hero .upload-consent .consent-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}
+.s-hero .upload-consent button{min-height:44px;padding:0 18px;border:1px solid #7e725f;border-radius:999px;background:transparent;cursor:pointer;font-weight:600}
+.s-hero .upload-consent .allow{background:var(--olive);border-color:var(--olive);color:#fff}
+
+/* examples and what we check */
+.s-hero .try-label{font:600 13px/1 var(--sans);letter-spacing:.25em;text-transform:uppercase;color:#824e34}
+.s-hero .tries{display:flex}
+.s-hero .tries button{display:flex;align-items:center;gap:11px;height:49px;padding:0 19px;border-radius:999px;border:1px solid #ddd1c4;background:rgba(244,237,229,.55);font:400 17.5px/1 var(--sans);color:#1f1e1c;cursor:pointer;white-space:nowrap;transition:background .15s,border-color .15s}
+.s-hero .tries button:hover{background:#fcfaf6;border-color:#c9b9a6}
+.s-hero .tries svg{width:21px;height:21px;color:#2a2926}
+.s-hero .rule{height:1px;background:var(--line-2)}
+.s-hero .kinds{display:flex}
+.s-hero .kinds div{display:flex;flex-direction:column;gap:17px;font:400 16.5px/1 var(--sans);color:#1f1e1c}
+.s-hero .kinds svg{width:28px;height:28px;color:#2a2926}
+.s-hero .kinds .ig{color:#743618}
+.s-hero .kinds i{position:absolute;top:-4px;width:1px;height:66px;background:var(--line-2)}
+
+/* desktop: everything pinned to the reference canvas, scaled by --k (window width / 1672) */
+@media (min-width:1100px){
+  .s-hero .canvas{width:1672px;height:941px;zoom:var(--k,1)}
+  .s-hero .head{display:contents}
+  .s-hero .canvas>*,.s-hero .head>*{position:absolute}
+  .s-hero .wordmark{left:106px;top:25px}
+  .s-hero .nav{left:380px;top:40px}
+  .s-hero .go{right:92px;top:24px}
+  .s-hero .eyebrow{left:110px;top:176px}
+  .s-hero h1{left:106px;top:211px;width:820px}
+  .s-hero .lede{left:108px;top:408px;width:670px}
+  .s-hero .composer{left:108px;top:547px;width:785px}
+  .s-hero .chip-file{left:108px;top:478px;width:785px}
+  .s-hero .try-label{left:110px;top:652px}
+  .s-hero .tries{left:108px;top:678px;gap:17px}
+  .s-hero .rule{left:108px;top:775px;width:785px}
+  .s-hero .kinds{left:110px;top:810px;width:790px;height:62px}
+  .s-hero .kinds div{position:absolute;top:0}
+}
+/* narrow screens: a plain column, no photo */
+@media (max-width:1099px){
+  .s-hero{background:var(--bg)}
+  .s-hero .canvas{display:flex;flex-direction:column;gap:22px;padding:22px 20px 48px}
+  .s-hero .head{display:flex;align-items:center;justify-content:space-between}
+  .s-hero .nav,.s-hero .kinds i{display:none}
+  .s-hero .wordmark{font-size:32px}
+  .s-hero .go{height:42px;padding:0 18px;font-size:15px}
+  .s-hero h1{font-size:clamp(46px,11vw,76px);line-height:.95}
+  .s-hero .lede{font-size:18.5px;line-height:1.5}
+  .s-hero .composer{border-radius:26px}
+  .s-hero .composer form{flex-wrap:wrap;height:auto;padding:8px 8px 8px 18px}
+  .s-hero #q{flex-basis:calc(100% - 50px);height:50px;font-size:16px}
+  .s-hero .send{width:100%;height:52px}
+  .s-hero .tries{flex-wrap:wrap;gap:10px}
+  .s-hero .kinds{flex-wrap:wrap;gap:20px 0;padding-top:22px;border-top:1px solid var(--line-2)}
+  .s-hero .kinds div{flex:0 0 33%}
+  .s-hero .rule{display:none}
+}
+
+/* the answer, under the hero */
+.s-hero-result{max-width:1180px;margin:0 auto;padding:0 clamp(20px,4vw,48px)}
+.s-hero-result #result{scroll-margin-top:24px}
+.s-hero-result #result:not(:empty){padding:56px 0 8px}
+.s-hero-result .card{background:var(--card);border-radius:28px;box-shadow:var(--shadow),0 0 0 1px var(--line);overflow:hidden;animation:bg-rise .55s cubic-bezier(.2,.8,.2,1) both}
+@keyframes bg-rise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+.s-hero-result .card+.card{margin-top:20px}
+.s-hero-result .v-head{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:flex-end;justify-content:space-between;padding:clamp(24px,3.4vw,40px)}
+.s-hero-result .v-head>div{min-width:0}
+.s-hero-result .who{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.s-hero-result .who b{width:42px;height:42px;border-radius:12px;background:#111;color:#fff;display:grid;place-items:center;font-size:18px;flex:none}
+.s-hero-result .who strong{display:block;font-size:18px;overflow-wrap:anywhere}.s-hero-result .who small{color:var(--mute);font-size:13px}
+.s-hero-result h2{margin:0;font:600 clamp(44px,5.4vw,72px)/1 var(--serif);letter-spacing:-.03em}
+.s-hero-result .v-green h2{color:var(--green)}.s-hero-result .v-red h2{color:var(--red)}.s-hero-result .v-yellow h2{color:var(--amber)}
+.s-hero-result .advice{margin:10px 0 0;font-size:18px;color:var(--ink-2);max-width:620px}
+.s-hero-result .badge{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;font-weight:600;color:#fff;animation:bg-pop .45s .15s cubic-bezier(.3,1.5,.5,1) both}
+@keyframes bg-pop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:none}}
+.s-hero-result .v-green .badge{background:var(--green)}.s-hero-result .v-red .badge{background:var(--red)}.s-hero-result .v-yellow .badge{background:var(--amber)}
+.s-hero-result .v-body{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);border-top:1px solid var(--line)}
+.s-hero-result .v-body>div{padding:clamp(22px,3vw,36px);min-width:0}
+.s-hero-result .v-body>div+div{border-left:1px solid var(--line);background:var(--card-2)}
+.s-hero-result h3{margin:0 0 14px;font:600 12.5px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--eyebrow)}
+.s-hero-result .reasons{list-style:none;margin:0;padding:0;background:#fff;border-radius:18px;box-shadow:0 0 0 1px var(--line)}
+.s-hero-result .reasons li{display:grid;grid-template-columns:30px 1fr;gap:14px;padding:16px 18px;opacity:0;animation:bg-rise .45s cubic-bezier(.2,.8,.2,1) forwards}
+.s-hero-result .reasons li+li{border-top:1px solid #f0e8dc}
+.s-hero-result .ic{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:14px}
+.s-hero-result .t-good .ic{background:var(--green)}.s-hero-result .t-bad .ic{background:var(--red)}.s-hero-result .t-warn .ic{background:var(--amber)}
+.s-hero-result .reasons p{margin:3px 0 0;font-weight:500;font-size:16.5px}
+.s-hero-result .proof{display:inline-block;margin-top:5px;font-size:14px;color:var(--mute);text-decoration:none;overflow-wrap:anywhere}
+.s-hero-result a.proof{color:var(--terra);text-decoration:underline;text-decoration-color:rgba(128,63,30,.35);text-underline-offset:3px}
+.s-hero-result .crowd{margin-top:16px;padding:13px 16px;border-radius:14px;background:#efe7da;color:var(--ink-2);font-weight:500}
+.s-hero-result .paid{margin-top:16px;padding:18px 20px;border-radius:18px;background:var(--red-bg)}
+.s-hero-result .paid h4{margin:0 0 8px;font:600 22px var(--serif);color:var(--red)}
+.s-hero-result .paid ul,.s-hero-result .alts{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.s-hero-result .paid li{padding-left:16px;position:relative;font-size:15.5px}.s-hero-result .paid li::before{content:"";position:absolute;left:0;top:.62em;width:6px;height:6px;border-radius:50%;background:var(--red)}
+.s-hero-result .paid a{overflow-wrap:anywhere;color:var(--red)}
+.s-hero-result .brand-real{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:16px;background:#fff;box-shadow:0 0 0 1px var(--line);text-decoration:none;margin-bottom:22px}
+.s-hero-result .brand-real .mk{width:40px;height:40px;border-radius:12px;background:var(--olive);color:#fff;display:grid;place-items:center;font-weight:700}
+.s-hero-result .brand-real small{display:block;color:var(--mute);font-size:12.5px}
+.s-hero-result .alts a{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:14px;background:#fff;box-shadow:0 0 0 1px var(--line);text-decoration:none;transition:transform .15s}
+.s-hero-result .alts a:hover{transform:translateX(3px)}
+.s-hero-result .dot{width:10px;height:10px;border-radius:50%;background:var(--green);flex:none;box-shadow:0 0 0 4px var(--green-bg)}
+.s-hero-result .alts b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.s-hero-result .pr{font-weight:600;color:var(--ink-2)}
+.s-hero-result .note{color:var(--mute);font-size:15.5px;margin:16px 0 0}
+.s-hero-result details{margin-top:16px;font-size:14.5px;color:var(--mute)}
+.s-hero-result summary{cursor:pointer;font-weight:600}
+.s-hero-result details ol{margin:10px 0 0;padding-left:20px;line-height:1.7}
+.s-hero-result .again{display:flex;justify-content:center;margin:26px 0 0}
+.s-hero-result .again button{border:1px solid #d6c7b2;background:#fffdf9;padding:12px 22px;border-radius:999px;font-weight:600;cursor:pointer}
+.s-hero-result .again button:hover{border-color:var(--ink)}
+.s-hero-result .msg{display:flex;gap:14px;align-items:flex-start;padding:clamp(24px,3vw,36px)}
+.s-hero-result .msg .av{flex:none;width:44px;height:44px;border-radius:50%;background:var(--olive);display:grid;place-items:center}
+.s-hero-result .msg .av svg{width:22px;height:22px}
+.s-hero-result .bubble{background:#ece6dd;border-radius:22px;border-bottom-left-radius:6px;padding:14px 18px;font-size:17px;max-width:640px}
+.s-hero-result .checking{padding:clamp(28px,4vw,44px);display:flex;gap:24px;align-items:center}
+.s-hero-result .ring{flex:none;width:64px;height:64px;border-radius:50%;border:3px solid #eadfce;border-top-color:var(--terra);animation:bg-spin 1s linear infinite}
+@keyframes bg-spin{to{transform:rotate(360deg)}}
+.s-hero-result .checking h2{font-size:clamp(30px,3.6vw,42px);color:var(--ink)}
+.s-hero-result #step{color:var(--mute);min-height:1.5em}
+@media (max-width:900px){.s-hero-result .v-body{grid-template-columns:1fr}.s-hero-result .v-body>div+div{border-left:0;border-top:1px solid var(--line)}}
+</style>
+
+<section class="s-hero" id="top">
+  <div class="canvas">
+    <div class="head">
+      <a class="wordmark" href="/" aria-label="Brand Guard home">Brand Guard</a>
+      <nav class="nav"><a href="#how">How it works</a><a href="#imessage">iMessage</a><a href="/lab">Evidence Lab</a></nav>
+      <a class="go" href="#imessage">Get started</a>
+    </div>
+
+    <span class="eyebrow">Check before you buy</span>
+    <h1>Know what’s <em>real</em><br>before you pay.</h1>
+    <p class="lede">Paste a link, brand name, or screenshot to quickly verify whether a store, website, post, or seller is legitimate, with clear signals and safer next steps.</p>
+
+    <div class="chip-file" id="chip"><span class="fi" id="chip-icon"></span><span id="chip-name"></span><button type="button" id="chip-x" aria-label="Remove file">×</button></div>
+    <div class="composer" id="composer">
+      <form id="ask">
+        <button type="button" class="attach" id="attach" aria-label="Attach a screenshot, video or PDF">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.07 0l3-3a5 5 0 00-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 00-7.07 0l-3 3a5 5 0 007.07 7.07l1.5-1.5"/></svg>
+        </button>
+        <label class="sr" for="q">A link, a store's name, or a question</label>
+        <input id="q" autocomplete="off" placeholder="Paste a link, store name, or drop a screenshot">
+        <input type="file" id="file" accept="image/*,video/*,application/pdf,.heic,.heif" hidden>
+        <button class="send" id="send" type="submit">Check now<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      </form>
+    </div>
+
+    <span class="try-label">Try these examples</span>
+    <div class="tries">
+      <button type="button" data-try="is Lucky Fours legit?"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>is Lucky Fours legit?</button>
+      <button type="button" data-try="https://testsafebrowsing.appspot.com/s/phishing.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3.5V12c0 5-3.4 8.3-8 10-4.6-1.7-8-5-8-10V6.5z"/><path d="M12 8v5M12 16.5v.5"/></svg>a phishing page</button>
+      <button type="button" id="try-shot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-9 9"/></svg>upload a screenshot</button>
+    </div>
+    <div class="rule"></div>
+    <div class="kinds">
+      <div style="left:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.8 3 2.8 15 0 18M12 3c-2.8 3-2.8 15 0 18"/></svg>Websites &amp; stores</div>
+      <i style="left:155px"></i>
+      <div style="left:182px"><svg class="ig" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r=".8" fill="currentColor"/></svg>Social sellers</div>
+      <i style="left:310px"></i>
+      <div style="left:337px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-9 9"/></svg>Screenshots</div>
+      <i style="left:466px"></i>
+      <div style="left:493px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="3" y="5" width="13" height="14" rx="2.5"/><path d="M16 10l5-3v10l-5-3"/></svg>Videos</div>
+      <i style="left:588px"></i>
+      <div style="left:615px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>Receipts</div>
+    </div>
+
+  </div>
+  <dialog class="upload-consent" id="upload-consent" aria-labelledby="upload-consent-title">
+    <form method="dialog">
+      <h2 id="upload-consent-title">Before you upload</h2>
+      <p>Only share a file that you own or have permission to use. Brand Guard will read it to answer your request.</p>
+      <ul><li>Remove passwords and full payment-card numbers.</li><li>Do not upload government IDs, medical records, or private conversations without permission.</li><li>Relevant text or images may be checked with configured research providers.</li></ul>
+      <div class="consent-actions"><button value="cancel">Cancel</button><button class="allow" value="accept">I have permission</button></div>
+    </form>
+  </dialog>
+</section>
+<div class="s-hero-result"><div id="result" aria-live="polite"></div></div>
+
+<script>
+(() => {
+  // desktop: scale the reference canvas to the window width
+  const hero = document.querySelector(".s-hero");
+  const fit = () => hero.style.setProperty("--k", Math.max(innerWidth, 1) / 1672);
+  fit(); addEventListener("resize", fit);
+
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const safeHref = u => /^https?:\/\//i.test(u || "") ? esc(u) : "#";
+  const linkify = s => esc(s).replace(/https?:\/\/[^\s<]+[^\s<.,;:)]/g, u => `<a href="${u}" target="_blank" rel="noopener noreferrer">${u}</a>`);
+  const firstSentence = s => ((s || "").match(/^.*?[.!?](?=\s|$)/)?.[0] ?? s ?? "").trim();
+  const host = u => { try { return new URL(u).host.replace(/^www\./, ""); } catch { return u; } };
+
+  // the same words the iMessage agent sends (imessage-agent/src/brandguard.ts)
+  const VERDICT = {green: ["Legit", "✓"], red: ["Not legit", "✕"], yellow: ["Couldn't check", "?"]};
+  const ADVICE = {
+    red: "Don't pay or share your details.",
+    yellow: "I couldn't read the site or find anything about it elsewhere. If you buy, pay only with buyer protection (a card or PayPal Goods & Services).",
+    green: "Nothing points to a scam. Not a guarantee.",
+  };
+  const screenshotAsk = p => `${p || "The site"} didn't let me see this post. Send me a screenshot of it, with the account name and caption showing, and I'll check that.`;
+  const FROM = {screenshot: "screenshot", video: "video", pdf: "PDF"};
+  const KIND_OF = {link: "Website", name: "Found by name", account: "Account", screenshot: "From your screenshot", video: "From your video", pdf: "From your PDF"};
+  const picked = c => (c.signals || []).filter(s => (c.verdict === "green" ? ["good"] : ["bad", "warn"]).includes(s.tone)).slice(0, 3);
+  const crowdText = c => {
+    const cr = c.crowd;
+    if (!cr || !cr.checked || cr.checked < 2) return "";
+    return `👥 Checked ${cr.checked} times ${cr.days === 7 ? "this week" : `in the last ${cr.days} days`}; ` + (cr.flagged ? `${cr.flagged} came out Not legit.` : "never flagged.");
+  };
+  const money = a => a.price == null ? "" : (!a.currency || a.currency === "USD") ? `$${a.price.toFixed(2)}` : `${a.price.toFixed(2)} ${a.currency}`;
+
+  function card(c) {
+    const [word, mark] = VERDICT[c.verdict] || VERDICT.yellow;
+    const f = c.found || {};
+    const what = f.what || c.domain || host(c.url) || "?";
+    const from = FROM[f.how];
+    const advice = c.ask_for || (c.send_screenshot ? screenshotAsk(c.platform) : ADVICE[c.verdict]);
+    const reasons = picked(c).map((s, i) => `<li class="t-${esc(s.tone)}" style="animation-delay:${.2 + i * .1}s"><span class="ic">${s.tone === "good" ? "✓" : "!"}</span>
+        <div><p>${esc(firstSentence(s.detail))}</p>${s.proof ? (s.proof.url
+          ? `<a class="proof" href="${safeHref(s.proof.url)}" target="_blank" rel="noopener noreferrer">${esc(s.proof.text)}</a>`
+          : `<span class="proof">${esc(s.proof.text)}</span>`) : ""}</div></li>`).join("");
+    const crowd = crowdText(c);
+    const ap = c.already_paid || {};
+    const paid = c.verdict === "red" && ap.steps && ap.steps.length
+      ? `<div class="paid"><h4>Already paid?</h4><ul>${[...ap.steps, ...(ap.report || [])].map(s => `<li>${linkify(s)}</li>`).join("")}</ul></div>` : "";
+    const rb = c.real_brand && !c.real_brand.this_site
+      ? `<a class="brand-real" href="${safeHref(c.real_brand.url)}" target="_blank" rel="noopener noreferrer"><span class="mk">${esc((c.real_brand.name || "?")[0])}</span><span><small>The real brand</small><b>${esc(c.real_brand.name)}</b> · ${esc(host(c.real_brand.url))}</span></a>` : "";
+    const alts = (c.alternatives || []).slice(0, 3);
+    const forWhat = c.alternatives_for && c.alternatives_for.kind === "category" ? `Trusted stores for ${esc(c.alternatives_for.what.toLowerCase())}` : "Other places to buy it";
+    const altsHtml = alts.length ? `<h3>${forWhat}</h3><ul class="alts">${alts.map(a => `<li><a href="${safeHref(a.url)}" target="_blank" rel="noopener noreferrer"><span class="dot"></span><b>${esc(a.host)}</b><span class="pr">${esc(money(a))}</span></a></li>`).join("")}</ul>` : "";
+    const altNote = !alts.length && c.alternatives_note && !c.send_screenshot ? `<p class="note">${esc(c.alternatives_note)}</p>` : "";
+    const photos = c.verdict === "green" ? [] : (c.same_photo || []).slice(0, 2);
+    const photosHtml = photos.length ? `<h3 style="margin-top:22px">Same photo also on</h3><ul class="alts">${photos.map(p => `<li><a href="${safeHref(p.url)}" target="_blank" rel="noopener noreferrer"><span class="dot" style="background:var(--amber);box-shadow:0 0 0 4px var(--amber-bg)"></span><b>${esc(p.host)}</b></a></li>`).join("")}</ul>` : "";
+    const read = (f.read || []).length && from ? `<details><summary>What I read in your ${from}</summary><ol>${f.read.slice(0, 20).map(l => `<li>${esc(l)}</li>`).join("")}</ol></details>` : "";
+    const side = rb + altsHtml + photosHtml;
+    return `<article class="card v-${esc(c.verdict)}">
+      <div class="v-head"><div>
+          <div class="who"><b>${esc(what.replace(/^@/, "").charAt(0).toUpperCase())}</b><div><strong>${esc(what)}</strong><small>${esc(KIND_OF[f.how] || "Website")}</small></div></div>
+          <h2>${esc(word)}</h2><p class="advice">${esc(advice)}</p></div>
+        <span class="badge">${mark} ${esc(word)}</span></div>
+      <div class="v-body" ${side ? "" : 'style="grid-template-columns:minmax(0,1fr)"'}>
+        <div><h3>Why</h3>${reasons ? `<ul class="reasons">${reasons}</ul>` : `<p class="note" style="margin:0">No single signal stood out.</p>`}
+          ${crowd ? `<div class="crowd">${esc(crowd)}</div>` : ""}${paid}${altNote}${read}</div>
+        ${side ? `<div>${side}</div>` : ""}
+      </div></article>`;
+  }
+  const agentSays = text => `<article class="card"><div class="msg"><span class="av"><svg viewBox="0 0 32 32"><path d="M16 4l10 4.4V15c0 6.4-4.3 10.6-10 13.2C10.3 25.6 6 21.4 6 15V8.4z" fill="none" stroke="#f4efe6" stroke-width="2.2"/></svg></span><div class="bubble">${esc(text)}</div></div></article>`;
+  const againHtml = `<div class="again"><button type="button" id="again">Check something else</button></div>`;
+  const wireAgain = () => { $("again").onclick = () => { $("result").innerHTML = ""; clearFile(); $("q").value = ""; scrollTo({top: 0, behavior: "smooth"}); $("q").focus(); }; };
+  const render = r => {
+    const others = (r.others || []).map(o => o.error ? agentSays(`${o.found?.what || "That"}: ${o.error}`) : card(o)).join("");
+    $("result").innerHTML = card(r) + others + againHtml; wireAgain();
+  };
+
+  // while it works: what is being looked up, then "Double checking…" after 15 s, as on iMessage
+  const STEPS_LINK = ["Looking up who registered the domain", "Asking Google Safe Browsing", "Reading the page", "Checking the archive", "Searching the web for the store"];
+  const STEPS_FILE = ["Reading the text in your file", "Finding the address or @account", "Looking up who registered the domain", "Asking Google Safe Browsing", "Searching for trusted stores"];
+  let ticker;
+  function checking(withFile) {
+    const steps = withFile ? STEPS_FILE : STEPS_LINK;
+    $("result").innerHTML = `<article class="card"><div class="checking"><div class="ring" aria-hidden="true"></div><div><h2 id="chk-h">Checking…</h2><div id="step">${steps[0]}</div></div></div></article>`;
+    let i = 0; const t0 = Date.now(); clearInterval(ticker);
+    ticker = setInterval(() => {
+      i = Math.min(i + 1, steps.length - 1); if ($("step")) $("step").textContent = steps[i];
+      if (Date.now() - t0 > 15000 && $("chk-h")) $("chk-h").textContent = "Double checking…";
+    }, 2200);
+    $("result").scrollIntoView({behavior: "smooth", block: "start"});
+  }
+
+  let file = null;
+  const KIND = f => f.type === "application/pdf" ? "PDF" : f.type.startsWith("video/") ? "VIDEO" : "IMG";
+  function setFile(f) {
+    if (!f) return;
+    file = f;
+    const icon = $("chip-icon");
+    if (f.type.startsWith("image/") && !/hei[cf]/i.test(f.type + f.name)) {
+      const img = document.createElement("img"); img.src = URL.createObjectURL(f); img.alt = ""; img.id = "chip-icon"; icon.replaceWith(img);
+    } else { const s = document.createElement("span"); s.className = "fi"; s.id = "chip-icon"; s.textContent = KIND(f); icon.replaceWith(s); }
+    $("chip-name").textContent = f.name; $("chip").classList.add("on");
+    $("q").placeholder = "Add a note (optional)";
+  }
+  function clearFile() { file = null; $("file").value = ""; $("chip").classList.remove("on"); $("q").placeholder = "Paste a link, store name, or drop a screenshot"; }
+
+  let consentResolve;
+  const consentDialog = $("upload-consent");
+  const requestUploadPermission = f => new Promise(resolve => {
+    if (!f) { resolve(false); return; }
+    consentResolve = resolve;
+    consentDialog.returnValue = "";
+    consentDialog.showModal();
+  });
+  consentDialog.addEventListener("close", () => {
+    if (!consentResolve) return;
+    const resolve = consentResolve; consentResolve = null;
+    resolve(consentDialog.returnValue === "accept");
+  });
+  async function acceptFile(f) {
+    if (await requestUploadPermission(f)) { setFile(f); $("q").focus(); }
+    else $("file").value = "";
+  }
+
+  $("attach").onclick = () => $("file").click();
+  $("try-shot").onclick = () => $("file").click();
+  $("file").onchange = e => acceptFile(e.target.files[0]);
+  $("chip-x").onclick = clearFile;
+  const comp = $("composer");
+  ["dragenter", "dragover"].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); comp.classList.add("drag"); }));
+  ["dragleave", "drop"].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); if (ev === "drop" || !e.relatedTarget) comp.classList.remove("drag"); }));
+  document.addEventListener("drop", e => { const f = e.dataTransfer?.files?.[0]; if (f) acceptFile(f); });
+  document.addEventListener("paste", e => { const f = [...(e.clipboardData?.files || [])][0]; if (f) { e.preventDefault(); acceptFile(f); } });
+  document.querySelectorAll(".s-hero [data-try]").forEach(b => b.onclick = () => { clearFile(); $("q").value = b.dataset.try; $("ask").requestSubmit(); });
+
+  $("ask").onsubmit = async e => {
+    e.preventDefault();
+    const text = $("q").value.trim();
+    if (!text && !file) { $("q").focus(); return; }
+    const fd = new FormData(); fd.append("text", text);
+    if (file) fd.append("image", file, file.name);
+    $("send").disabled = true; checking(!!file);
+    try {
+      const res = await fetch("/api/listing/ask", {method: "POST", body: fd});
+      const body = await res.json().catch(() => ({}));
+      if (res.status === 422) { $("result").innerHTML = agentSays(body.detail || "I couldn't check that.") + againHtml; wireAgain(); }
+      else if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      else render(body);
+    } catch (err) {
+      $("result").innerHTML = agentSays(`Brand Guard is not reachable right now (${err.message}). Try again in a minute.`) + againHtml; wireAgain();
+    } finally { clearInterval(ticker); $("send").disabled = false; }
+  };
+})();
+</script>

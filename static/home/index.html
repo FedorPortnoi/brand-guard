@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#ede4da">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ede4da'/%3E%3Cpath d='M16 5l9 4v6.5c0 5.6-3.8 9.4-9 11.8-5.2-2.4-9-6.2-9-11.8V9z' fill='none' stroke='%23803f1e' stroke-width='2'/%3E%3Cpath d='M12 16l3 3 5.5-6' fill='none' stroke='%23803f1e' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>Brand Guard: know what's real before you pay</title>
+<meta name="description" content="Paste a link, a store's name, or a screenshot. Brand Guard tells you Legit, Not legit or Couldn't check, with the proof, and safer places to buy. Or text it on iMessage.">
+<link rel="preload" as="image" href="/static/home/hero-scene-v2.png" fetchpriority="high">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,650;8..60,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- The page is put together by the server (app/main.py) from three standalone sections in this folder:
+     hero.html (the checker and its answers), how.html (how it works), imessage.html (text it on iMessage).
+     Each brings its own styles, scoped to its section class, so one can be restyled without touching the others.
+     Only the shared colors and fonts live here. -->
+<style>
+:root{
+  --bg:#ede4da;--paper:#fcfaf6;--card:#fbf7f1;--card-2:#f5eee4;--line:#e3d7c6;--line-2:#dfd6cb;
+  --ink:#111717;--ink-2:#232925;--mute:#6e675d;--soft:#9a9184;
+  --terra:#803f1e;--terra-2:#6d3418;--eyebrow:#7a4628;--olive:#575337;--olive-2:#46432c;
+  --green:#3d8f5a;--green-bg:#e3efe5;--red:#b8392b;--red-bg:#f6e2dc;--amber:#a8670f;--amber-bg:#f5e8d2;
+  --serif:"Source Serif 4","Iowan Old Style",Georgia,serif;--sans:Inter,"Segoe UI",system-ui,sans-serif;
+  --shadow:0 1px 2px rgba(60,45,30,.06),0 12px 32px -12px rgba(60,45,30,.18)}
+*{box-sizing:border-box}
+html{background:var(--bg);scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--terra);outline-offset:3px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.site-foot{position:relative;background:#eee8e1;color:#53504b;border-top:1px solid rgba(119,104,89,.2)}
+.site-foot .foot-inner{height:100%;padding:40px 84px 30px;display:grid;grid-template-columns:260px 1fr;grid-template-rows:auto auto;gap:31px 70px;align-content:center}
+.site-foot .foot-brand{font:600 32px/1 var(--serif);letter-spacing:-.03em;color:#171918}
+.site-foot .foot-brand small{display:block;margin-top:12px;font:600 11px/1.3 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:#8c4d2c}
+.site-foot .foot-main{display:flex;align-items:flex-start;justify-content:space-between;gap:42px;border-left:1px solid #9d958b;padding-left:48px}
+.site-foot .foot-note{max-width:650px;margin:0;font-size:15px;line-height:1.55}
+.site-foot .foot-links{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:12px 25px;max-width:650px}
+.site-foot a,.site-foot button{color:#373936;text-decoration:underline;text-decoration-color:#a39b91;text-underline-offset:4px}
+.site-foot button{padding:0;border:0;background:none;cursor:pointer;font:inherit}
+.site-foot .foot-meta{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:28px;padding-top:22px;border-top:1px solid rgba(119,104,89,.22);font-size:13px;color:#706c66}
+.site-foot .foot-signals{display:flex;flex-wrap:wrap;gap:9px}
+.site-foot .foot-signals span{padding:7px 11px;border:1px solid #d3c9bc;border-radius:999px;background:rgba(255,255,255,.35);font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:#54534d}
+@media (min-width:1100px){.site-foot{width:1930px;height:271.202px;zoom:var(--imsg-k,1)}}
+@media (max-width:1099px){.site-foot .foot-inner{height:auto;padding:38px 22px;grid-template-columns:1fr;gap:25px}.site-foot .foot-main{border-left:0;border-top:1px solid #9d958b;padding:24px 0 0;display:grid;gap:22px}.site-foot .foot-links{justify-content:flex-start}.site-foot .foot-meta{align-items:flex-start;flex-direction:column}.site-foot .foot-brand{font-size:27px}}
+.privacy-banner{position:fixed;z-index:100;left:24px;right:24px;bottom:22px;max-width:980px;margin:auto;padding:18px 20px;display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;border:1px solid #d7caba;border-radius:18px;background:rgba(252,249,244,.97);box-shadow:0 18px 60px rgba(41,31,23,.22);backdrop-filter:blur(12px)}
+.privacy-banner[hidden]{display:none}.privacy-banner p{margin:0;font-size:14px;line-height:1.5;color:#494640}.privacy-banner strong{color:#171918}.privacy-actions{display:flex;gap:10px}.privacy-actions button{min-height:42px;padding:0 16px;border:1px solid #7c715f;border-radius:999px;background:transparent;cursor:pointer;font-weight:600}.privacy-actions button:first-child{background:#575337;color:#fff;border-color:#575337}
+.privacy-dialog{width:min(600px,calc(100% - 32px));padding:0;border:1px solid #d8ccbd;border-radius:22px;background:#fbf7f1;color:#171918;box-shadow:0 28px 90px rgba(35,26,18,.35)}
+.privacy-dialog::backdrop{background:rgba(25,23,20,.48);backdrop-filter:blur(3px)}.privacy-dialog .dialog-inner{padding:28px}.privacy-dialog h2{margin:0;font:600 38px/1 var(--serif);letter-spacing:-.03em}.privacy-dialog>form{margin:0}.privacy-dialog p{color:#605b54}.privacy-row{display:grid;grid-template-columns:1fr auto;gap:18px;padding:16px 0;border-top:1px solid #e1d7ca}.privacy-row b,.privacy-row small{display:block}.privacy-row small{margin-top:4px;color:#716b63}.privacy-state{align-self:center;padding:6px 10px;border-radius:999px;background:#e2eadb;color:#355636;font-size:12px;font-weight:700;text-transform:uppercase}.privacy-dialog .dialog-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}.privacy-dialog button{min-height:43px;padding:0 17px;border:1px solid #817563;border-radius:999px;background:transparent;cursor:pointer;font-weight:600}.privacy-dialog .save{background:#575337;border-color:#575337;color:#fff}
+@media (max-width:680px){.privacy-banner{left:12px;right:12px;bottom:12px;grid-template-columns:1fr}.privacy-actions{display:grid;grid-template-columns:1fr 1fr}.privacy-actions button{padding:0 10px}.privacy-dialog h2{font-size:32px}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}}
+</style>
+</head>
+<body>
+<!-- section: hero -->
+<!-- section: how -->
+<!-- section: imessage -->
+<footer class="site-foot">
+  <div class="foot-inner">
+    <div class="foot-brand">Brand Guard<small>Policies and transparency</small></div>
+    <div class="foot-main">
+      <p class="foot-note">Brand Guard reports observable signals, not a guarantee or legal finding. Pay with buyer protection when unsure.</p>
+      <nav class="foot-links" aria-label="Legal and support">
+        <a href="/legal#privacy">Privacy</a><a href="/legal#terms">Terms</a><a href="/legal#cookies">Cookies</a><a href="/legal#security">Security</a><a href="/legal#accessibility">Accessibility</a><a href="/lab">Evidence Lab</a><button type="button" data-cookie-settings>Cookie settings</button>
+      </nav>
+    </div>
+    <div class="foot-meta">
+      <div class="foot-signals" aria-label="Current product safeguards"><span>No ad tracking</span><span>Upload permission</span><span>Security headers</span><span>WCAG 2.2 AA target</span></div>
+      <span>&copy; 2026 Brand Guard &middot; Hacklanta '26</span>
+    </div>
+  </div>
+</footer>
+
+<aside class="privacy-banner" id="privacy-banner" aria-label="Privacy choices" hidden>
+  <p><strong>Your privacy choices.</strong> This site currently uses only local storage needed to remember your choice. No analytics or advertising trackers are active. <a href="/legal#cookies">Read the cookie policy</a>.</p>
+  <div class="privacy-actions"><button type="button" id="essential-only">Use essential only</button><button type="button" id="open-privacy">Privacy choices</button></div>
+</aside>
+
+<dialog class="privacy-dialog" id="privacy-dialog" aria-labelledby="privacy-title">
+  <form method="dialog"><div class="dialog-inner">
+    <h2 id="privacy-title">Privacy choices</h2>
+    <p>Brand Guard currently runs without analytics or advertising trackers. Your browser stores only this preference.</p>
+    <div class="privacy-row"><div><b>Essential storage</b><small>Remembers this privacy choice on this device.</small></div><span class="privacy-state">Always on</span></div>
+    <div class="privacy-row"><div><b>Analytics</b><small>Not installed or used.</small></div><span class="privacy-state">Off</span></div>
+    <div class="privacy-row"><div><b>Advertising</b><small>Not installed or used.</small></div><span class="privacy-state">Off</span></div>
+    <p id="gpc-note" hidden>Your browser's Global Privacy Control signal is on. Optional tracking stays off.</p>
+    <div class="dialog-actions"><button value="cancel">Cancel</button><button class="save" id="save-privacy" value="default">Save essential only</button></div>
+  </div></form>
+</dialog>
+
+<script>
+(() => {
+  const key = "bg_privacy_choice_v1";
+  const banner = document.getElementById("privacy-banner");
+  const dialog = document.getElementById("privacy-dialog");
+  const save = () => {
+    localStorage.setItem(key, JSON.stringify({version:1,essential:true,analytics:false,advertising:false,gpc:navigator.globalPrivacyControl===true,savedAt:new Date().toISOString()}));
+    banner.hidden = true;
+  };
+  try { banner.hidden = Boolean(localStorage.getItem(key)); } catch { banner.hidden = false; }
+  document.getElementById("essential-only").addEventListener("click", save);
+  document.getElementById("open-privacy").addEventListener("click", () => dialog.showModal());
+  document.getElementById("save-privacy").addEventListener("click", save);
+  document.querySelectorAll("[data-cookie-settings]").forEach(button => button.addEventListener("click", () => dialog.showModal()));
+  if (navigator.globalPrivacyControl === true) document.getElementById("gpc-note").hidden = false;
+})();
+</script>
+</body>
+</html>

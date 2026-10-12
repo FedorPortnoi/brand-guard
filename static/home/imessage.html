@@ -1,0 +1,120 @@
+<!-- IMESSAGE: reference-matched editorial still life. Desktop is composed on a 1930 x 714 canvas. -->
+<style>
+.s-imsg{position:relative;overflow:hidden;background:#e6ded5;color:var(--ink)}
+.s-imsg .desktop-reference{display:none}
+.s-imsg .canvas{position:relative;isolation:isolate;overflow:hidden;background:
+  radial-gradient(ellipse at 22% 10%,rgba(255,255,255,.84),transparent 38%),
+  radial-gradient(ellipse at 75% 42%,rgba(115,91,70,.13),transparent 46%),
+  linear-gradient(105deg,#eee9e3 0%,#ddd4ca 61%,#cfc4b9 100%)}
+.s-imsg .canvas::before{content:"";position:absolute;z-index:0;inset:0;pointer-events:none;opacity:.48;background:
+  radial-gradient(ellipse at 13% 0%,transparent 0 15%,rgba(105,91,75,.16) 28%,transparent 47%),
+  linear-gradient(118deg,transparent 11%,rgba(99,84,69,.09) 27%,transparent 38%),
+  linear-gradient(76deg,transparent 52%,rgba(104,88,69,.09) 66%,transparent 76%)}
+.s-imsg .canvas::after{content:"";position:absolute;z-index:1;left:0;right:0;top:494px;height:260px;pointer-events:none;clip-path:polygon(0 83%,57% 12%,100% 3%,100% 100%,0 100%);background:linear-gradient(168deg,#f2ece5 0%,#e5dbd0 62%,#d9cec3 100%);box-shadow:inset 0 18px 40px rgba(114,91,67,.09)}
+.s-imsg .copy{position:absolute;z-index:10;left:214px;top:88px;width:690px}
+.s-imsg .eyebrow{display:flex;align-items:center;gap:22px;color:#3f3d39;font:600 14px/1 var(--sans);letter-spacing:.25em;text-transform:uppercase}
+.s-imsg .eyebrow::before{content:"";width:62px;height:2px;background:#97552f}
+.s-imsg h2{margin:31px 0 22px;width:690px;font:600 87px/.91 var(--serif);letter-spacing:-.045em;color:#191d1d}
+.s-imsg h2 em{font-style:normal;color:#8b5030}
+.s-imsg .intro{width:660px;margin:0;color:#292b2a;font-size:22px;line-height:1.4;letter-spacing:-.015em}
+.s-imsg .phone{display:block;width:385px;margin-top:24px;border-radius:999px;text-decoration:none;transition:transform .18s ease,filter .18s ease}
+.s-imsg .phone:hover{transform:translateY(-2px);filter:brightness(1.02)}
+.s-imsg .phone:active{transform:translateY(1px) scale(.99)}
+.s-imsg .phone img{display:block;width:100%;height:auto}
+.s-imsg .features{margin:27px 0 0;padding:0;list-style:none;display:grid;gap:16px}
+.s-imsg .features li{display:flex;align-items:center;gap:25px;color:#2d302f;font-size:19px;line-height:1.2}
+.s-imsg .features img{width:42px;height:42px;object-fit:contain;flex:none}
+.s-imsg .still-life{position:absolute;z-index:2;inset:0;pointer-events:none}
+.s-imsg .prop{position:absolute;height:auto;user-select:none}
+.s-imsg .book{z-index:1;left:900px;top:281px;width:665px}
+.s-imsg .stone{z-index:2;left:1088px;top:53px;width:455px}
+.s-imsg .plant{z-index:3;left:1258px;top:-115px;width:775px}
+.s-imsg .bowl{z-index:6;left:1485px;top:426px;width:575px}
+.s-imsg .qr-card{position:absolute;z-index:5;left:1191px;top:190px;width:294px;height:383px;padding:74px 48px 28px;border:1px solid rgba(108,87,68,.2);border-radius:16px;background:
+  radial-gradient(circle at 22% 16%,rgba(255,255,255,.92),transparent 32%),
+  linear-gradient(145deg,#f4f0e8,#e9e1d7);box-shadow:0 24px 38px -22px rgba(55,41,30,.62),inset 0 1px rgba(255,255,255,.7);transform:rotate(7deg);transform-origin:center;display:flex;flex-direction:column;align-items:center}
+.s-imsg .qr-card::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:.18;background-image:radial-gradient(rgba(83,64,48,.32) .6px,transparent .7px);background-size:4px 4px}
+.s-imsg .qr-card img{position:relative;z-index:1;display:block;width:194px;height:194px}
+.s-imsg .qr-card span{position:relative;z-index:1;margin-top:24px;color:#25231f;font:600 12px/1 var(--sans);letter-spacing:.29em;text-transform:uppercase;white-space:nowrap}
+@media (min-width:1100px){
+  .s-imsg .desktop-reference{position:relative;display:block;width:1930px;height:815px;zoom:var(--imsg-k,1)}
+  .s-imsg .desktop-reference>img{display:block;width:1930px;height:815px}
+  .s-imsg .desktop-phone{position:absolute;left:214px;top:417px;width:385px;height:71px;border-radius:999px}
+  .s-imsg .desktop-phone:hover{background:rgba(255,255,255,.08)}
+  .s-imsg .desktop-phone:active{transform:translateY(1px)}
+  .s-imsg .canvas{display:none}
+}
+@media (max-width:1099px){
+  .s-imsg{background:#e6ded5}
+  .s-imsg .canvas{width:auto;height:auto;min-height:1260px;padding:64px 20px 0;background:radial-gradient(circle at 20% 0%,rgba(255,255,255,.78),transparent 34%),linear-gradient(145deg,#eee8e0,#d8cec3)}
+  .s-imsg .canvas::after{top:auto;bottom:0;height:510px;clip-path:polygon(0 28%,100% 0,100% 100%,0 100%)}
+  .s-imsg .copy{position:relative;left:auto;top:auto;width:auto;max-width:680px;margin:0 auto}
+  .s-imsg h2{width:auto;font-size:clamp(52px,11vw,78px)}
+  .s-imsg .intro{width:auto;max-width:620px;font-size:18px}
+  .s-imsg .phone{width:min(385px,100%)}
+  .s-imsg .features li{gap:17px;font-size:17px}
+  .s-imsg .features img{width:36px;height:36px}
+  .s-imsg .still-life{position:relative;inset:auto;height:550px;margin:18px auto 0;max-width:680px}
+  .s-imsg .book{left:-92px;top:188px;width:550px}
+  .s-imsg .stone{left:0;top:32px;width:275px}
+  .s-imsg .plant{left:105px;top:-28px;width:430px}
+  .s-imsg .bowl{left:205px;top:284px;width:390px}
+  .s-imsg .qr-card{left:122px;top:112px;width:190px;height:252px;padding:46px 29px 18px;border-radius:11px}
+  .s-imsg .qr-card img{width:130px;height:130px}
+  .s-imsg .qr-card span{margin-top:15px;font-size:8px}
+}
+@media (max-width:520px){
+  .s-imsg .canvas{min-height:1190px;padding:52px 16px 0}
+  .s-imsg .eyebrow{gap:12px;font-size:10px;letter-spacing:.2em}
+  .s-imsg .eyebrow::before{width:34px}
+  .s-imsg h2{margin:23px 0 18px;font-size:52px;line-height:.94}
+  .s-imsg .features{gap:14px}
+  .s-imsg .features li{font-size:15.5px}
+  .s-imsg .still-life{height:485px;margin-top:12px}
+  .s-imsg .book{left:-104px;top:181px;width:475px}
+  .s-imsg .stone{left:-23px;top:32px;width:240px}
+  .s-imsg .plant{left:75px;top:-14px;width:355px}
+  .s-imsg .bowl{left:182px;top:263px;width:326px}
+  .s-imsg .qr-card{left:91px;top:105px;width:170px;height:226px;padding:42px 26px 16px}
+  .s-imsg .qr-card img{width:116px;height:116px}
+  .s-imsg .qr-card span{margin-top:13px;font-size:7px}
+}
+</style>
+
+<section class="s-imsg" id="imessage">
+  <div class="desktop-reference">
+    <img src="/static/home/imessage-reference.png" alt="">
+    <a class="desktop-phone" href="sms:+16465792852&amp;body=is%20Lucky%20Fours%20legit%3F" aria-label="Text Brand Guard at +1 646 579 2852"></a>
+  </div>
+  <div class="sr">Same answers, in iMessage. Send a shopping link, screenshot, or store name to Brand Guard at +1 646 579 2852.</div>
+  <div class="canvas">
+    <div class="copy">
+      <span class="eyebrow">Or just text it</span>
+      <h2>Same answers,<br>in <em>iMessage.</em></h2>
+      <p class="intro">Shopping on your phone? Send the link, the screenshot, or the store's name to Brand Guard, like you'd ask a friend.</p>
+      <a class="phone" href="sms:+16465792852&amp;body=is%20Lucky%20Fours%20legit%3F" aria-label="Text Brand Guard at +1 646 579 2852">
+        <img src="/static/home/imessage/text-button.webp" alt="">
+      </a>
+      <ul class="features">
+        <li><img src="/static/home/imessage/camera.webp" alt="">Screenshots straight from Instagram or TikTok</li>
+        <li><img src="/static/home/imessage/video.webp" alt="">Screen recordings of a shop</li>
+        <li><img src="/static/home/imessage/message.webp" alt="">&ldquo;Double checking...&rdquo; when it takes a moment</li>
+      </ul>
+    </div>
+
+    <div class="still-life" aria-hidden="true">
+      <img class="prop book" src="/static/home/imessage/guide-book.webp" alt="">
+      <img class="prop stone" src="/static/home/imessage/stone-plinth.webp" alt="">
+      <img class="prop plant" src="/static/home/imessage/olive-vase.webp" alt="">
+      <div class="qr-card"><img src="/static/imessage-qr.svg" alt=""><span>Scan to text it</span></div>
+      <img class="prop bowl" src="/static/home/imessage/receipt-bowl.webp" alt="">
+    </div>
+  </div>
+</section>
+
+<script>
+(() => {
+  const fit = () => document.documentElement.style.setProperty("--imsg-k", Math.max(innerWidth, 1) / 1930);
+  fit(); addEventListener("resize", fit);
+})();
+</script>

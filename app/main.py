@@ -12,8 +12,8 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")  # before app imports; real env vars win
 
 import httpx
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
-from fastapi.responses import FileResponse, Response, StreamingResponse
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi.responses import FileResponse, RedirectResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import (archive_api, ingest, investigations_api, labels_api, listing_api, monitor, monitor_api, pipeline, report, risk, sellers_api,
@@ -33,6 +33,33 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Brand Authenticity Guard", lifespan=lifespan)
 for mod in (monitor_api, sellers_api, takedown_api, labels_api, archive_api, video_api, investigations_api, listing_api):
     app.include_router(mod.router)
+
+
+@app.middleware("http")
+async def security_and_privacy_headers(request: Request, call_next):
+    """Safe browser defaults for both the public site and JSON/API responses."""
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
+    response.headers["Permissions-Policy"] = (
+        "camera=(), microphone=(), geolocation=(), payment=(), usb=(), "
+        "accelerometer=(), gyroscope=(), magnetometer=()"
+    )
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; "
+        "img-src 'self' data: blob: https:; media-src 'self' blob: https:; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; "
+        "connect-src 'self'; form-action 'self'"
+    )
+    if request.url.scheme == "https":
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    if request.url.path.startswith("/api/"):
+        response.headers["Cache-Control"] = "no-store"
+        response.headers["X-Robots-Tag"] = "noindex"
+    return response
 
 
 def _sse(event: str, data) -> str:
@@ -200,10 +227,54 @@ def get_report(scan_id: str, idx: int):
 app.mount("/static", StaticFiles(directory=ROOT / "static"), name="static")
 
 
+HOME = ROOT / "static" / "home"
+HOME_SECTIONS = ("hero", "how", "imessage")  # each a standalone file with its own scoped styles
+
+
+def home_page() -> str:
+    """The home page: the shell with each section's file put in its place (read on every request, so an edited
+    section shows on reload)."""
+    page = (HOME / "index.html").read_text(encoding="utf-8")
+    for name in HOME_SECTIONS:
+        page = page.replace(f"<!-- section: {name} -->", (HOME / f"{name}.html").read_text(encoding="utf-8"))
+    return page
+
+
 @app.get("/")
 def index():
     """Is it legit? The same question and answers as the iMessage agent, on the web."""
-    return FileResponse(ROOT / "static" / "ask.html")
+    return Response(home_page(), media_type="text/html; charset=utf-8")
+
+
+@app.get("/legal")
+def legal():
+    """Privacy, terms, cookie, security, and accessibility disclosures."""
+    return FileResponse(HOME / "legal.html")
+
+
+@app.get("/privacy")
+def privacy():
+    return RedirectResponse("/legal#privacy", status_code=307)
+
+
+@app.get("/terms")
+def terms():
+    return RedirectResponse("/legal#terms", status_code=307)
+
+
+@app.get("/cookies")
+def cookies():
+    return RedirectResponse("/legal#cookies", status_code=307)
+
+
+@app.get("/security")
+def security():
+    return RedirectResponse("/legal#security", status_code=307)
+
+
+@app.get("/accessibility")
+def accessibility():
+    return RedirectResponse("/legal#accessibility", status_code=307)
 
 
 @app.get("/lab")

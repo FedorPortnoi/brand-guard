@@ -74,6 +74,8 @@ through a shared pool of numbers) and set:
 | `SPECTRUM_PROJECT_ID`, `SPECTRUM_PROJECT_SECRET` | project credentials; their presence switches the agent from terminal to iMessage |
 | `BRAND_GUARD_URL` | Brand Guard API, default `http://127.0.0.1:8000` |
 | `ALLOWED_SENDERS` | optional: phone numbers or emails that may use the agent, comma separated (`+1 555 010 2345, me@example.com`). Anyone else is told once that the agent is private, and their messages never start a check. Set it before giving out the number: every check uses your search API keys |
+| `OPEN_TO_ALL` | optional: `1` lets anyone use the agent (judging day); `ALLOWED_SENDERS` then lists the owners, who are never capped |
+| `CHECKS_PER_HOUR` | optional, default `20`: checks one sender may run per hour (owners excepted); after that they're told how many minutes to wait. `0`: no cap |
 | `AGENT_TERMINAL=1` | force the terminal chat even when credentials are set |
 
 On Replit, `bash start.sh` runs Brand Guard and this agent together; put the two Spectrum values in Replit Secrets.
